@@ -1,76 +1,53 @@
-
 const express = require("express");
-const sqlite3 = require("sqlite3").verbose();
+const session = require("express-session");
 const bodyParser = require("body-parser");
-const basicAuth = require("basic-auth");
 const path = require("path");
-const fs = require("fs");
+const sqlite3 = require("sqlite3").verbose();
+const fetch = require("node-fetch");
+require("dotenv").config();
 
 const app = express();
-const dbFile = "./analytics.db";
-const db = new sqlite3.Database(dbFile);
+const db = new sqlite3.Database("./analytics.db");
 
-// Middleware
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
-// Basic auth credentials
-const USERNAME = "admin";
-const PASSWORD = "pilgram123";
+app.use(session({
+  secret: process.env.SESSION_SECRET || "pilgramsecretkey",
+  resave: false,
+  saveUninitialized: true,
+}));
 
-// Create tables if not exist
-db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS page_views (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    product TEXT,
-    type TEXT,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`);
-
-  db.run(`CREATE TABLE IF NOT EXISTS orders (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT,
-    product_id TEXT,
-    product_name TEXT,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`);
-});
-
-// Track analytics event
-app.post("/analytics", (req, res) => {
-  const { product, type } = req.body;
-  db.run("INSERT INTO page_views (product, type) VALUES (?, ?)", [product, type]);
-  res.sendStatus(200);
-});
-
-// Shoppy webhook
-app.post("/webhook", (req, res) => {
-  const { email, product_id, product_name } = req.body;
-  db.run(
-    "INSERT INTO orders (email, product_id, product_name) VALUES (?, ?, ?)",
-    [email, product_id, product_name]
-  );
-  res.sendStatus(200);
-});
-
-// Admin auth middleware
-function auth(req, res, next) {
-  const user = basicAuth(req);
-  if (user && user.name === USERNAME && user.pass === PASSWORD) {
-    return next();
-  } else {
-    res.set("WWW-Authenticate", 'Basic realm="Dashboard"');
-    return res.status(401).send("Authentication required.");
-  }
+function requireLogin(req, res, next) {
+  if (req.session.loggedIn) return next();
+  res.redirect("/login");
 }
 
-// Admin dashboard
-app.get("/dashboard", auth, (req, res) => {
-  res.sendFile(path.join(__dirname, "public/dashboard.html"));
+app.get("/login", (req, res) => {
+  res.sendFile(path.join(__dirname, "views/login.html"));
 });
 
-// Get data for dashboard
-app.get("/api/data", auth, (req, res) => {
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
+  if (username === "admin" && password === "pilgram123") {
+    req.session.loggedIn = true;
+    res.redirect("/dashboard");
+  } else {
+    res.send("Login failed. <a href='/login'>Try again</a>");
+  }
+});
+
+app.get("/logout", (req, res) => {
+  req.session.destroy();
+  res.redirect("/login");
+});
+
+app.get("/dashboard", requireLogin, (req, res) => {
+  res.sendFile(path.join(__dirname, "views/dashboard.html"));
+});
+
+app.get("/api/data", requireLogin, (req, res) => {
   const stats = {};
   db.all("SELECT product, type, COUNT(*) as count FROM page_views GROUP BY product, type", [], (err, views) => {
     stats.views = views || [];
@@ -81,52 +58,33 @@ app.get("/api/data", auth, (req, res) => {
   });
 });
 
-const crypto = require('crypto');
-
-app.post('/shoppy-webhook', express.json(), (req, res) => {
-  const secret = process.env.HXgbzeZ0bM10JYgU; // Add this in .env
-  const signature = req.headers['x-shoppy-signature'];
-
-  const payload = JSON.stringify(req.body);
-  const expectedSignature = crypto
-    .createHmac('sha512', secret)
-    .update(payload)
-    .digest('hex');
-
-  if (signature !== expectedSignature) {
-    console.log('Invalid webhook signature');
-    return res.status(401).send('Unauthorized');
-  }
-
-  console.log('✅ Valid Shoppy webhook received:', req.body);
-
-  // Save or process the order (example: log to file)
-  const logLine = `[${new Date().toISOString()}] ${req.body.product_title} purchased by ${req.body.email} for $${req.body.price}\n`;
-
-  fs.appendFile('sales_log.txt', logLine, err => {
-    if (err) console.error('Failed to log webhook:', err);
-  });
-
-  res.status(200).send('OK');
-});
-
-app.get('/api/shoppy/orders', async (req, res) => {
+app.get("/api/shoppy/orders", requireLogin, async (req, res) => {
   try {
-    const response = await fetch('https://shoppy.gg/api/v1/orders', {
+    const response = await fetch("https://shoppy.gg/api/v1/orders", {
       headers: {
-        'Authorization': `Bearer ${process.env.SHOPPY_API_KEY}`
-      }
+        Authorization: `Bearer ${process.env.SHOPPY_API_KEY}`,
+      },
     });
-
-    const orders = await response.json();
-    res.json(orders);
+    const data = await response.json();
+    res.json(data);
   } catch (err) {
-    console.error('Error fetching orders:', err);
-    res.status(500).send('Failed to fetch orders');
+    console.error("Failed to fetch from Shoppy:", err);
+    res.status(500).send("Error fetching Shoppy orders");
   }
 });
 
+app.post("/shoppy-webhook", (req, res) => {
+  const secret = req.headers["x-shoppy-secret"];
+  if (secret !== process.env.SHOPPY_WEBHOOK_SECRET) {
+    return res.status(403).send("Invalid secret");
+  }
+  const data = req.body;
+  db.run(
+    "INSERT INTO orders (email, product_id, product_name) VALUES (?, ?, ?)",
+    [data.email, data.product_id || "unknown", data.product_title || "unknown"]
+  );
+  res.sendStatus(200);
+});
 
-// Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
