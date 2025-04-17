@@ -5,6 +5,32 @@ const path = require("path");
 const sqlite3 = require("sqlite3").verbose();
 const fetch = require("node-fetch");
 require("dotenv").config();
+
+const { BetaAnalyticsDataClient } = require('@google-analytics/data');
+
+const analyticsClient = new BetaAnalyticsDataClient({
+  keyFilename: path.join(__dirname, 'pilgrims-pages-1d3f856f222d.json')
+});
+
+async function fetchGAViews() {
+  try {
+    const [response] = await analyticsClient.runReport({
+      property: "properties/486157365",
+      dateRanges: [{ startDate: "7daysAgo", endDate: "today" }],
+      dimensions: [{ name: "date" }],
+      metrics: [{ name: "screenPageViews" }],
+    });
+
+    return response.rows.map(row => ({
+      date: row.dimensionValues[0].value,
+      views: parseInt(row.metricValues[0].value)
+    }));
+  } catch (err) {
+    console.error("Google Analytics fetch error:", err);
+    return [];
+  }
+}
+
 const app = express();
 
 
@@ -56,14 +82,6 @@ app.get("/dashboard", requireLogin, (req, res) => {
   res.sendFile(path.join(__dirname, "views/dashboard.html"));
 });
 
-app.get("/api/data", requireLogin, (req, res) => {
-  const stats = {};
-  db.all("SELECT product, type, COUNT(*) as count FROM page_views GROUP BY product, type", [], (err, views) => {
-    stats.views = views || [];
-    db.all("SELECT * FROM orders ORDER BY timestamp DESC", [], (err, orders) => {
-      stats.orders = orders || [];
-      res.json(stats);
-    });
   });
 });
 
@@ -121,3 +139,15 @@ app.get("/export/orders", requireLogin, (req, res) => {
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+
+app.get("/api/data", requireLogin, async (req, res) => {
+  const stats = {};
+  db.all("SELECT product, type, COUNT(*) as count FROM page_views GROUP BY product, type", [], (err, views) => {
+    stats.views = views || [];
+    db.all("SELECT * FROM orders ORDER BY timestamp DESC", [], async (err, orders) => {
+      stats.orders = orders || [];
+      stats.pageViews = await fetchGAViews();
+      res.json(stats);
+    });
+  });
+});

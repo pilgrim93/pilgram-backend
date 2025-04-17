@@ -137,3 +137,19 @@ td {
 .export-btn:hover {
   background: #00cc7a;
 }
+
+
+.chart-grid {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+.chart-grid > div {
+  flex: 1 1 45%;
+}
+canvas {
+  width: 100% !important;
+  height: auto !important;
+}
