@@ -1,14 +1,35 @@
+
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pilgram Dashboard</title><link rel="stylesheet" href="/style.css"></head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
 <body>
-  <h1>📊 Pilgram Dashboard</h1><a href="/logout" class="logout-link">Logout</a>
-  <div class="section"><h2>Page Views</h2><ul id="views"></ul></div>
-  <div class="section"><h2>Orders (Webhooks)</h2>
-    <table><thead><tr><th>Email</th><th>Product</th><th>ID</th><th>Time</th></tr></thead><tbody id="orders"></tbody></table>
-  </div>
-  <div class="section"><h2>Shoppy Orders (Live API)</h2><ul id="shoppy-orders"></ul></div>
+  <header>
+    <h1>Pilgram Admin</h1>
+    <a href="/logout" class="logout-btn">Logout</a>
+  </header>
+
+  <main>
+    <section class="stats-grid">
+      <div class="card">
+        <h2>Page Views</h2>
+        <ul id="views"></ul>
+      </div>
+      <div class="card">
+        <h2>Webhook Orders</h2>
+        <table><thead><tr><th>Email</th><th>Product</th><th>ID</th><th>Time</th></tr></thead><tbody id="orders"></tbody></table>
+      </div>
+      <div class="card">
+        <h2>Live Shoppy Orders</h2>
+        <ul id="shoppy-orders"></ul>
+      </div>
+    </section>
+  </main>
+
   <script>
     fetch("/api/data").then(res => res.json()).then(data => {
       const views = document.getElementById("views");
