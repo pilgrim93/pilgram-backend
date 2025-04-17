@@ -48,6 +48,10 @@ app.get("/logout", (req, res) => {
   res.redirect("/login");
 });
 
+app.get("/", (req, res) => {
+  res.redirect("/login");
+});
+
 app.get("/dashboard", requireLogin, (req, res) => {
   res.sendFile(path.join(__dirname, "views/dashboard.html"));
 });
