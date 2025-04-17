@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pilgram Dashboard</title><link rel="stylesheet" href="/style.css"></head>
+<body>
+  <h1>📊 Pilgram Dashboard</h1><a href="/logout" class="logout-link">Logout</a>
+  <div class="section"><h2>Page Views</h2><ul id="views"></ul></div>
+  <div class="section"><h2>Orders (Webhooks)</h2>
+    <table><thead><tr><th>Email</th><th>Product</th><th>ID</th><th>Time</th></tr></thead><tbody id="orders"></tbody></table>
+  </div>
+  <div class="section"><h2>Shoppy Orders (Live API)</h2><ul id="shoppy-orders"></ul></div>
+  <script>
+    fetch("/api/data").then(res => res.json()).then(data => {
+      const views = document.getElementById("views");
+      data.views.forEach(v => {
+        const li = document.createElement("li");
+        li.textContent = `${v.product} — ${v.type}: ${v.count}`;
+        views.appendChild(li);
+      });
+      const orders = document.getElementById("orders");
+      data.orders.forEach(o => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${o.email}</td><td>${o.product_name}</td><td>${o.product_id}</td><td>${o.timestamp}</td>`;
+        orders.appendChild(tr);
+      });
+    });
+
+    fetch("/api/shoppy/orders").then(res => res.json()).then(data => {
+      const list = document.getElementById("shoppy-orders");
+      data.forEach(o => {
+        const li = document.createElement("li");
+        li.textContent = `${o.email} bought ${o.product_title} for $${o.price}`;
+        list.appendChild(li);
+      });
+    });
+  </script>
+</body>
+</html>
