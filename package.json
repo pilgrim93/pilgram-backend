@@ -13,6 +13,7 @@
     "express-session": "^1.17.3",
     "json2csv": "5.0.7",
     "node-fetch": "^2.6.9",
-    "sqlite3": "^5.1.6"
+    "sqlite3": "^5.1.6",
+    "@google-analytics/data": "^0.14.0"
   }
 }
