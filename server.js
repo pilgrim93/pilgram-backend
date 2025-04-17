@@ -81,6 +81,35 @@ app.get("/api/data", auth, (req, res) => {
   });
 });
 
+const crypto = require('crypto');
+
+app.post('/shoppy-webhook', express.json(), (req, res) => {
+  const secret = process.env.SHOPPY_WEBHOOK_SECRET; // Add this in .env
+  const signature = req.headers['x-shoppy-signature'];
+
+  const payload = JSON.stringify(req.body);
+  const expectedSignature = crypto
+    .createHmac('sha512', secret)
+    .update(payload)
+    .digest('hex');
+
+  if (signature !== expectedSignature) {
+    console.log('Invalid webhook signature');
+    return res.status(401).send('Unauthorized');
+  }
+
+  console.log('✅ Valid Shoppy webhook received:', req.body);
+
+  // Save or process the order (example: log to file)
+  const logLine = `[${new Date().toISOString()}] ${req.body.product_title} purchased by ${req.body.email} for $${req.body.price}\n`;
+
+  fs.appendFile('sales_log.txt', logLine, err => {
+    if (err) console.error('Failed to log webhook:', err);
+  });
+
+  res.status(200).send('OK');
+});
+
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
