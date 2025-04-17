@@ -94,6 +94,24 @@ app.post("/shoppy-webhook", (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
+const { Parser } = require('json2csv');
+
+app.get("/export/orders", requireLogin, (req, res) => {
+  db.all("SELECT * FROM orders", [], (err, rows) => {
+    if (err) return res.status(500).send("Error exporting orders");
+
+    const fields = ['email', 'product_id', 'product_name', 'timestamp'];
+    const opts = { fields };
+    const parser = new Parser(opts);
+    const csv = parser.parse(rows);
+
+    res.header("Content-Type", "text/csv");
+    res.attachment("orders.csv");
+    res.send(csv);
+  });
+});
+
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 

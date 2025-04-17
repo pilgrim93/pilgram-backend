@@ -121,3 +121,17 @@ td {
     min-width: 300px;
   }
 }
+
+.export-btn {
+  display: inline-block;
+  margin-bottom: 1rem;
+  background: #00ff99;
+  color: #000;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: bold;
+  text-decoration: none;
+}
+.export-btn:hover {
+  background: #00cc7a;
+}

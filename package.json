@@ -12,7 +12,8 @@
   "basic-auth": "^2.0.1",
   "express-session": "^1.17.3",
   "node-fetch": "^2.6.9",
-  "dotenv": "^16.3.1"
+  "dotenv": "^16.3.1",
+  "json2csv": "^6.0.0"
 }
 
 }
