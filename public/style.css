@@ -39,6 +39,25 @@ main {
   padding: 2rem;
 }
 
+.filters {
+  margin-bottom: 2rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.filters label, .filters select {
+  font-size: 1rem;
+}
+
+.chart-section {
+  background: #111;
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  box-shadow: 0 0 10px rgba(0,255,150,0.2);
+}
+
 .stats-grid {
   display: flex;
   flex-direction: column;

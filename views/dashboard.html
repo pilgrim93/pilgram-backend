@@ -4,8 +4,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Dashboard</title>
+  <title>Pilgram Admin Dashboard</title>
   <link rel="stylesheet" href="/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <header>
@@ -14,13 +15,31 @@
   </header>
 
   <main>
+    <section class="filters">
+      <label for="productFilter">Filter Views by Product:</label>
+      <select id="productFilter">
+        <option value="all">All</option>
+      </select>
+
+      <label for="orderSort">Sort Orders:</label>
+      <select id="orderSort">
+        <option value="newest">Newest First</option>
+        <option value="oldest">Oldest First</option>
+      </select>
+    </section>
+
+    <section class="chart-section">
+      <h2>Analytics Chart</h2>
+      <canvas id="analyticsChart" height="100"></canvas>
+    </section>
+
     <section class="stats-grid">
       <div class="card">
-        <h2>Page Views</h2>
+        <h2>Filtered Page Views</h2>
         <ul id="views"></ul>
       </div>
       <div class="card">
-        <h2>Webhook Orders</h2>
+        <h2>Sorted Orders</h2>
         <table><thead><tr><th>Email</th><th>Product</th><th>ID</th><th>Time</th></tr></thead><tbody id="orders"></tbody></table>
       </div>
       <div class="card">
@@ -31,19 +50,89 @@
   </main>
 
   <script>
-    fetch("/api/data").then(res => res.json()).then(data => {
-      const views = document.getElementById("views");
-      data.views.forEach(v => {
+    let allViews = [];
+    let allOrders = [];
+
+    function populateFilters(views) {
+      const productFilter = document.getElementById("productFilter");
+      const uniqueProducts = [...new Set(views.map(v => v.product))];
+      uniqueProducts.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p;
+        opt.textContent = p;
+        productFilter.appendChild(opt);
+      });
+    }
+
+    function renderViews(filtered) {
+      const viewList = document.getElementById("views");
+      viewList.innerHTML = "";
+      filtered.forEach(v => {
         const li = document.createElement("li");
         li.textContent = `${v.product} — ${v.type}: ${v.count}`;
-        views.appendChild(li);
+        viewList.appendChild(li);
       });
-      const orders = document.getElementById("orders");
-      data.orders.forEach(o => {
+    }
+
+    function renderOrders(orders) {
+      const orderBody = document.getElementById("orders");
+      orderBody.innerHTML = "";
+      orders.forEach(o => {
         const tr = document.createElement("tr");
         tr.innerHTML = `<td>${o.email}</td><td>${o.product_name}</td><td>${o.product_id}</td><td>${o.timestamp}</td>`;
-        orders.appendChild(tr);
+        orderBody.appendChild(tr);
       });
+    }
+
+    function drawChart(views, orders) {
+      const ctx = document.getElementById("analyticsChart").getContext("2d");
+      const viewLabels = [...new Set(views.map(v => v.product))];
+      const viewCounts = viewLabels.map(p => {
+        return views.filter(v => v.product === p).reduce((sum, v) => sum + v.count, 0);
+      });
+
+      const orderLabels = orders.map(o => o.timestamp.split("T")[0]);
+      const orderCounts = orderLabels.reduce((acc, date) => {
+        acc[date] = (acc[date] || 0) + 1;
+        return acc;
+      }, {});
+      const orderDates = Object.keys(orderCounts);
+      const orderTotals = Object.values(orderCounts);
+
+      new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: viewLabels,
+          datasets: [
+            {
+              label: "Page Views",
+              data: viewCounts,
+              backgroundColor: "#00ff99"
+            },
+            {
+              label: "Orders Per Day",
+              data: orderTotals,
+              backgroundColor: "#0099ff"
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    fetch("/api/data").then(res => res.json()).then(data => {
+      allViews = data.views;
+      allOrders = data.orders;
+
+      populateFilters(allViews);
+      renderViews(allViews);
+      renderOrders(allOrders);
+      drawChart(allViews, allOrders);
     });
 
     fetch("/api/shoppy/orders").then(res => res.json()).then(data => {
@@ -53,6 +142,21 @@
         li.textContent = `${o.email} bought ${o.product_title} for $${o.price}`;
         list.appendChild(li);
       });
+    });
+
+    document.getElementById("productFilter").addEventListener("change", (e) => {
+      const selected = e.target.value;
+      const filtered = selected === "all" ? allViews : allViews.filter(v => v.product === selected);
+      renderViews(filtered);
+    });
+
+    document.getElementById("orderSort").addEventListener("change", (e) => {
+      const sorted = [...allOrders].sort((a, b) => {
+        return e.target.value === "oldest"
+          ? new Date(a.timestamp) - new Date(b.timestamp)
+          : new Date(b.timestamp) - new Date(a.timestamp);
+      });
+      renderOrders(sorted);
     });
   </script>
 </body>
