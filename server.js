@@ -5,12 +5,13 @@ const path = require("path");
 const sqlite3 = require("sqlite3").verbose();
 const fetch = require("node-fetch");
 require("dotenv").config();
+const app = express();
+
 
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'views/login.html'));
 });
 
-const app = express();
 const db = new sqlite3.Database("./analytics.db");
 
 app.use(bodyParser.urlencoded({ extended: false }));
