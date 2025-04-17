@@ -149,5 +149,4 @@ app.get("/api/data", requireLogin, async (req, res) => {
       stats.pageViews = await fetchGAViews();
       res.json(stats);
     });
-  });
-});
+
