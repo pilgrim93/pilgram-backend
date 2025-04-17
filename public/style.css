@@ -122,6 +122,7 @@ td {
   }
 }
 
+
 .export-btn {
   display: inline-block;
   margin-bottom: 1rem;
@@ -131,6 +132,7 @@ td {
   border-radius: 8px;
   font-weight: bold;
   text-decoration: none;
+  transition: background 0.3s;
 }
 .export-btn:hover {
   background: #00cc7a;
