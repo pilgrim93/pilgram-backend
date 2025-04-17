@@ -84,7 +84,7 @@ app.get("/api/data", auth, (req, res) => {
 const crypto = require('crypto');
 
 app.post('/shoppy-webhook', express.json(), (req, res) => {
-  const secret = process.env.SHOPPY_WEBHOOK_SECRET; // Add this in .env
+  const secret = process.env.HXgbzeZ0bM10JYgU; // Add this in .env
   const signature = req.headers['x-shoppy-signature'];
 
   const payload = JSON.stringify(req.body);
@@ -109,6 +109,23 @@ app.post('/shoppy-webhook', express.json(), (req, res) => {
 
   res.status(200).send('OK');
 });
+
+app.get('/api/shoppy/orders', async (req, res) => {
+  try {
+    const response = await fetch('https://shoppy.gg/api/v1/orders', {
+      headers: {
+        'Authorization': `Bearer ${process.env.SHOPPY_API_KEY}`
+      }
+    });
+
+    const orders = await response.json();
+    res.json(orders);
+  } catch (err) {
+    console.error('Error fetching orders:', err);
+    res.status(500).send('Failed to fetch orders');
+  }
+});
+
 
 // Start server
 const PORT = process.env.PORT || 3000;
