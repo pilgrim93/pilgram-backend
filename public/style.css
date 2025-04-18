@@ -215,3 +215,17 @@ canvas {
     max-height: 300px;
   }
 }
+
+.export-btn {
+  display: inline-block;
+  background: #00aa00;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  margin-bottom: 10px;
+}
+.export-btn:hover {
+  background: #008800;
+}
+

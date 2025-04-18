@@ -200,5 +200,12 @@ function showTab(tabName) {
   document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
   document.querySelector(`.tab-btn[onclick="showTab('${tabName}')"]`).classList.add('active');
 }
+app.get("/export/orders/json", requireLogin, (req, res) => {
+  db.all("SELECT email, product_id, product_name, timestamp FROM orders", [], (err, rows) => {
+    if (err) return res.status(500).send("Error exporting JSON orders");
+    res.json(rows);
+  });
+});
+
 
 
