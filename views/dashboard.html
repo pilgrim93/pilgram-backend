@@ -87,11 +87,19 @@
       </section>
       <div class="bg-black rounded-2xl shadow p-4 mt-6">
         <h3 class="text-white mb-2">Views Over Time</h3>
-        <select id="homepageChartType" class="tab-btn" onchange="updateHomepageChartType(this.value)">
-          <option value="line">Line</option>
-          <option value="bar">Bar</option>
-        </select>
-        <canvas id="homepageChart" height="200"></canvas>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+  <select id="homepageChartType" class="tab-btn" onchange="updateHomepageChart()">
+    <option value="line">Line</option>
+    <option value="bar">Bar</option>
+  </select>
+  <select id="homepageChartView" class="tab-btn" onchange="updateHomepageChart()">
+    <option value="geo">View by Country</option>
+    <option value="devices">View by Device</option>
+    <option value="referrals">View by Referral</option>
+  </select>
+</div>
+<canvas id="homepageChart" height="200"></canvas>
+
       </div>
     </div>
   </main>
@@ -121,16 +129,16 @@
       document.getElementById('timeOnPage').textContent = data.avgTimeOnPage ?? '–';
     }
 
-    async function fetchTraffic() {
-      const res = await fetch('/api/traffic');
-      const data = await res.json();
-      const geoList = document.getElementById('geoData');
-      const deviceList = document.getElementById('deviceData');
-      const referralList = document.getElementById('referralData');
-      geoList.innerHTML = Object.entries(data.geo || {}).map(([k, v]) => `<li>${k}: ${v}</li>`).join('');
-      deviceList.innerHTML = Object.entries(data.devices || {}).map(([k, v]) => `<li>${k}: ${v}</li>`).join('');
-      referralList.innerHTML = Object.entries(data.referrals || {}).map(([k, v]) => `<li>${k}: ${v}</li>`).join('');
-    }
+  let homepageTrafficData = { geo: {}, devices: {}, referrals: {} };
+
+async function fetchTraffic() {
+  const res = await fetch('/api/traffic');
+  const data = await res.json();
+  homepageTrafficData = data;
+
+  document.getElementById('geoData').innerHTML = Object.entries(data.geo || {})
+    .map(([k, v]) => `<li>${k}: ${v
+
 
     fetchUserBehavior();
     fetchTraffic();
