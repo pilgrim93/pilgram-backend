@@ -6,6 +6,10 @@ const sqlite3 = require("sqlite3").verbose();
 const fetch = require("node-fetch");
 require("dotenv").config();
 
+app.get("/", (req, res) => {
+  res.redirect("/login");
+});
+
 const { BetaAnalyticsDataClient } = require('@google-analytics/data');
 
 const analyticsClient = new BetaAnalyticsDataClient({
@@ -32,6 +36,7 @@ async function fetchGAViews() {
 }
 
 const app = express();
+
 
 
 app.get('/login', (req, res) => {
@@ -74,9 +79,6 @@ app.get("/logout", (req, res) => {
   res.redirect("/login");
 });
 
-app.get("/", (req, res) => {
-  res.redirect("/login");
-});
 
 app.get("/dashboard", requireLogin, (req, res) => {
   res.sendFile(path.join(__dirname, "views/dashboard.html"));
