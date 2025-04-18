@@ -38,6 +38,17 @@ app.get("/dashboard", requireLogin, (req, res) => {
   res.sendFile(path.join(__dirname, "views/dashboard.html"));
 });
 
+
+app.get("/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.redirect("/login");
+  });
+});
+
+app.get("/", (req, res) => {
+  res.redirect("/login");
+});
+
 // ✅ Create necessary tables if they don't exist
 const db = new sqlite3.Database("./analytics.db");
 
@@ -124,12 +135,5 @@ app.get("/api/traffic", requireLogin, async (req, res) => {
     res.status(500).send("Error fetching traffic data");
   }
 });
-
-app.get("/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.redirect("/login");
-  });
-});
-
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
