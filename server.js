@@ -1,26 +1,45 @@
 const express = require("express");
-const app = express(); // This MUST be above any use of `app`
+const app = express(); // ✅ App declared at the top
 const session = require("express-session");
 const bodyParser = require("body-parser");
 const path = require("path");
-const sqlite3 = require("sqlite3").verbose(); // ✅ this should be here
+const sqlite3 = require("sqlite3").verbose();
 const fetch = require("node-fetch");
 const PORT = process.env.PORT || 3000;
 
 require("dotenv").config();
-app.use(express.static(path.join(__dirname, "public")));
-// (unchanged) ... all the way until:
-const db = new sqlite3.Database("./analytics.db");
 
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, "public")));
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "pilgramsecretkey",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
+// ✅ Middleware to protect routes
+function requireLogin(req, res, next) {
+  if (req.session.loggedIn) return next();
+  res.redirect("/login");
+}
+
+// ✅ Redirect root to /dashboard
 app.get("/", (req, res) => {
   res.redirect("/dashboard");
 });
 
+// ✅ Protected route
 app.get("/dashboard", requireLogin, (req, res) => {
   res.sendFile(path.join(__dirname, "views/dashboard.html"));
 });
 
 // ✅ Create necessary tables if they don't exist
+const db = new sqlite3.Database("./analytics.db");
+
 db.serialize(() => {
   db.run(`
     CREATE TABLE IF NOT EXISTS behavior (
