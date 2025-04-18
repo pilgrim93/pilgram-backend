@@ -54,6 +54,11 @@ app.get("/api/orders", (req, res) => {
   res.json(shoppyOrders);
 });
 
+// Redirect root to dashboard
+app.get("/", (req, res) => {
+  res.redirect("/dashboard");
+});
+
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
@@ -126,3 +131,4 @@ app.get("/api/traffic-stats", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch traffic stats" });
   }
 });
+
