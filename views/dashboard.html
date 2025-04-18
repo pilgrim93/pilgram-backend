@@ -26,10 +26,18 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="bg-black rounded-2xl shadow p-4">
           <h3 class="text-white mb-2">Sales Over Time</h3>
+          <select id="salesChartType" class="tab-btn" onchange="updateSalesChartType(this.value)">
+            <option value="line">Line</option>
+            <option value="bar">Bar</option>
+          </select>
           <canvas id="salesOverTimeChart" height="200"></canvas>
         </div>
         <div class="bg-black rounded-2xl shadow p-4">
           <h3 class="text-white mb-2">Revenue Breakdown</h3>
+          <select id="revenueChartType" class="tab-btn" onchange="updateRevenueChartType(this.value)">
+            <option value="bar">Bar</option>
+            <option value="line">Line</option>
+          </select>
           <canvas id="revenueChart" height="200"></canvas>
         </div>
       </div>
@@ -51,6 +59,16 @@
         <div class="card"><h2>Devices</h2><ul id="deviceData"></ul></div>
         <div class="card"><h2>Referrals</h2><ul id="referralData"></ul></div>
       </section>
+      <!-- Add inside the TRAFFIC tab, below the stats-grid section -->
+<div class="bg-black rounded-2xl shadow p-4 mt-6">
+  <h3 class="text-white mb-2">Homepage Views Over Time (cpapilgrim.shop)</h3>
+  <select id="homepageChartType" class="tab-btn" onchange="updateHomepageChartType(this.value)">
+    <option value="line">Line</option>
+    <option value="bar">Bar</option>
+  </select>
+  <canvas id="homepageChart" height="200"></canvas>
+</div>
+
     </div>
   </main>
 
@@ -84,103 +102,87 @@
   </script>
 
   <script>
-    const dummySalesData = {
+    const salesCtx = document.getElementById('salesOverTimeChart').getContext('2d');
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+
+    let salesChart = new Chart(salesCtx, {
+      type: 'line',
+      data: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [{
+          label: 'Sales',
+          data: [5, 10, 7, 14, 9, 12, 6],
+          borderColor: 'rgb(34,197,94)',
+          backgroundColor: 'rgba(34,197,94,0.2)',
+          tension: 0.3,
+        }]
+      },
+      options: {
+        plugins: {
+          legend: { labels: { color: 'white' } }
+        },
+        scales: {
+          x: { ticks: { color: 'white' } },
+          y: { ticks: { color: 'white' } }
+        }
+      }
+    });
+
+    let revenueChart = new Chart(revenueCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Basic', 'Premium', 'Bundles'],
+        datasets: [{
+          label: 'Revenue ($)',
+          data: [120, 240, 90],
+          backgroundColor: ['#10b981', '#3b82f6', '#f59e0b'],
+        }]
+      },
+      options: {
+        plugins: {
+          legend: { labels: { color: 'white' } }
+        },
+        scales: {
+          x: { ticks: { color: 'white' } },
+          y: { ticks: { color: 'white' } }
+        }
+      }
+    });
+
+    function updateSalesChartType(type) {
+    
+      const homepageCtx = document.getElementById('homepageChart').getContext('2d');
+  let homepageChart = new Chart(homepageCtx, {
+    type: 'line',
+    data: {
       labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
       datasets: [{
-        label: 'Sales',
-        data: [5, 10, 7, 14, 9, 12, 6],
-        borderColor: 'rgb(34,197,94)',
-        backgroundColor: 'rgba(34,197,94,0.2)',
-        tension: 0.3,
+        label: 'Page Views',
+        data: [120, 140, 115, 180, 130, 160, 190],
+        backgroundColor: 'rgba(59,130,246,0.3)',
+        borderColor: '#3b82f6',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4
       }]
-    };
-
-    const dummyRevenueData = {
-      labels: ['Basic', 'Premium', 'Bundles'],
-      datasets: [{
-        label: 'Revenue ($)',
-        data: [120, 240, 90],
-        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b'],
-      }]
-    };
-
-    const salesChartCtx = document.getElementById('salesOverTimeChart').getContext('2d');
-    const revenueChartCtx = document.getElementById('revenueChart').getContext('2d');
-
-    const salesOverTimeChart = new Chart(salesChartCtx, {
-      type: 'line',
-      data: dummySalesData,
-      options: {
-        plugins: {
-          legend: { labels: { color: 'white' } }
-        },
-        scales: {
-          x: { ticks: { color: 'white' } },
-          y: { ticks: { color: 'white' } }
-        }
+    },
+    options: {
+      plugins: {
+        legend: { labels: { color: 'white' } }
+      },
+      scales: {
+        x: { ticks: { color: 'white' } },
+        y: { ticks: { color: 'white' } }
       }
-    });
-
-    const revenueChart = new Chart(revenueChartCtx, {
-      type: 'bar',
-      data: dummyRevenueData,
-      options: {
-        plugins: {
-          legend: { labels: { color: 'white' } }
-        },
-        scales: {
-          x: { ticks: { color: 'white' } },
-          y: { ticks: { color: 'white' } }
-        }
-      }
-    });
-
-    function updateChartsWithShoppyData(data) {
-      // 🎯 When ready: dynamically update Chart.js charts with real Shoppy data
-      // salesOverTimeChart.data = ...
-      // salesOverTimeChart.update();
-      // revenueChart.data = ...
-      // revenueChart.update();
     }
+  });
+
+  function updateHomepageChartType(type) {
+    homepageChart.destroy();
+    homepageChart = new Chart(homepageCtx, {
+      type: type,
+      data: homepageChart.data,
+      options: homepageChart.options
+    });
+  }
   </script>
-
-  <style>
-    .tab-buttons {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 1rem;
-    }
-    .tab-btn {
-      background: #111;
-      border: 1px solid #333;
-      padding: 10px 15px;
-      border-radius: 10px;
-      color: #77ff77;
-      cursor: pointer;
-    }
-    .tab-btn:hover {
-      background: #222;
-    }
-    .tab-content {
-      animation: fadeIn 0.3s ease-in;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-      margin-top: 1rem;
-    }
-    .card {
-      background: #111;
-      padding: 1rem;
-      border-radius: 10px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.3);
-    }
-  </style>
-
-</body>
-</html>
