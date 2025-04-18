@@ -119,8 +119,6 @@ app.get("/dashboard", requireLogin, (req, res) => {
   res.sendFile(path.join(__dirname, "views/dashboard.html"));
 });
 
-  });
-});
 
 app.get("/api/shoppy/orders", requireLogin, async (req, res) => {
   try {
@@ -168,8 +166,6 @@ app.get("/export/orders", requireLogin, (req, res) => {
     res.header("Content-Type", "text/csv");
     res.attachment("orders.csv");
     res.send(csv);
-  });
-});
 
 
 
