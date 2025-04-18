@@ -166,6 +166,8 @@ app.get("/export/orders", requireLogin, (req, res) => {
     res.header("Content-Type", "text/csv");
     res.attachment("orders.csv");
     res.send(csv);
+  });
+});
 
 
 
