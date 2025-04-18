@@ -163,7 +163,7 @@ canvas {
   margin-bottom: 1rem;
 }
 .tab-btn {
-  background: #ffffff ;
+  background: #00ff99;
   border: 1px solid #333;
   padding: 10px 15px;
   border-radius: 10px;
@@ -201,8 +201,8 @@ canvas {
 }
 
 .tab-btn.active {
-  background-color: #00ff99;
-  color: #000;
+  background-color: #FFBF00;
+  color: #ffffff;
   font-weight: bold;
 }
 .chart-section {

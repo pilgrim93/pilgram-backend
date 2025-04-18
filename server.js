@@ -207,5 +207,15 @@ app.get("/export/orders/json", requireLogin, (req, res) => {
   });
 });
 
+const axios = require('axios');
 
+const TELEGRAM_TOKEN = process.env.7646735201:AAFp_5J1HorBxjCNMNic1a-Ab2GCNxG17fc;
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+
+function sendTelegramNotification(text) {
+  return axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+    chat_id: TELEGRAM_CHAT_ID,
+    text,
+  });
+}
 
