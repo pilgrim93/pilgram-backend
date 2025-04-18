@@ -162,19 +162,20 @@ canvas {
   justify-content: center;
   margin-bottom: 1rem;
 }
+
 .tab-btn {
-  background: #FFBF00;
+  background: #ffffff;
   border: 1px solid #333;
   padding: 10px 15px;
   border-radius: 10px;
-  color: #77ff77;
+  color: #FFBF00;
   cursor: pointer;
   font-size: 0.9rem;
 }
 
 .tab-btn.active {
   background-color: #FFBF00;
-  color: #ffffff;
+  color: #000000;
   font-weight: bold;
 }
 
@@ -191,7 +192,7 @@ canvas {
   .tab-btn {
     font-size: 1.3rem;
     padding: 16px 28px;
-    background-color: ff9#009;
+    background-color: #FFBF00;
   }
 
   .tab-content {
@@ -205,12 +206,6 @@ canvas {
   .card p, .card ul, .card table {
     font-size: 1.1rem;
   }
-}
-
-.tab-btn.active {
-  background-color: #FFBF00;
-  color: #000000;
-  font-weight: bold;
 }
 
 .chart-section {
