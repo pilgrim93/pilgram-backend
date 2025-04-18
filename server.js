@@ -1,206 +1,81 @@
 const express = require("express");
-const session = require("express-session");
 const bodyParser = require("body-parser");
 const path = require("path");
-const sqlite3 = require("sqlite3").verbose();
-const fetch = require("node-fetch");
 const axios = require("axios");
+const basicAuth = require("express-basic-auth");
 const fs = require("fs");
-const { google } = require("googleapis");
-const { parse } = require("json2csv");
+require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-require("dotenv").config();
-
-// ✅ Write Google service account JSON from environment to a file
-const credentialsPath = path.join(__dirname, "google-service-account.json");
-if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
-  fs.writeFileSync(credentialsPath, process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
-  process.env.GOOGLE_APPLICATION_CREDENTIALS = credentialsPath;
-}
+// Serve static files
+app.use(express.static(path.join(__dirname, "public")));
+app.use("/styles", express.static(path.join(__dirname, "styles")));
+app.use("/views", express.static(path.join(__dirname, "views")));
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, "public")));
 
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "pilgramsecretkey",
-    resave: false,
-    saveUninitialized: true,
-  })
-);
+// ✅ Basic auth middleware
+app.use("/dashboard", basicAuth({
+  users: { "admin": "playyb0yy01" },
+  challenge: true,
+  unauthorizedResponse: "Access denied"
+}));
 
-function requireLogin(req, res, next) {
-  if (req.session.loggedIn) return next();
-  res.redirect("/login");
-}
-
-app.get("/", (req, res) => res.redirect("/login"));
-
-app.get("/login", (req, res) => {
-  res.sendFile(path.join(__dirname, "views/login.html"));
+// ✅ Serve the dashboard
+app.get("/dashboard", (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "dashboard.html"));
 });
 
-app.post("/login", (req, res) => {
-  const { username, password } = req.body;
-  if (username === "admin" && password === "pilgram123") {
-    req.session.loggedIn = true;
-    res.redirect("/dashboard");
-  } else {
-    res.send("Login failed. <a href='/login'>Try again</a>");
-  }
-});
+// ✅ Shoppy polling
+let shoppyOrders = [];
 
-app.get("/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.redirect("/login");
-  });
-});
-
-app.get("/dashboard", requireLogin, (req, res) => {
-  res.sendFile(path.join(__dirname, "views/dashboard.html"));
-});
-
-// ✅ Initialize SQLite database
-const db = new sqlite3.Database("./analytics.db");
-db.serialize(() => {
-  db.run(`
-    CREATE TABLE IF NOT EXISTS behavior (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      scroll_depth INTEGER,
-      clicks INTEGER,
-      time_on_page INTEGER,
-      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-  db.run(`
-    CREATE TABLE IF NOT EXISTS user_behavior (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      path TEXT,
-      type TEXT,
-      value TEXT,
-      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-  db.run(`
-    CREATE TABLE IF NOT EXISTS orders (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      email TEXT,
-      product_id TEXT,
-      product_name TEXT,
-      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-});
-
-// ✅ Google Analytics API for traffic data
-app.get("/api/traffic", requireLogin, async (req, res) => {
+async function fetchShoppyOrders() {
   try {
-    const auth = new google.auth.GoogleAuth({
-      scopes: ["https://www.googleapis.com/auth/analytics.readonly"],
-    });
-
-    const analytics = google.analyticsreporting({
-      version: "v4",
-      auth: await auth.getClient(),
-    });
-
-    const response = await analytics.reports.batchGet({
-      requestBody: {
-        reportRequests: [
-          {
-            viewId: process.env.GA_VIEW_ID,
-            dateRanges: [{ startDate: "7daysAgo", endDate: "today" }],
-            metrics: [{ expression: "ga:sessions" }],
-            dimensions: [
-              { name: "ga:country" },
-              { name: "ga:deviceCategory" },
-              { name: "ga:source" },
-            ],
-          },
-        ],
-      },
-    });
-
-    const geo = {};
-    const devices = {};
-    const referrals = {};
-    const rows = response.data.reports[0].data.rows || [];
-
-    rows.forEach((row) => {
-      const [country, device, source] = row.dimensions;
-      const count = parseInt(row.metrics[0].values[0]);
-      geo[country] = (geo[country] || 0) + count;
-      devices[device] = (devices[device] || 0) + count;
-      referrals[source] = (referrals[source] || 0) + count;
-    });
-
-    res.json({ geo, devices, referrals });
-  } catch (err) {
-    console.error("Failed to fetch traffic data:", err);
-    res.status(500).send("Error fetching traffic data");
-  }
-});
-
-// ✅ Export Orders JSON
-app.get("/export/orders/json", requireLogin, (req, res) => {
-  db.all("SELECT email, product_id, product_name, timestamp FROM orders", [], (err, rows) => {
-    if (err) return res.status(500).send("Error exporting JSON orders");
-    res.json(rows);
-  });
-});
-
-// ✅ Export Orders CSV
-app.get("/export/orders/csv", requireLogin, (req, res) => {
-  db.all("SELECT email, product_id, product_name, timestamp FROM orders", [], (err, rows) => {
-    if (err) return res.status(500).send("Error exporting CSV");
-    try {
-      const csv = parse(rows);
-      res.header("Content-Type", "text/csv");
-      res.attachment("orders.csv");
-      res.send(csv);
-    } catch (err) {
-      res.status(500).send("Failed to generate CSV");
-    }
-  });
-});
-
-// ✅ Telegram notification function
-function sendTelegramMessage(text) {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
-
-  if (!token || !chatId) {
-    console.warn("Telegram credentials not set.");
-    return;
-  }
-
-  axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
-    chat_id: chatId,
-    text,
-  }).catch((err) => {
-    console.error("Failed to send Telegram message:", err.message);
-  });
-}
-
-// ✅ Shoppy sales endpoint
-app.get("/api/shoppy/orders", requireLogin, async (req, res) => {
-  try {
-    const response = await fetch("https://shoppy.gg/api/v1/orders", {
+    const response = await axios.get("https://shoppy.gg/api/v1/orders", {
       headers: {
-        Authorization: `Bearer ${process.env.SHOPPY_API_KEY}`,
-      },
+        Authorization: process.env.SHOPPY_API_KEY
+      }
     });
-    const data = await response.json();
-    res.json(data);
+    shoppyOrders = response.data;
   } catch (err) {
-    console.error("Failed to fetch Shoppy orders:", err);
-    res.status(500).send("Error fetching Shoppy orders");
+    console.error("Error fetching Shoppy orders:", err.message);
   }
+}
+
+// ✅ Poll every 2 minutes
+setInterval(fetchShoppyOrders, 2 * 60 * 1000);
+fetchShoppyOrders(); // Fetch once at startup
+
+// ✅ API endpoint to access orders
+app.get("/api/orders", (req, res) => {
+  res.json(shoppyOrders);
 });
 
-// ✅ Start server
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+});
+
+app.post("/webhook/shoppy", async (req, res) => {
+  const order = req.body;
+
+  // Optional: validate token if sent
+  if (req.headers["x-verification-key"] !== process.env.SHOPPY_WEBHOOK_SECRET) {
+    return res.status(403).send("Invalid key");
+  }
+
+  // Send to Telegram
+  const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  const message = `🛒 New Order\nProduct: ${order.product_title}\nAmount: $${order.amount}\nEmail: ${order.email}`;
+
+  await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, text: message })
+  });
+
+  res.sendStatus(200);
+});

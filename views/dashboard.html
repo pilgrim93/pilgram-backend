@@ -170,9 +170,34 @@
       byProduct: ["Quiz": 500, "Box A": 300, "Box B": 350]
     };
 
-    function renderCharts() {
-      // Stub — will implement chart rendering in JS after base layout
-    }
+   async function renderCharts() {
+  const res = await fetch('/api/orders');
+  const orders = await res.json();
+
+  // --- TABLE ---
+  const tbody = document.querySelector('#ordersTable tbody');
+  tbody.innerHTML = "";
+  orders.forEach(order => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${order.id}</td>
+      <td>$${order.amount}</td>
+      <td>${order.email}</td>
+      <td>${new Date(order.created_at).toLocaleString()}</td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  // --- CHART DATA ---
+  const salesByDay = {};
+  const salesByWeek = {};
+  const revenueByDay = {};
+  const revenueByProduct = {};
+
+  orders.forEach(order => {
+    const date = new Date(order.created_at);
+    const dayKey = date
+
 
     function toggleChartType(id) {
       chartTypes[id] = chartTypes[id] === 'bar' ? 'line' : 'bar';
@@ -204,6 +229,9 @@
       a.download = 'orders.csv';
       a.click();
     }
+    
+    renderCharts();
+
   </script>
 </body>
 </html>
