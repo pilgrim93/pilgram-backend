@@ -71,26 +71,26 @@ HXgbzeZ0bM10JYgU
       </div>
 
       <!-- Orders Table -->
-      <div class="card mt-8 p-4 bg-[#181818] rounded-2xl shadow">
-        <div class="flex justify-between items-center mb-2">
-          <h2 class="text-white text-lg font-semibold">Sorted Orders</h2>
-          <a href="/export/orders" class="export-btn">Export Orders</a>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="min-w-full text-left">
-            <thead class="border-b border-gray-700">
-              <tr>
-                <th>Email</th>
-                <th>Product</th>
-                <th>ID</th>
-                <th>Time</th>
-              </tr>
-            </thead>
-            <tbody id="orders"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+<div class="sorted-orders-container">
+  <div class="flex justify-between items-center mb-2">
+    <h2 class="sorted-orders-title">Sorted Orders</h2>
+    <a href="/export/orders" class="export-btn">Export Orders</a>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="sorted-orders-table">
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Product</th>
+          <th>ID</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody id="orders"></tbody>
+    </table>
+  </div>
+</div>
+
 
     <!-- 👥 USER BEHAVIOR TAB -->
     <div id="tab-behavior" class="tab-content hidden">
