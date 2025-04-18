@@ -129,115 +129,62 @@
       document.getElementById('timeOnPage').textContent = data.avgTimeOnPage ?? '–';
     }
 
-  let homepageTrafficData = { geo: {}, devices: {}, referrals: {} };
+   try {
+    const res = await fetch('/api/traffic');
+    const data = await res.json();
+    homepageTrafficData = data;
 
-async function fetchTraffic() {
-  const res = await fetch('/api/traffic');
-  const data = await res.json();
-  homepageTrafficData = data;
+    document.getElementById('geoData').innerHTML = Object.entries(data.geo || {})
+      .map(([k, v]) => `<li>${k}: ${v}</li>`).join('');
 
-  document.getElementById('geoData').innerHTML = Object.entries(data.geo || {})
-    .map(([k, v]) => `<li>${k}: ${v
+    document.getElementById('deviceData').innerHTML = Object.entries(data.devices || {})
+      .map(([k, v]) => `<li>${k}: ${v}</li>`).join('');
 
+    document.getElementById('referralData').innerHTML = Object.entries(data.referrals || {})
+      .map(([k, v]) => `<li>${k}: ${v}</li>`).join('');
 
-    fetchUserBehavior();
-    fetchTraffic();
-
-    const salesCtx = document.getElementById('salesOverTimeChart').getContext('2d');
-    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-    const homepageCtx = document.getElementById('homepageChart').getContext('2d');
-
-    let salesChart = new Chart(salesCtx, {
-      type: 'line',
-      data: {
-        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-        datasets: [{
-          label: 'Sales',
-          data: [5, 10, 7, 14, 9, 12, 6],
-          borderColor: 'rgb(34,197,94)',
-          backgroundColor: 'rgba(34,197,94,0.2)',
-          tension: 0.3,
-        }]
-      },
-      options: {
-        plugins: { legend: { labels: { color: 'white' } } },
-        scales: {
-          x: { ticks: { color: 'white' } },
-          y: { ticks: { color: 'white' } }
-        }
-      }
-    });
-
-    let revenueChart = new Chart(revenueCtx, {
-      type: 'bar',
-      data: {
-        labels: ['Basic', 'Premium', 'Bundles'],
-        datasets: [{
-          label: 'Revenue ($)',
-          data: [120, 240, 90],
-          backgroundColor: ['#10b981', '#3b82f6', '#f59e0b'],
-        }]
-      },
-      options: {
-        plugins: { legend: { labels: { color: 'white' } } },
-        scales: {
-          x: { ticks: { color: 'white' } },
-          y: { ticks: { color: 'white' } }
-        }
-      }
-    });
-
-    let homepageChart = new Chart(homepageCtx, {
-      type: 'line',
-      data: {
-        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-        datasets: [{
-          label: 'Homepage Views',
-          data: [120, 140, 115, 180, 130, 160, 190],
-          backgroundColor: 'rgba(59,130,246,0.3)',
-          borderColor: '#3b82f6',
-          borderWidth: 2,
-          fill: true,
-          tension: 0.4
-        }]
-      },
-      options: {
-        plugins: { legend: { labels: { color: 'white' } } },
-        scales: {
-          x: { ticks: { color: 'white' } },
-          y: { ticks: { color: 'white' } }
-        }
-      }
-    });
-
-    function updateSalesChartType(type) {
-      salesChart.destroy();
-      salesChart = new Chart(salesCtx, {
-        type: type,
-        data: salesChart.data,
-        options: salesChart.options
-      });
-    }
-
-    function updateRevenueChartType(type) {
-      revenueChart.destroy();
-      revenueChart = new Chart(revenueCtx, {
-        type: type,
-        data: revenueChart.data,
-        options: revenueChart.options
-      });
-    }
-
-    function updateHomepageChartType(type) {
-      homepageChart.destroy();
-      homepageChart = new Chart(homepageCtx, {
-        type: type,
-        data: homepageChart.data,
-        options: homepageChart.options
-      });
-    }
+    updateHomepageChart(); // draw the default chart
+  } catch (err) {
+    console.error('Failed to fetch traffic:', err);
+  }
+}
   </script>
   
+  <script>
+function updateHomepageChart() {
+  const chartType = document.getElementById('homepageChartType').value;
+  const view = document.getElementById('homepageChartView').value;
+
+  const source = homepageTrafficData[view] || {};
+  const labels = Object.keys(source);
+  const values = Object.values(source);
+
+  homepageChart.destroy();
+  homepageChart = new Chart(homepageCtx, {
+    type: chartType,
+    data: {
+      labels,
+      datasets: [{
+        label: `Views by ${view.charAt(0).toUpperCase() + view.slice(1)}`,
+        data: values,
+        backgroundColor: 'rgba(59,130,246,0.3)',
+        borderColor: '#3b82f6',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      plugins: { legend: { labels: { color: 'white' } } },
+      scales: {
+        x: { ticks: { color: 'white' } },
+        y: { ticks: { color: 'white' } }
+      }
+    }
+  });
+}
+</script>
+
   <script>
   let currentSalesView = 'day';
   let currentRevenueView = 'day';
