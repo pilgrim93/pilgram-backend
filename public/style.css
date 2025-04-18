@@ -153,3 +153,49 @@ canvas {
   width: 100% !important;
   height: auto !important;
 }
+
+/* Base styles for mobile */
+.tab-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+.tab-btn {
+  background: #111;
+  border: 1px solid #333;
+  padding: 10px 15px;
+  border-radius: 10px;
+  color: #77ff77;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+/* Tablet size and up */
+@media (min-width: 768px) {
+  .tab-btn {
+    font-size: 1.1rem;
+    padding: 12px 20px;
+  }
+}
+
+/* Desktop size and up */
+@media (min-width: 1024px) {
+  .tab-btn {
+    font-size: 1.3rem;
+    padding: 16px 28px;
+  }
+
+  .tab-content {
+    padding: 2rem;
+  }
+
+  .card h2 {
+    font-size: 1.5rem;
+  }
+
+  .card p, .card ul, .card table {
+    font-size: 1.1rem;
+  }
+}
