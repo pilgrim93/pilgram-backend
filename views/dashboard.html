@@ -270,25 +270,28 @@
 </script>
 
 <!--  Orders Table with Price, Responsive + Export + Pagination -->
-<div class="card">
-  <h2 class="text-white mb-2">Sorted Orders</h2>
-  <a href="/export/orders/csv" class="export-btn">Export Orders as CSV</a>
-  <div class="sorted-orders-container">
-    <table class="sorted-orders-table">
-      <thead>
+<div class="mt-6 rounded-xl bg-black/50 p-4 shadow-md ring-1 ring-green-400/20 backdrop-blur-md">
+  <h2 class="mb-4 text-xl font-semibold text-green-400">Sorted Orders</h2>
+  <button onclick="exportSortedOrders()" class="mb-2 rounded bg-green-500 px-4 py-2 font-semibold text-black hover:bg-green-600">
+    Export Orders
+  </button>
+  <div class="overflow-x-auto rounded">
+    <table class="min-w-full divide-y divide-green-500 text-sm text-white">
+      <thead class="bg-green-500/20 text-green-400">
         <tr>
-          <th onclick="sortOrders('email')">Email</th>
-          <th onclick="sortOrders('product_name')">Product</th>
-          <th onclick="sortOrders('price')">Price</th>
-          <th onclick="sortOrders('product_id')">ID</th>
-          <th onclick="sortOrders('timestamp')">Time</th>
+          <th class="px-6 py-3 text-left font-medium">Email</th>
+          <th class="px-6 py-3 text-left font-medium">Product</th>
+          <th class="px-6 py-3 text-left font-medium">ID</th>
+          <th class="px-6 py-3 text-left font-medium">Time</th>
         </tr>
       </thead>
-      <tbody id="orders"></tbody>
+      <tbody id="ordersTable" class="divide-y divide-gray-600 bg-black/30 text-white">
+        <!-- Order rows will be inserted here -->
+      </tbody>
     </table>
-    <div id="pagination" class="pagination"></div>
   </div>
 </div>
+
 
 <style>
   .sorted-orders-container {
