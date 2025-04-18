@@ -276,80 +276,10 @@
   <div class="sorted-orders-container">
     <table class="sorted-orders-table">
       <thead>
-        <tr><th>Email</th><th>Product</th><th>ID</th><th>Time</th></tr>
-      </thead>
-      <tbody id="orders"></tbody>
-    </table>
-    <div id="pagination" class="pagination"></div>
-  </div>
-</div>
-
-<script>
-  async function fetchAndDisplayOrders() {
-    try {
-      const response = await fetch('/api/shoppy/orders');
-
-      if (!Array.isArray(orders)) throw new Error('Invalid data format');
-      window.allOrders = orders;
-    } catch (err) {
-      console.warn("Using fallback orders", err);
-      window.allOrders = dummyOrders;
-    }
-    renderOrders();
-  }
-
-  const dummyOrders = [
-    { email: "john@example.com", product_name: "iPhone Quiz", product_id: "001", timestamp: "2025-04-18 10:00" },
-    { email: "jane@example.com", product_name: "Shein Box", product_id: "002", timestamp: "2025-04-18 11:00" },
-    // more dummy rows as needed
-  ];
- 
-  let currentPage = 1;
-  const rowsPerPage = 5;
-
-  function renderOrders() {
-    const tbody = document.getElementById('orders');
-    tbody.innerHTML = '';
-    const start = (currentPage - 1) * rowsPerPage;
-    const end = start + rowsPerPage;
-    const pageOrders = allOrders.slice(start, end);
-    pageOrders.forEach(order => {
-      const row = `<tr><td>${order.email}</td><td>${order.product_name}</td><td>${order.product_id}</td><td>${order.timestamp}</td></tr>`;
-      tbody.innerHTML += row;
-    });
-    renderPagination();
-  }
-
-  function renderPagination() { ste
-    const totalPages = Math.ceil(allOrders.length / rowsPerPage);
-    const pagination = document.getElementById('pagination');
-    pagination.innerHTML = '';
-    for (let i = 1; i <= totalPages; i++) {
-      const btn = document.createElement('button');
-      btn.textContent = i;
-      btn.className = 'tab-btn';
-      if (i === currentPage) btn.classList.add('active');
-      btn.onclick = () => {
-        currentPage = i;
-        renderOrders();
-      };
-      pagination.appendChild(btn);
-    }
-  }
-
-  fetchAndDisplayOrders();
-</script>
-
-<!-- Orders Export CSV Button + Existing Orders Table -->
-<div class="card">
-  <h2 class="text-white mb-2">Sorted Orders</h2>
-  <a href="/export/orders/csv" class="export-btn">Export Orders as CSV</a>
-  <div class="sorted-orders-container">
-    <table class="sorted-orders-table">
-      <thead>
         <tr>
           <th onclick="sortOrders('email')">Email</th>
           <th onclick="sortOrders('product_name')">Product</th>
+          <th onclick="sortOrders('price')">Price</th>
           <th onclick="sortOrders('product_id')">ID</th>
           <th onclick="sortOrders('timestamp')">Time</th>
         </tr>
@@ -361,7 +291,7 @@
 </div>
 
 <style>
-   #pagination {
+  #pagination {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
@@ -420,14 +350,14 @@
   }
 
   const dummyOrders = [
-    { email: "john@example.com", product_name: "iPhone Quiz", product_id: "001", timestamp: "2025-04-18 10:00" },
-    { email: "jane@example.com", product_name: "Shein Box", product_id: "002", timestamp: "2025-04-18 11:00" },
-    { email: "mike@example.com", product_name: "Temu Box", product_id: "003", timestamp: "2025-04-18 12:00" },
-    { email: "sara@example.com", product_name: "iPhone Quiz", product_id: "004", timestamp: "2025-04-18 13:00" },
-    { email: "alex@example.com", product_name: "Shein Box", product_id: "005", timestamp: "2025-04-18 14:00" },
-    { email: "lucy@example.com", product_name: "Temu Box", product_id: "006", timestamp: "2025-04-18 15:00" },
-    { email: "dan@example.com", product_name: "iPhone Quiz", product_id: "007", timestamp: "2025-04-18 16:00" },
-    { email: "lisa@example.com", product_name: "Shein Box", product_id: "008", timestamp: "2025-04-18 17:00" }
+    { email: "john@example.com", product_name: "iPhone Quiz", price: "$10.00", product_id: "001", timestamp: "2025-04-18 10:00" },
+    { email: "jane@example.com", product_name: "Shein Box", price: "$15.00", product_id: "002", timestamp: "2025-04-18 11:00" },
+    { email: "mike@example.com", product_name: "Temu Box", price: "$12.00", product_id: "003", timestamp: "2025-04-18 12:00" },
+    { email: "sara@example.com", product_name: "iPhone Quiz", price: "$10.00", product_id: "004", timestamp: "2025-04-18 13:00" },
+    { email: "alex@example.com", product_name: "Shein Box", price: "$15.00", product_id: "005", timestamp: "2025-04-18 14:00" },
+    { email: "lucy@example.com", product_name: "Temu Box", price: "$12.00", product_id: "006", timestamp: "2025-04-18 15:00" },
+    { email: "dan@example.com", product_name: "iPhone Quiz", price: "$10.00", product_id: "007", timestamp: "2025-04-18 16:00" },
+    { email: "lisa@example.com", product_name: "Shein Box", price: "$15.00", product_id: "008", timestamp: "2025-04-18 17:00" }
   ];
 
   function sortOrders(key) {
@@ -453,7 +383,7 @@
     const end = start + rowsPerPage;
     const pageOrders = allOrders.slice(start, end);
     pageOrders.forEach(order => {
-      const row = `<tr><td>${order.email}</td><td>${order.product_name}</td><td>${order.product_id}</td><td>${order.timestamp}</td></tr>`;
+      const row = `<tr><td>${order.email}</td><td>${order.product_name}</td><td>${order.price}</td><td>${order.product_id}</td><td>${order.timestamp}</td></tr>`;
       tbody.innerHTML += row;
     });
     renderPagination();
