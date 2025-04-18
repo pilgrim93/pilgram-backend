@@ -158,3 +158,56 @@ app.get("/api/data", requireLogin, async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+app.get("/api/data", requireLogin, async (req, res) => {
+  const { range = "7daysAgo", device = "", geo = "", source = "" } = req.query;
+  const stats = {};
+
+  const filters = [];
+  if (device) filters.push({ dimensionName: "deviceCategory", operator: "EXACT", expressions: [device] });
+  if (geo) filters.push({ dimensionName: "countryId", operator: "EXACT", expressions: [geo] });
+  if (source) filters.push({ dimensionName: "sessionSource", operator: "EXACT", expressions: [source] });
+
+  try {
+    const auth = new google.auth.GoogleAuth({
+      keyFile: path.join(__dirname, 'pilgrims-pages-1d3f856f222d.json'),
+      scopes: ['https://www.googleapis.com/auth/analytics.readonly'],
+    });
+
+    const analytics = google.analyticsreporting({
+      version: 'v4',
+      auth: await auth.getClient(),
+    });
+
+    const response = await analytics.reports.batchGet({
+      requestBody: {
+        reportRequests: [
+          {
+            viewId: process.env.GA_VIEW_ID || "486157365",
+            dateRanges: [{ startDate: range, endDate: "today" }],
+            metrics: [{ expression: "ga:pageviews" }],
+            dimensions: [{ name: "ga:date" }],
+            ...(filters.length ? { dimensionFilterClauses: [{ filters }] } : {})
+          }
+        ]
+      }
+    });
+
+    const rows = response.data.reports[0].data.rows || [];
+    stats.pageViews = rows.map(row => ({
+      date: row.dimensions[0],
+      views: parseInt(row.metrics[0].values[0])
+    }));
+
+    db.all("SELECT product, type, COUNT(*) as count FROM page_views GROUP BY product, type", [], (err, views) => {
+      stats.views = views || [];
+      db.all("SELECT * FROM orders ORDER BY timestamp DESC", [], (err, orders) => {
+        stats.orders = orders || [];
+        res.json(stats);
+      });
+    });
+  } catch (err) {
+    console.error("Google Analytics fetch error:", err);
+    res.status(500).send("Error fetching analytics");
+  }
+});

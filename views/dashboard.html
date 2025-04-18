@@ -160,5 +160,37 @@
       renderOrders(sorted);
     });
   </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const timeRangeSelector = document.getElementById("timeRangeSelector");
+  const chartTypeSelector = document.getElementById("chartTypeSelector");
+  const deviceFilter = document.getElementById("deviceFilter");
+  const geoFilter = document.getElementById("geoFilter");
+  const sourceFilter = document.getElementById("sourceFilter");
+
+  function updateDashboard() {
+    const timeRange = timeRangeSelector.value;
+    const chartType = chartTypeSelector.value;
+    const device = deviceFilter.value;
+    const geo = geoFilter.value;
+    const source = sourceFilter.value;
+
+    fetch(`/api/data?range=${timeRange}&device=${device}&geo=${geo}&source=${source}`)
+      .then(res => res.json())
+      .then(data => {
+        // Redraw chart with new data and chart type
+        renderChart(data.pageViews || [], chartType);
+      });
+  }
+
+  [timeRangeSelector, chartTypeSelector, deviceFilter, geoFilter, sourceFilter].forEach(el =>
+    el.addEventListener("change", updateDashboard)
+  );
+
+  updateDashboard(); // Initial load
+});
+</script>
+
 </body>
 </html>
