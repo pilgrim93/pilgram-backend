@@ -1,3 +1,11 @@
+const express = require("express");
+const session = require("express-session");
+const bodyParser = require("body-parser");
+const path = require("path");
+const sqlite3 = require("sqlite3").verbose(); // ✅ this should be here
+const fetch = require("node-fetch");
+require("dotenv").config();
+
 // (unchanged) ... all the way until:
 const db = new sqlite3.Database("./analytics.db");
 
