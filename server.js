@@ -1,9 +1,13 @@
 const express = require("express");
+const app = express(); // This MUST be above any use of `app`
 const session = require("express-session");
 const bodyParser = require("body-parser");
 const path = require("path");
 const sqlite3 = require("sqlite3").verbose(); // ✅ this should be here
 const fetch = require("node-fetch");
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
 require("dotenv").config();
 
 // (unchanged) ... all the way until:
