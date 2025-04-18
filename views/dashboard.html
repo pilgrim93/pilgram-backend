@@ -37,10 +37,15 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="bg-black rounded-2xl shadow p-4">
           <h3 class="text-white mb-2">Sales Over Time</h3>
+          <select id="salesViewBy" class="tab-btn" onchange="updateSalesViewBy(this.value)">
+  <option value="day">View by Day</option>
+  <option value="product">View by Product</option>
+</select>
           <select id="salesChartType" class="tab-btn" onchange="updateSalesChartType(this.value)">
             <option value="line">Line</option>
             <option value="bar">Bar</option>
           </select>
+          
           <canvas id="salesOverTimeChart" height="200"></canvas>
         </div>
         <div class="bg-black rounded-2xl shadow p-4">
@@ -49,6 +54,26 @@
             <option value="bar">Bar</option>
             <option value="line">Line</option>
           </select>
+          <select id="salesViewBy" class="tab-btn" onchange="updateSalesView(this.value)">
+    <option value="day">View by Day</option>
+    <option value="product">View by Product</option>
+  </select>
+  <canvas id="salesOverTimeChart" height="200"></canvas>
+  </div>
+  
+  <!-- Revenue Breakdown -->
+<div class="bg-black rounded-2xl shadow p-4">
+  <h3 class="text-white mb-2">Revenue Breakdown</h3>
+  <select id="revenueChartType" class="tab-btn" onchange="updateRevenueChartType(this.value)">
+    <option value="bar">Bar</option>
+    <option value="line">Line</option>
+  </select>
+  <select id="revenueViewBy" class="tab-btn" onchange="updateRevenueView(this.value)">
+    <option value="day">View by Day</option>
+    <option value="product">View by Product</option>
+  </select>
+  <canvas id="revenueChart" height="200"></canvas>
+</div>
           <canvas id="revenueChart" height="200"></canvas>
         </div>
       </div>
@@ -147,6 +172,24 @@
         }
       }
     });
+    
+
+  let currentSalesView = 'day';
+
+  async function updateSalesViewBy(viewType) {
+    currentSalesView = viewType;
+    const res = await fetch(`/api/sales?view=${viewType}`);
+    const data = await res.json();
+
+    // Replace chart data and labels
+    salesChart.data.labels = data.labels;
+    salesChart.data.datasets[0].data = data.values;
+    salesChart.data.datasets[0].label = viewType === 'day' ? 'Sales per Day' : 'Sales by Product';
+
+    salesChart.update();
+  }
+
+
 
     let revenueChart = new Chart(revenueCtx, {
       type: 'bar',
@@ -217,5 +260,117 @@
       });
     }
   </script>
+  
+  <script>
+  let currentSalesView = 'day';
+  let currentRevenueView = 'day';
+
+  function updateSalesView(viewBy) {
+    currentSalesView = viewBy;
+    renderSalesChart();
+  }
+
+  function updateRevenueView(viewBy) {
+    currentRevenueView = viewBy;
+    renderRevenueChart();
+  }
+
+  function updateSalesChartType(type) {
+    salesChart.destroy();
+    salesChart = new Chart(salesCtx, {
+      type,
+      data: getSalesChartData(currentSalesView),
+      options: baseChartOptions
+    });
+  }
+
+  function updateRevenueChartType(type) {
+    revenueChart.destroy();
+    revenueChart = new Chart(revenueCtx, {
+      type,
+      data: getRevenueChartData(currentRevenueView),
+      options: baseChartOptions
+    });
+  }
+
+  const baseChartOptions = {
+    plugins: { legend: { labels: { color: 'white' } } },
+    scales: {
+      x: { ticks: { color: 'white' } },
+      y: { ticks: { color: 'white' } }
+    }
+  };
+
+  function getSalesChartData(viewBy) {
+    if (viewBy === 'product') {
+      return {
+        labels: ['iPhone Quiz', 'Shein Box', 'Temu Box'],
+        datasets: [{
+          label: 'Sales by Product',
+          data: [35, 21, 18],
+          borderColor: 'rgb(34,197,94)',
+          backgroundColor: 'rgba(34,197,94,0.2)',
+          tension: 0.3,
+        }]
+      };
+    } else {
+      return {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [{
+          label: 'Sales by Day',
+          data: [5, 10, 7, 14, 9, 12, 6],
+          borderColor: 'rgb(34,197,94)',
+          backgroundColor: 'rgba(34,197,94,0.2)',
+          tension: 0.3,
+        }]
+      };
+    }
+  }
+
+  function getRevenueChartData(viewBy) {
+    if (viewBy === 'product') {
+      return {
+        labels: ['iPhone Quiz', 'Shein Box', 'Temu Box'],
+        datasets: [{
+          label: 'Revenue by Product',
+          data: [350, 210, 180],
+          backgroundColor: 'rgba(34,197,94,0.6)',
+        }]
+      };
+    } else {
+      return {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [{
+          label: 'Revenue by Day',
+          data: [50, 100, 70, 140, 90, 120, 60],
+          backgroundColor: 'rgba(34,197,94,0.6)',
+        }]
+      };
+    }
+  }
+
+  function renderSalesChart() {
+    salesChart.destroy();
+    salesChart = new Chart(salesCtx, {
+      type: document.getElementById('salesChartType').value,
+      data: getSalesChartData(currentSalesView),
+      options: baseChartOptions
+    });
+  }
+
+  function renderRevenueChart() {
+    revenueChart.destroy();
+    revenueChart = new Chart(revenueCtx, {
+      type: document.getElementById('revenueChartType').value,
+      data: getRevenueChartData(currentRevenueView),
+      options: baseChartOptions
+    });
+  }
+
+  renderSalesChart();
+  renderRevenueChart();
+</script>
+
+
 </body>
 </html>
