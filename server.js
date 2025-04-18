@@ -8,7 +8,7 @@ const fetch = require("node-fetch");
 const PORT = process.env.PORT || 3000;
 
 require("dotenv").config();
-
+app.use(express.static(path.join(__dirname, "public")));
 // (unchanged) ... all the way until:
 const db = new sqlite3.Database("./analytics.db");
 
