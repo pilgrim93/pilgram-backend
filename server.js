@@ -6,6 +6,10 @@ const path = require("path");
 const sqlite3 = require("sqlite3").verbose();
 const fetch = require("node-fetch");
 const PORT = process.env.PORT || 3000;
+// /routes/sales.js
+const express = require('express');
+const axios = require('axios');
+const router = express.Router();
 
 require("dotenv").config();
 
@@ -148,3 +152,46 @@ app.get("/api/traffic", requireLogin, async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+
+router.get('/shoppy-sales', async (req, res) => {
+  try {
+    const response = await axios.get('https://shoppy.gg/api/v1/orders', {
+      headers: {
+        Authorization: `Bearer ${process.env.qeSyJMncwCRyR7CR62uL0gub9oc1DQ2sYm31E0WpSf5LELJW2H}`,
+      },
+    });
+
+    // Filter or format as needed
+    const sales = response.data.map((order) => ({
+      email: order.email,
+      price: parseFloat(order.total),
+      product: order.product_title,
+      createdAt: order.created_at,
+    }));
+
+    res.json({ sales });
+  } catch (error) {
+    console.error('Shoppy API Error:', error.message);
+    res.status(500).json({ error: 'Failed to fetch Shoppy sales' });
+  }
+});
+
+module.exports = router;
+
+app.get("/api/shoppy/orders", requireLogin, async (req, res) => {
+  try {
+    const response = await fetch("https://shoppy.gg/api/v1/orders", {
+      headers: {
+        Authorization: `Bearer ${process.env.SHOPPY_API_KEY}`,
+      },
+    });
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error("Failed to fetch from Shoppy:", err);
+    res.status(500).send("Error fetching Shoppy orders");
+  }
+});
+
+

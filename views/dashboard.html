@@ -14,7 +14,6 @@
   </header>
 
   <main>
-
     <section class="tab-buttons">
       <button class="tab-btn" onclick="showTab('sales')">💰 Sales</button>
       <button class="tab-btn" onclick="showTab('behavior')">👥 User Behavior</button>
@@ -23,26 +22,17 @@
 
     <!-- 💰 SALES -->
     <div id="tab-sales" class="tab-content">
-      <section class="chart-section">
-        <h2>Analytics Chart</h2>
-        <canvas id="analyticsChart" height="100"></canvas>
-      </section>
-
-      <section class="stats-grid">
-        <div class="card">
-          <h2>Filtered Page Views</h2>
-          <ul id="views"></ul>
+      <h2 class="text-green-400 text-xl font-bold mb-4">Sales Charts</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-black rounded-2xl shadow p-4">
+          <h3 class="text-white mb-2">Sales Over Time</h3>
+          <canvas id="salesOverTimeChart" height="200"></canvas>
         </div>
-        <div class="card">
-          <h2>Sorted Orders</h2>
-          <a href="/export/orders" class="export-btn">⬇️ Download Orders CSV</a>
-          <table><thead><tr><th>Email</th><th>Product</th><th>ID</th><th>Time</th></tr></thead><tbody id="orders"></tbody></table>
+        <div class="bg-black rounded-2xl shadow p-4">
+          <h3 class="text-white mb-2">Revenue Breakdown</h3>
+          <canvas id="revenueChart" height="200"></canvas>
         </div>
-        <div class="card">
-          <h2>Live Shoppy Orders</h2>
-          <ul id="shoppy-orders"></ul>
-        </div>
-      </section>
+      </div>
     </div>
 
     <!-- 👥 USER BEHAVIOR -->
@@ -81,11 +71,9 @@
     async function fetchTraffic() {
       const res = await fetch('/api/traffic');
       const data = await res.json();
-
       const geoList = document.getElementById('geoData');
       const deviceList = document.getElementById('deviceData');
       const referralList = document.getElementById('referralData');
-
       geoList.innerHTML = Object.entries(data.geo || {}).map(([k, v]) => `<li>${k}: ${v}</li>`).join('');
       deviceList.innerHTML = Object.entries(data.devices || {}).map(([k, v]) => `<li>${k}: ${v}</li>`).join('');
       referralList.innerHTML = Object.entries(data.referrals || {}).map(([k, v]) => `<li>${k}: ${v}</li>`).join('');
@@ -93,6 +81,67 @@
 
     fetchUserBehavior();
     fetchTraffic();
+  </script>
+
+  <script>
+    const dummySalesData = {
+      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      datasets: [{
+        label: 'Sales',
+        data: [5, 10, 7, 14, 9, 12, 6],
+        borderColor: 'rgb(34,197,94)',
+        backgroundColor: 'rgba(34,197,94,0.2)',
+        tension: 0.3,
+      }]
+    };
+
+    const dummyRevenueData = {
+      labels: ['Basic', 'Premium', 'Bundles'],
+      datasets: [{
+        label: 'Revenue ($)',
+        data: [120, 240, 90],
+        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b'],
+      }]
+    };
+
+    const salesChartCtx = document.getElementById('salesOverTimeChart').getContext('2d');
+    const revenueChartCtx = document.getElementById('revenueChart').getContext('2d');
+
+    const salesOverTimeChart = new Chart(salesChartCtx, {
+      type: 'line',
+      data: dummySalesData,
+      options: {
+        plugins: {
+          legend: { labels: { color: 'white' } }
+        },
+        scales: {
+          x: { ticks: { color: 'white' } },
+          y: { ticks: { color: 'white' } }
+        }
+      }
+    });
+
+    const revenueChart = new Chart(revenueChartCtx, {
+      type: 'bar',
+      data: dummyRevenueData,
+      options: {
+        plugins: {
+          legend: { labels: { color: 'white' } }
+        },
+        scales: {
+          x: { ticks: { color: 'white' } },
+          y: { ticks: { color: 'white' } }
+        }
+      }
+    });
+
+    function updateChartsWithShoppyData(data) {
+      // 🎯 When ready: dynamically update Chart.js charts with real Shoppy data
+      // salesOverTimeChart.data = ...
+      // salesOverTimeChart.update();
+      // revenueChart.data = ...
+      // revenueChart.update();
+    }
   </script>
 
   <style>
@@ -131,11 +180,7 @@
       border-radius: 10px;
       box-shadow: 0 0 5px rgba(0,0,0,0.3);
     }
-    .export-btn {
-      display: inline-block;
-      margin-bottom: 10px;
-      color: #00ff99;
-    }
   </style>
+
 </body>
 </html>
