@@ -126,7 +126,7 @@ td {
 .export-btn {
   display: inline-block;
   margin-bottom: 1rem;
-  background: #FFBF00;
+  background: #ffffff;
   color: #000;
   padding: 0.5rem 1rem;
   border-radius: 8px;
@@ -163,7 +163,7 @@ canvas {
   margin-bottom: 1rem;
 }
 .tab-btn {
-  background: #FFBF00;
+  background: #ffffff;
   border: 1px solid #333;
   padding: 10px 15px;
   border-radius: 10px;
