@@ -166,8 +166,6 @@ app.get("/export/orders", requireLogin, (req, res) => {
     res.header("Content-Type", "text/csv");
     res.attachment("orders.csv");
     res.send(csv);
-  });
-});
 
 
 
@@ -185,3 +183,4 @@ app.get("/api/data", requireLogin, async (req, res) => {
       res.json(stats);
     });
 }
+});
