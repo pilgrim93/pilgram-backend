@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Pilgram Admin Dashboard</title>
   <link rel="stylesheet" href="/style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -16,6 +16,45 @@
         max-height: 250px !important;
       }
     }
+
+    .pagination {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+
+    .pagination button {
+      padding: 6px 12px;
+      background: #222;
+      color: white;
+      border: 1px solid #444;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .pagination button.active {
+      background: #22c55e;
+      color: black;
+      font-weight: bold;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      max-width: 100%;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 0.75rem;
+      border: 1px solid #333;
+      text-align: left;
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
@@ -23,128 +62,424 @@
     <img src="/logo1.png" alt="Logo" style="height:40px;margin-bottom:1rem;">
     <a href="/logout" class="logout-btn">Logout</a>
   </header>
+
   <main>
     <section class="tab-buttons">
-      <button class="tab-btn active" data-tab="sales">💰 Sales</button>
-      <button class="tab-btn" data-tab="behavior">👥 User Behavior</button>
-      <button class="tab-btn" data-tab="traffic">🌐 Traffic</button>
+      <button class="tab-btn active" onclick="showTab('sales', this)">💰 Sales</button>
+      <button class="tab-btn" onclick="showTab('behavior', this)">👥 User Behavior</button>
+      <button class="tab-btn" onclick="showTab('traffic', this)">🌐 Traffic</button>
     </section>
 
     <div id="tab-sales" class="tab-content">
-      <h2 class="text-green-400 text-xl font-bold mb-4">Sales Charts</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-black rounded-2xl shadow p-4">
-          <h3 class="text-white mb-2">Sales Over Time</h3>
-          <canvas id="salesOverTimeChart" height="200"></canvas>
+      <h2>Sales</h2>
+      <canvas id="salesChart"></canvas>
+      <canvas id="revenueChart"></canvas>
+      <div class="card">
+        <h2>Sorted Orders</h2>
+        <a href="/export/orders" class="export-btn">Export Orders</a>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Product</th>
+                <th>ID</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody id="orders"></tbody>
+          </table>
         </div>
-        <div class="bg-black rounded-2xl shadow p-4">
-          <h3 class="text-white mb-2">Revenue Breakdown</h3>
-          <canvas id="revenueChart" height="200"></canvas>
-        </div>
+        <div class="pagination" id="pagination"></div>
       </div>
     </div>
 
-    <div id="tab-traffic" class="tab-content" style="display:none">
-      <div class="bg-black rounded-2xl shadow p-4">
-        <h3 class="text-white mb-2">Views Over Time</h3>
-        <canvas id="homepageChart" height="200"></canvas>
-      </div>
+    <div id="tab-behavior" class="tab-content" style="display:none;">
+      <h2>User Behavior</h2>
+      <ul>
+        <li>Scroll Depth: <span id="scrollDepth">-</span></li>
+        <li>Clicks: <span id="clicks">-</span></li>
+        <li>Time on Page: <span id="timeOnPage">-</span></li>
+      </ul>
     </div>
 
-    <div id="tab-behavior" class="tab-content" style="display:none">
-      <section class="stats-grid">
-        <div class="card"><h2>Avg Scroll Depth</h2><p id="scrollDepth">–</p></div>
-        <div class="card"><h2>Avg Clicks</h2><p id="clicks">–</p></div>
-        <div class="card"><h2>Avg Time on Page (s)</h2><p id="timeOnPage">–</p></div>
-      </section>
+    <div id="tab-traffic" class="tab-content" style="display:none;">
+      <h2>Traffic</h2>
+      <canvas id="homepageChart"></canvas>
+      <ul>
+        <li>Top Countries: <span id="geoData"></span></li>
+        <li>Devices: <span id="deviceData"></span></li>
+        <li>Referrals: <span id="referralData"></span></li>
+      </ul>
     </div>
   </main>
+  
+  	   <script>
+    const salesCtx = document.getElementById('salesChart').getContext('2d');
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    const homepageCtx = document.getElementById('homepageChart').getContext('2d');
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const tabButtons = document.querySelectorAll(".tab-btn");
-      const tabContents = document.querySelectorAll(".tab-content");
+    const dummyOrders = [
+      { email: 'user1@example.com', product: 'Shein Box', id: 'A001', time: '2025-04-18 08:00' },
+      { email: 'user2@example.com', product: 'iPhone Quiz', id: 'A002', time: '2025-04-18 09:00' },
+      { email: 'user3@example.com', product: 'Temu Box', id: 'A003', time: '2025-04-18 10:30' },
+      { email: 'user4@example.com', product: 'Shein Box', id: 'A004', time: '2025-04-18 11:00' },
+      { email: 'user5@example.com', product: 'iPhone Quiz', id: 'A005', time: '2025-04-18 12:15' },
+      { email: 'user6@example.com', product: 'Temu Box', id: 'A006', time: '2025-04-18 13:45' },
+      { email: 'user7@example.com', product: 'Temu Box', id: 'A007', time: '2025-04-18 14:30' },
+      { email: 'user8@example.com', product: 'Shein Box', id: 'A008', time: '2025-04-18 15:00' },
+    ];
 
-      tabButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
-          const tab = btn.dataset.tab;
+    const rowsPerPage = 5;
+    let currentPage = 1;
 
-          tabButtons.forEach(b => b.classList.remove("active"));
-          tabContents.forEach(c => c.style.display = "none");
+    function paginateOrders() {
+      const start = (currentPage - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const visibleOrders = dummyOrders.slice(start, end);
 
-          btn.classList.add("active");
-          document.getElementById("tab-" + tab).style.display = "block";
-        });
+      const tbody = document.getElementById('orders');
+      tbody.innerHTML = '';
+      visibleOrders.forEach(order => {
+        const row = `<tr><td>${order.email}</td><td>${order.product}</td><td>${order.id}</td><td>${order.time}</td></tr>`;
+        tbody.innerHTML += row;
       });
 
-      // Dummy data for charts
-      const salesCtx = document.getElementById('salesOverTimeChart').getContext('2d');
-      const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-      const homepageCtx = document.getElementById('homepageChart').getContext('2d');
+      const totalPages = Math.ceil(dummyOrders.length / rowsPerPage);
+      const pagination = document.getElementById('pagination');
+      pagination.innerHTML = '';
+      for (let i = 1; i <= totalPages; i++) {
+        pagination.innerHTML += `<button class="${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+      }
+    }
 
-      new Chart(salesCtx, {
-        type: 'line',
-        data: {
-          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-          datasets: [{
-            label: 'Sales',
-            data: [5, 10, 7, 14, 9, 12, 6],
-            borderColor: 'rgb(34,197,94)',
-            backgroundColor: 'rgba(34,197,94,0.2)',
-            tension: 0.3,
-          }]
-        },
-        options: {
-          plugins: { legend: { labels: { color: 'white' } } },
-          scales: {
-            x: { ticks: { color: 'white' } },
-            y: { ticks: { color: 'white' } }
-          }
+    function goToPage(page) {
+      currentPage = page;
+      paginateOrders();
+    }
+
+    paginateOrders();
+
+    const salesChart = new Chart(salesCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [{
+          label: 'Sales by Day',
+          data: [5, 8, 4, 10, 6, 9, 3],
+          backgroundColor: 'rgba(34,197,94,0.7)',
+        }]
+      },
+      options: {
+        plugins: { legend: { labels: { color: 'white' } } },
+        scales: {
+          x: { ticks: { color: 'white' } },
+          y: { ticks: { color: 'white' } }
         }
-      });
-
-      new Chart(revenueCtx, {
-        type: 'bar',
-        data: {
-          labels: ['Basic', 'Premium', 'Bundles'],
-          datasets: [{
-            label: 'Revenue ($)',
-            data: [120, 240, 90],
-            backgroundColor: ['#10b981', '#3b82f6', '#f59e0b'],
-          }]
-        },
-        options: {
-          plugins: { legend: { labels: { color: 'white' } } },
-          scales: {
-            x: { ticks: { color: 'white' } },
-            y: { ticks: { color: 'white' } }
-          }
-        }
-      });
-
-      new Chart(homepageCtx, {
-        type: 'line',
-        data: {
-          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-          datasets: [{
-            label: 'Homepage Views',
-            data: [120, 140, 115, 180, 130, 160, 190],
-            backgroundColor: 'rgba(59,130,246,0.3)',
-            borderColor: '#3b82f6',
-            borderWidth: 2,
-            fill: true,
-            tension: 0.4
-          }]
-        },
-        options: {
-          plugins: { legend: { labels: { color: 'white' } } },
-          scales: {
-            x: { ticks: { color: 'white' } },
-            y: { ticks: { color: 'white' } }
-          }
-        }
-      });
+      }
     });
+
+    const revenueChart = new Chart(revenueCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Shein Box', 'iPhone Quiz', 'Temu Box'],
+        datasets: [{
+          label: 'Revenue by Product',
+          data: [150, 300, 90],
+          backgroundColor: ['#10b981', '#3b82f6', '#f59e0b']
+        }]
+      },
+      options: {
+        plugins: { legend: { labels: { color: 'white' } } },
+        scales: {
+          x: { ticks: { color: 'white' } },
+          y: { ticks: { color: 'white' } }
+        }
+      }
+    });
+
+    const homepageChart = new Chart(homepageCtx, {
+      type: 'line',
+      data: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [{
+          label: 'Homepage Views',
+          data: [120, 140, 115, 180, 130, 160, 190],
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59,130,246,0.3)',
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        plugins: { legend: { labels: { color: 'white' } } },
+        scales: {
+          x: { ticks: { color: 'white' } },
+          y: { ticks: { color: 'white' } }
+        }
+      }
+    });
+
+    function showTab(tabName, btn) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-' + tabName).style.display = 'block';
+      btn.classList.add('active');
+    }
+
+    // Behavior dummy
+    document.getElementById('scrollDepth').textContent = "67%";
+    document.getElementById('clicks').textContent = "4.2";
+    document.getElementById('timeOnPage').textContent = "62";
+
   </script>
+  
+  <!-- STEP 3: API Hookup to Shoppy Orders -->
+<script>
+  async function fetchOrdersFromShoppy() {
+    try {
+      const res = await fetch('/api/shoppy/orders'); // Ensure this route is served by your Express backend
+      const data = await res.json();
+
+      // If data is empty or error, fallback to dummy data
+      if (!Array.isArray(data) || data.length === 0) {
+        console.warn('Using dummy data (no Shoppy orders found)');
+        return dummyOrders;
+      }
+
+      return data.map(order => ({
+        email: order.email,
+        product: order.product_name || order.product || 'Unknown',
+        id: order.product_id || order.id || '—',
+        time: new Date(order.timestamp || order.created_at).toLocaleString()
+      }));
+    } catch (err) {
+      console.error('Error fetching Shoppy orders:', err);
+      return dummyOrders; // fallback to dummy
+    }
+  }
+
+  async function initializeOrdersWithAPI() {
+    const orders = await fetchOrdersFromShoppy();
+    dummyOrders.length = 0;
+    dummyOrders.push(...orders);
+    paginateOrders();
+  }
+
+  initializeOrdersWithAPI();
+</script>
+
+<!-- ✅ Orders Export CSV Button + Existing Orders Table -->
+<div class="card">
+  <h2 class="text-white mb-2">Sorted Orders</h2>
+  <a href="/export/orders/csv" class="export-btn">Export Orders as CSV</a>
+  <div class="sorted-orders-container">
+    <table class="sorted-orders-table">
+      <thead>
+        <tr><th>Email</th><th>Product</th><th>ID</th><th>Time</th></tr>
+      </thead>
+      <tbody id="orders"></tbody>
+    </table>
+    <div id="pagination" class="pagination"></div>
+  </div>
+</div>
+
+<script>
+  async function fetchAndDisplayOrders() {
+    try {
+      const response = await fetch('/api/shoppy/orders');
+
+      if (!Array.isArray(orders)) throw new Error('Invalid data format');
+      window.allOrders = orders;
+    } catch (err) {
+      console.warn("Using fallback orders", err);
+      window.allOrders = dummyOrders;
+    }
+    renderOrders();
+  }
+
+  const dummyOrders = [
+    { email: "john@example.com", product_name: "iPhone Quiz", product_id: "001", timestamp: "2025-04-18 10:00" },
+    { email: "jane@example.com", product_name: "Shein Box", product_id: "002", timestamp: "2025-04-18 11:00" },
+    // more dummy rows as needed
+  ];
+ 
+  let currentPage = 1;
+  const rowsPerPage = 5;
+
+  function renderOrders() {
+    const tbody = document.getElementById('orders');
+    tbody.innerHTML = '';
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    const pageOrders = allOrders.slice(start, end);
+    pageOrders.forEach(order => {
+      const row = `<tr><td>${order.email}</td><td>${order.product_name}</td><td>${order.product_id}</td><td>${order.timestamp}</td></tr>`;
+      tbody.innerHTML += row;
+    });
+    renderPagination();
+  }
+
+  function renderPagination() { ste
+    const totalPages = Math.ceil(allOrders.length / rowsPerPage);
+    const pagination = document.getElementById('pagination');
+    pagination.innerHTML = '';
+    for (let i = 1; i <= totalPages; i++) {
+      const btn = document.createElement('button');
+      btn.textContent = i;
+      btn.className = 'tab-btn';
+      if (i === currentPage) btn.classList.add('active');
+      btn.onclick = () => {
+        currentPage = i;
+        renderOrders();
+      };
+      pagination.appendChild(btn);
+    }
+  }
+
+  fetchAndDisplayOrders();
+</script>
+
+<!-- Orders Export CSV Button + Existing Orders Table -->
+<div class="card">
+  <h2 class="text-white mb-2">Sorted Orders</h2>
+  <a href="/export/orders/csv" class="export-btn">Export Orders as CSV</a>
+  <div class="sorted-orders-container">
+    <table class="sorted-orders-table">
+      <thead>
+        <tr>
+          <th onclick="sortOrders('email')">Email</th>
+          <th onclick="sortOrders('product_name')">Product</th>
+          <th onclick="sortOrders('product_id')">ID</th>
+          <th onclick="sortOrders('timestamp')">Time</th>
+        </tr>
+      </thead>
+      <tbody id="orders"></tbody>
+    </table>
+    <div id="pagination" class="pagination"></div>
+  </div>
+</div>
+
+<style>
+   #pagination {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  #pagination .tab-btn {
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: #222;
+    color: #00ff99;
+    border: 1px solid #00ff99;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  #pagination .tab-btn:hover {
+    background: #00ff99;
+    color: #000;
+  }
+
+  #pagination .tab-btn.active {
+    background: #00ff99;
+    color: #000;
+    font-weight: bold;
+  }
+
+  th {
+    cursor: pointer;
+  }
+  th:hover {
+    text-decoration: underline;
+    color: #00ff99;
+  }
+</style>
+
+<script>
+  let currentPage = 1;
+  const rowsPerPage = 5;
+  let currentSortKey = null;
+  let sortDirection = 1;
+
+  async function fetchAndDisplayOrders() {
+    try {
+      const response = await fetch('/api/shoppy/orders');
+      const orders = await response.json();
+      if (!Array.isArray(orders)) throw new Error('Invalid data format');
+      window.allOrders = orders;
+    } catch (err) {
+      console.warn("Using fallback orders", err);
+      window.allOrders = dummyOrders;
+    }
+    renderOrders();
+  }
+
+  const dummyOrders = [
+    { email: "john@example.com", product_name: "iPhone Quiz", product_id: "001", timestamp: "2025-04-18 10:00" },
+    { email: "jane@example.com", product_name: "Shein Box", product_id: "002", timestamp: "2025-04-18 11:00" },
+    { email: "mike@example.com", product_name: "Temu Box", product_id: "003", timestamp: "2025-04-18 12:00" },
+    { email: "sara@example.com", product_name: "iPhone Quiz", product_id: "004", timestamp: "2025-04-18 13:00" },
+    { email: "alex@example.com", product_name: "Shein Box", product_id: "005", timestamp: "2025-04-18 14:00" },
+    { email: "lucy@example.com", product_name: "Temu Box", product_id: "006", timestamp: "2025-04-18 15:00" },
+    { email: "dan@example.com", product_name: "iPhone Quiz", product_id: "007", timestamp: "2025-04-18 16:00" },
+    { email: "lisa@example.com", product_name: "Shein Box", product_id: "008", timestamp: "2025-04-18 17:00" }
+  ];
+
+  function sortOrders(key) {
+    if (currentSortKey === key) {
+      sortDirection *= -1;
+    } else {
+      currentSortKey = key;
+      sortDirection = 1;
+    }
+    allOrders.sort((a, b) => {
+      const aVal = a[key]?.toString().toLowerCase() || '';
+      const bVal = b[key]?.toString().toLowerCase() || '';
+      return aVal.localeCompare(bVal) * sortDirection;
+    });
+    currentPage = 1;
+    renderOrders();
+  }
+
+  function renderOrders() {
+    const tbody = document.getElementById('orders');
+    tbody.innerHTML = '';
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    const pageOrders = allOrders.slice(start, end);
+    pageOrders.forEach(order => {
+      const row = `<tr><td>${order.email}</td><td>${order.product_name}</td><td>${order.product_id}</td><td>${order.timestamp}</td></tr>`;
+      tbody.innerHTML += row;
+    });
+    renderPagination();
+  }
+
+  function renderPagination() {
+    const totalPages = Math.ceil(allOrders.length / rowsPerPage);
+    const pagination = document.getElementById('pagination');
+    pagination.innerHTML = '';
+    for (let i = 1; i <= totalPages; i++) {
+      const btn = document.createElement('button');
+      btn.textContent = i;
+      btn.className = 'tab-btn';
+      if (i === currentPage) btn.classList.add('active');
+      btn.onclick = () => {
+        currentPage = i;
+        renderOrders();
+      };
+      pagination.appendChild(btn);
+    }
+  }
+
+  fetchAndDisplayOrders();
+</script>
+
+
 </body>
 </html>
+
