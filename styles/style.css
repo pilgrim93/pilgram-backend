@@ -1,0 +1,250 @@
+/* Reset & Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  font-family: 'Inter', 'Helvetica Neue', sans-serif;
+  background: #f8f9fa;
+  color: #212529;
+  line-height: 1.6;
+  height: 100%;
+}
+
+/* Layout Container */
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+
+.header .logo {
+  height: 40px;
+  width: auto;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.tab {
+  padding: 12px 18px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 8px 8px 0 0;
+  background-color: #f1f3f5;
+  color: #495057;
+  transition: all 0.2s ease;
+}
+
+.tab.active {
+  background-color: #ffffff;
+  color: #212529;
+  border: 1px solid #dee2e6;
+  border-bottom: none;
+}
+
+/* Section Content */
+.tab-content {
+  background-color: #ffffff;
+  border: 1px solid #dee2e6;
+  border-top: none;
+  padding: 24px;
+  border-radius: 0 0 8px 8px;
+  margin-bottom: 40px;
+}
+
+/* Product Card Style */
+.product-carousel {
+  display: flex;
+  overflow-x: auto;
+  gap: 20px;
+  padding: 20px 0;
+}
+
+.product-card {
+  flex: 0 0 300px;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+}
+
+.product-card img {
+  width: 100%;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.product-card h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #212529;
+}
+
+.product-card p {
+  font-size: 0.95rem;
+  margin-bottom: 14px;
+  color: #495057;
+}
+
+.product-card .buy-button {
+  background: #1c7ed6;
+  color: white;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.product-card .buy-button:hover {
+  background: #1864ab;
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.6);
+}
+
+.modal-content {
+  background-color: #ffffff;
+  margin: 10% auto;
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 500px;
+}
+
+.modal-header {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.price-options {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.price-option {
+  background-color: #f1f3f5;
+  padding: 12px;
+  border-radius: 6px;
+  flex: 1;
+  margin: 0 5px;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.price-option:hover {
+  background-color: #dee2e6;
+}
+
+.price-option.selected {
+  background-color: #1c7ed6;
+  color: white;
+  font-weight: bold;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.modal-buttons button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.paypal-button {
+  background-color: #ffc439;
+  color: #212529;
+}
+
+.crypto-button {
+  background-color: #6f42c1;
+  color: white;
+}
+
+/* Coupon Box */
+.coupon-box {
+  margin-top: 20px;
+}
+
+.coupon-box input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .tabs {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .tab {
+    border-radius: 8px;
+  }
+
+  .product-carousel {
+    flex-direction: column;
+    overflow-x: visible;
+  }
+
+  .product-card {
+    flex: 1 1 100%;
+  }
+
+  .modal-content {
+    margin: 30% auto;
+  }
+}
