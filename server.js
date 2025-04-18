@@ -173,7 +173,6 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 
-app.get("/api/data", requireLogin, async (req, res) => {
   const stats = {};
   db.all("SELECT product, type, COUNT(*) as count FROM page_views GROUP BY product, type", [], (err, views) => {
     stats.views = views || [];
@@ -183,4 +182,15 @@ app.get("/api/data", requireLogin, async (req, res) => {
       res.json(stats);
     });
 }
+
+app.get("/api/data", requireLogin, async (req, res) => {
+  const stats = {};
+  db.all("SELECT product, type, COUNT(*) as count FROM page_views GROUP BY product, type", [], (err, views) => {
+    stats.views = views || [];
+    db.all("SELECT * FROM orders ORDER BY timestamp DESC", [], async (err, orders) => {
+      stats.orders = orders || [];
+      stats.pageViews = await fetchGAViews();
+      res.json(stats);
+    });
+  });
 });
