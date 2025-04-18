@@ -21,6 +21,14 @@ app.use(
   })
 );
 
+function requireLogin(req, res, next) {
+  if (req.session && req.session.loggedIn) {
+    next();
+  } else {
+    res.redirect("/login");
+  }
+}
+
 // ✅ Middleware to protect routes
 function requireLogin(req, res, next) {
   if (req.session.loggedIn) return next();
