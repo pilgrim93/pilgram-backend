@@ -9,6 +9,8 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use("/public", express.static(path.join(__dirname, "public")));
+
 // Serve static files
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/styles", express.static(path.join(__dirname, "styles")));
