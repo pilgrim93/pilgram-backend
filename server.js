@@ -6,17 +6,20 @@ const sqlite3 = require("sqlite3").verbose();
 const fetch = require("node-fetch");
 require("dotenv").config();
 
-const { google } = require('googleapis');
+const { google } = require("googleapis");
 
+const app = express();
+
+// Google Analytics fetch function
 async function fetchGAViews() {
   try {
     const auth = new google.auth.GoogleAuth({
-      keyFile: path.join(__dirname, 'pilgrims-pages-1d3f856f222d.json'),
-      scopes: ['https://www.googleapis.com/auth/analytics.readonly'],
+      keyFile: path.join(__dirname, "pilgrims-pages-1d3f856f222d.json"),
+      scopes: ["https://www.googleapis.com/auth/analytics.readonly"],
     });
 
     const analytics = google.analyticsreporting({
-      version: 'v4',
+      version: "v4",
       auth: await auth.getClient(),
     });
 
@@ -27,14 +30,14 @@ async function fetchGAViews() {
             viewId: process.env.GA_VIEW_ID || "486157365",
             dateRanges: [{ startDate: "7daysAgo", endDate: "today" }],
             metrics: [{ expression: "ga:pageviews" }],
-            dimensions: [{ name: "ga:date" }]
-          }
+            dimensions: [{ name: "ga:date" }],
+          },
         ],
       },
     });
 
     const rows = response.data.reports[0].data.rows || [];
-    return rows.map(row => ({
+    return rows.map((row) => ({
       date: row.dimensions[0],
       views: parseInt(row.metrics[0].values[0]),
     }));
@@ -44,56 +47,31 @@ async function fetchGAViews() {
   }
 }
 
-
-app.get("/", (req, res) => {
-  res.redirect("/login");
-});
-
-
-
-async function fetchGAViews() {
-  try {
-    const [response] = await analyticsClient.runReport({
-      property: "properties/486157365",
-      dateRanges: [{ startDate: "7daysAgo", endDate: "today" }],
-      dimensions: [{ name: "date" }],
-      metrics: [{ name: "screenPageViews" }],
-    });
-
-    return response.rows.map(row => ({
-      date: row.dimensionValues[0].value,
-      views: parseInt(row.metricValues[0].value)
-    }));
-  } catch (err) {
-    console.error("Google Analytics fetch error:", err);
-    return [];
-  }
-}
-
-const app = express();
-
-
-
-app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, 'views/login.html'));
-});
-
 const db = new sqlite3.Database("./analytics.db");
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
-app.use(session({
-  secret: process.env.SESSION_SECRET || "pilgramsecretkey",
-  resave: false,
-  saveUninitialized: true,
-}));
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "pilgramsecretkey",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
 
 function requireLogin(req, res, next) {
   if (req.session.loggedIn) return next();
   res.redirect("/login");
 }
+
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+
+app.get("/", (req, res) => {
+  res.redirect("/login");
+});
 
 app.get("/login", (req, res) => {
   res.sendFile(path.join(__dirname, "views/login.html"));
@@ -114,11 +92,9 @@ app.get("/logout", (req, res) => {
   res.redirect("/login");
 });
 
-
 app.get("/dashboard", requireLogin, (req, res) => {
   res.sendFile(path.join(__dirname, "views/dashboard.html"));
 });
-
 
 app.get("/api/shoppy/orders", requireLogin, async (req, res) => {
   try {
@@ -148,71 +124,37 @@ app.post("/shoppy-webhook", (req, res) => {
   res.sendStatus(200);
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-const { Parser } = require('json2csv');
-
-const json2csv = require('json2csv').parse;
+const { parse } = require("json2csv");
 
 app.get("/export/orders", requireLogin, (req, res) => {
   db.all("SELECT * FROM orders", [], (err, rows) => {
     if (err) return res.status(500).send("Error exporting orders");
 
-    const fields = ['email', 'product_id', 'product_name', 'timestamp'];
+    const fields = ["email", "product_id", "product_name", "timestamp"];
     const opts = { fields };
-    const csv = json2csv(rows, opts);
+    const csv = parse(rows, opts);
 
     res.header("Content-Type", "text/csv");
     res.attachment("orders.csv");
     res.send(csv);
-
-
-
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
-
-
-
-app.get("/api/data", requireLogin, async (req, res) => {
-  const stats = {};
-
-  db.all("SELECT product, type, COUNT(*) as count FROM page_views GROUP BY product, type", [], (err, views) => {
-    if (err) {
-      console.error("Error fetching views:", err);
-      return res.status(500).send("Error fetching views");
-    }
-
-    stats.views = views || [];
-
-    db.all("SELECT * FROM orders ORDER BY timestamp DESC", [], async (err, orders) => {
-      if (err) {
-        console.error("Error fetching orders:", err);
-        return res.status(500).send("Error fetching orders");
-      }
-
-      stats.orders = orders || [];
-
-      try {
-        stats.pageViews = await fetchGAViews();
-      } catch (gaErr) {
-        console.error("Error fetching GA views:", gaErr);
-        stats.pageViews = [];
-      }
-
-      res.json(stats);
-    });
   });
 });
 
-// View engine
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
+app.get("/api/data", requireLogin, async (req, res) => {
+  const stats = {};
+  db.all(
+    "SELECT product, type, COUNT(*) as count FROM page_views GROUP BY product, type",
+    [],
+    (err, views) => {
+      stats.views = views || [];
+      db.all("SELECT * FROM orders ORDER BY timestamp DESC", [], async (err, orders) => {
+        stats.orders = orders || [];
+        stats.pageViews = await fetchGAViews();
+        res.json(stats);
+      });
+    }
+  );
+});
 
-// Start server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
