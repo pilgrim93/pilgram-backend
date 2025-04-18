@@ -174,9 +174,11 @@ canvas {
 }
 
 .tab-btn.active {
-  background-color: #FFBF00;
+  background-color: #22c55e;
   color: #000000;
   font-weight: bold;
+   border: 1px solid #16a34a;
+   box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
 }
 
 /* Tablet size and up */

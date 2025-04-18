@@ -116,6 +116,9 @@ app.get("/export/orders/csv", requireLogin, (req, res) => {
   });
 });
 
+app.get("/export/orders", requireLogin, (req, res) => {
+  res.redirect("/export/orders/csv");
+});
 
 // ✅ Traffic Analytics from Google
 app.get("/api/traffic", requireLogin, async (req, res) => {
