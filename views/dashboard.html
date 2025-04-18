@@ -6,17 +6,6 @@
   <title>Pilgram Admin Dashboard</title>
   <link rel="stylesheet" href="/style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    .tab-btn.active {
-      border: 2px solid #10b981;
-      background: #222;
-    }
-    @media (min-width: 768px) {
-      canvas {
-        max-height: 250px !important;
-      }
-    }
-  </style>
 </head>
 <body>
   <header>
@@ -30,158 +19,234 @@
       <button class="tab-btn" onclick="showTab('behavior', this)">👥 User Behavior</button>
       <button class="tab-btn" onclick="showTab('traffic', this)">🌐 Traffic</button>
     </section>
-
-    <!-- 💰 SALES -->
-<div id="tab-sales" class="tab-content">
-  <h2 class="text-green-400 text-xl font-bold mb-4">Sales Charts</h2>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <!-- Sales Over Time -->
-    <div class="bg-black rounded-2xl shadow p-4">
-      <h3 class="text-white mb-2">Sales Over Time</h3>
-      <select id="salesChartType" class="tab-btn" onchange="updateSalesChartType(this.value)">
-        <option value="line">Line</option>
-        <option value="bar">Bar</option>
-      </select>
-      <canvas id="salesOverTimeChart" height="200"></canvas>
-    </div>
-
-    <!-- Revenue Breakdown -->
-    <div class="bg-black rounded-2xl shadow p-4">
-      <h3 class="text-white mb-2">Revenue Breakdown</h3>
-      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-        <select id="revenueChartType" class="tab-btn" onchange="updateRevenueChartType(this.value)">
-          <option value="bar">Bar</option>
-          <option value="line">Line</option>
-        </select>
-        <select id="revenueViewBy" class="tab-btn" onchange="updateRevenueView(this.value)">
-          <option value="day">View by Day</option>
-          <option value="product">View by Product</option>
-        </select>
+    
+	    <!-- 💰 SALES -->
+    <div id="tab-sales" class="tab-content">
+      <h2 class="text-green-400 text-xl font-bold mb-4">Sales Charts</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-black rounded-2xl shadow p-4">
+          <h3 class="text-white mb-2">Sales Over Time</h3>
+          <select id="salesChartType" class="tab-btn" onchange="updateSalesChartType(this.value)">
+            <option value="line">Line</option>
+            <option value="bar">Bar</option>
+          </select>
+          <canvas id="salesOverTimeChart" height="200"></canvas>
+        </div>
+        <div class="bg-black rounded-2xl shadow p-4">
+          <h3 class="text-white mb-2">Revenue Breakdown</h3>
+          <select id="revenueChartType" class="tab-btn" onchange="updateRevenueChartType(this.value)">
+            <option value="bar">Bar</option>
+            <option value="line">Line</option>
+          </select>
+          <canvas id="revenueChart" height="200"></canvas>
+          <p id="revenueComparison" style="color: #10b981; margin-top: 0.5rem;"></p>
+        </div>
       </div>
-      <canvas id="revenueChart" height="200"></canvas>
-    </div>
-  </div>
 
-  <!-- Orders Table -->
-  <div class="card">
-    <br><br>
-    <h2>Sorted Orders</h2>
-    <a href="/export/orders" class="export-btn">Export Orders</a>
-    <table>
-      <thead>
-        <tr><th>Email</th><th>Product</th><th>ID</th><th>Time</th></tr>
-      </thead>
-      <tbody id="orders"></tbody>
-    </table>
+      <div class="card">
+        <br><br>
+        <h2>Sorted Orders</h2>
+        <a href="/export/orders" class="export-btn">Export Orders</a>
+        <table>
+          <thead>
+            <tr><th>Email</th><th>Product</th><th>ID</th><th>Time</th></tr>
+          </thead>
+          <tbody id="orders"></tbody>
+        </table>
+      </div>
+    </div>
+
+	<!-- 🌐 TRAFFIC -->
+<div id="tab-traffic" class="tab-content" style="display:none">
+  <section class="stats-grid">
+    <div class="card"><h2>Top Countries</h2><ul id="geoData"></ul></div>
+    <div class="card"><h2>Devices</h2><ul id="deviceData"></ul></div>
+    <div class="card"><h2>Referrals</h2><ul id="referralData"></ul></div>
+  </section>
+
+  <div class="bg-black rounded-2xl shadow p-4 mt-6">
+    <h3 class="text-white mb-2">Views Over Time</h3>
+    <select id="homepageChartType" class="tab-btn" onchange="updateHomepageChartType(this.value)">
+      <option value="line">Line</option>
+      <option value="bar">Bar</option>
+    </select>
+    <canvas id="homepageChart" height="200"></canvas>
   </div>
 </div>
 
+<!-- 👥 USER BEHAVIOR -->
+<div id="tab-behavior" class="tab-content" style="display:none">
+  <section class="stats-grid">
+    <div class="card"><h2>Avg Scroll Depth</h2><p id="scrollDepth">–</p></div>
+    <div class="card"><h2>Avg Clicks</h2><p id="clicks">–</p></div>
+    <div class="card"><h2>Avg Time on Page (s)</h2><p id="timeOnPage">–</p></div>
+  </section>
+</div>
 
-    <!-- 🌐 TRAFFIC -->
-    <div id="tab-traffic" class="tab-content" style="display:none">
-      <section class="stats-grid">
-        <div class="card"><h2>Top Countries</h2><ul id="geoData"></ul></div>
-        <div class="card"><h2>Devices</h2><ul id="deviceData"></ul></div>
-        <div class="card"><h2>Referrals</h2><ul id="referralData"></ul></div>
-      </section>
-      <div class="bg-black rounded-2xl shadow p-4 mt-6">
-        <h3 class="text-white mb-2">Views Over Time</h3>
-        <select id="homepageChartType" class="tab-btn" onchange="updateHomepageChartType(this.value)">
-          <option value="line">Line</option>
-          <option value="bar">Bar</option>
-        </select>
-        <canvas id="homepageChart" height="200"></canvas>
-      </div>
-    </div>
-  </main>
-  
-  <!-- 👥 USER BEHAVIOR -->
-    <div id="tab-behavior" class="tab-content" style="display:none">
-      <section class="stats-grid">
-        <div class="card"><h2>Avg Scroll Depth</h2><p id="scrollDepth">–</p></div>
-        <div class="card"><h2>Avg Clicks</h2><p id="clicks">–</p></div>
-        <div class="card"><h2>Avg Time on Page (s)</h2><p id="timeOnPage">–</p></div>
-      </section>
-    </div>
+<script>
+  // TAB TOGGLE
+  function showTab(tabName, btn) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tabName).style.display = 'block';
+    btn.classList.add('active');
+  }
 
-  <script>
-    function showTab(tabName, btn) {
-      document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('tab-' + tabName).style.display = 'block';
-      btn.classList.add('active');
-    }
+  // USER BEHAVIOR
+  async function fetchUserBehavior() {
+    const res = await fetch('/api/user-behavior');
+    const data = await res.json();
+    document.getElementById('scrollDepth').textContent = data.avgScrollDepth ?? '–';
+    document.getElementById('clicks').textContent = data.avgClicks ?? '–';
+    document.getElementById('timeOnPage').textContent = data.avgTimeOnPage ?? '–';
+  }
 
-    async function fetchUserBehavior() {
-      const res = await fetch('/api/user-behavior');
+  // TRAFFIC
+  async function fetchTraffic() {
+    const res = await fetch('/api/traffic');
+    const data = await res.json();
+    document.getElementById('geoData').innerHTML = Object.entries(data.geo || {}).map(([k, v]) => `<li>${k}: ${v}</li>`).join('');
+    document.getElementById('deviceData').innerHTML = Object.entries(data.devices || {}).map(([k, v]) => `<li>${k}: ${v}</li>`).join('');
+    document.getElementById('referralData').innerHTML = Object.entries(data.referrals || {}).map(([k, v]) => `<li>${k}: ${v}</li>`).join('');
+  }
+
+  fetchUserBehavior();
+  fetchTraffic();
+
+  // Chart Setup
+  const salesCtx = document.getElementById('salesOverTimeChart').getContext('2d');
+  const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+  const homepageCtx = document.getElementById('homepageChart').getContext('2d');
+
+  let salesChart, revenueChart, homepageChart;
+
+  // Fetch orders
+  async function fetchOrdersFromShoppy() {
+    try {
+      const res = await fetch('/api/shoppy/orders');
       const data = await res.json();
-      document.getElementById('scrollDepth').textContent = data.avgScrollDepth ?? '–';
-      document.getElementById('clicks').textContent = data.avgClicks ?? '–';
-      document.getElementById('timeOnPage').textContent = data.avgTimeOnPage ?? '–';
+      if (!Array.isArray(data)) throw new Error('Unexpected format');
+
+      const dailySales = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
+      const revenueByProduct = {};
+      const revenueByDay = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
+      const ordersHtml = [];
+
+      data.forEach(order => {
+        const date = new Date(order.timestamp || order.created_at);
+        const weekday = date.toLocaleDateString('en-US', { weekday: 'short' });
+        const dayKey = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][date.getDay()];
+        const product = order.product_name || order.product_title || 'Unknown';
+        const price = parseFloat(order.total || 0);
+
+        dailySales[dayKey] = (dailySales[dayKey] || 0) + 1;
+        revenueByProduct[product] = (revenueByProduct[product] || 0) + price;
+        revenueByDay[dayKey] = (revenueByDay[dayKey] || 0) + price;
+
+        ordersHtml.push(`<tr><td>${order.email}</td><td>${product}</td><td>${order.product_id || '-'}</td><td>${date.toLocaleString()}</td></tr>`);
+      });
+
+      document.getElementById('orders').innerHTML = ordersHtml.join('');
+
+      return { dailySales, revenueByProduct, revenueByDay };
+    } catch (e) {
+      console.warn("Using fallback dummy data for Shoppy charts");
+
+      document.getElementById('orders').innerHTML = `<tr><td>user@example.com</td><td>Basic</td><td>123ABC</td><td>${new Date().toLocaleString()}</td></tr>`;
+
+      return {
+        dailySales: { Mon: 2, Tue: 3, Wed: 1, Thu: 4, Fri: 5, Sat: 2, Sun: 3 },
+        revenueByProduct: { Basic: 120, Premium: 250, Bundle: 90 },
+        revenueByDay: { Mon: 30, Tue: 45, Wed: 20, Thu: 55, Fri: 80, Sat: 50, Sun: 25 }
+      };
     }
+  }
 
-    async function fetchTraffic() {
-      const res = await fetch('/api/traffic');
-      const data = await res.json();
-      const geoList = document.getElementById('geoData');
-      const deviceList = document.getElementById('deviceData');
-      const referralList = document.getElementById('referralData');
-      geoList.innerHTML = Object.entries(data.geo || {}).map(([k, v]) => `<li>${k}: ${v}</li>`).join('');
-      deviceList.innerHTML = Object.entries(data.devices || {}).map(([k, v]) => `<li>${k}: ${v}</li>`).join('');
-      referralList.innerHTML = Object.entries(data.referrals || {}).map(([k, v]) => `<li>${k}: ${v}</li>`).join('');
-    }
+  // Initialize charts
+  async function setupCharts() {
+    const { dailySales, revenueByProduct, revenueByDay } = await fetchOrdersFromShoppy();
 
-    fetchUserBehavior();
-    fetchTraffic();
+    const weekdays = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-    const salesCtx = document.getElementById('salesOverTimeChart').getContext('2d');
-    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-    const homepageCtx = document.getElementById('homepageChart').getContext('2d');
-
-    let salesChart = new Chart(salesCtx, {
+    // SALES CHART
+    salesChart = new Chart(salesCtx, {
       type: 'line',
       data: {
-        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        labels: weekdays,
         datasets: [{
           label: 'Sales',
-          data: [5, 10, 7, 14, 9, 12, 6],
+          data: weekdays.map(day => dailySales[day] || 0),
           borderColor: 'rgb(34,197,94)',
           backgroundColor: 'rgba(34,197,94,0.2)',
-          tension: 0.3,
+          tension: 0.3
         }]
       },
       options: {
         plugins: { legend: { labels: { color: 'white' } } },
         scales: {
           x: { ticks: { color: 'white' } },
-          y: { ticks: { color: 'white' } }
+          y: { ticks: { color: 'white' }, beginAtZero: true }
         }
       }
     });
 
-    let revenueChart = new Chart(revenueCtx, {
-      type: 'bar',
-      data: {
-        labels: ['Basic', 'Premium', 'Bundles'],
+    // REVENUE CHART SWITCHABLE
+    const modeSwitcher = document.createElement("select");
+    modeSwitcher.className = "tab-btn";
+    modeSwitcher.innerHTML = `<option value="product">By Product</option><option value="day">By Day</option>`;
+    document.getElementById('revenueChart').parentNode.insertBefore(modeSwitcher, document.getElementById('revenueChart'));
+    modeSwitcher.addEventListener("change", () => {
+      updateRevenueChartType(document.getElementById("revenueChartType").value, modeSwitcher.value);
+    });
+
+    function buildRevenueDataset(viewBy) {
+      const source = viewBy === 'day' ? revenueByDay : revenueByProduct;
+      return {
+        labels: Object.keys(source),
         datasets: [{
           label: 'Revenue ($)',
-          data: [120, 240, 90],
-          backgroundColor: ['#10b981', '#3b82f6', '#f59e0b'],
+          data: Object.values(source),
+          backgroundColor: ['#10b981','#3b82f6','#f59e0b','#ec4899','#8b5cf6','#f87171','#14b8a6']
         }]
-      },
+      };
+    }
+
+    revenueChart = new Chart(revenueCtx, {
+      type: 'bar',
+      data: buildRevenueDataset("product"),
       options: {
         plugins: { legend: { labels: { color: 'white' } } },
         scales: {
           x: { ticks: { color: 'white' } },
-          y: { ticks: { color: 'white' } }
+          y: { ticks: { color: 'white' }, beginAtZero: true }
         }
       }
     });
 
-    let homepageChart = new Chart(homepageCtx, {
+    // REVENUE SWITCHES
+    window.updateSalesChartType = (type) => {
+      salesChart.destroy();
+      salesChart = new Chart(salesCtx, {
+        type,
+        data: salesChart.data,
+        options: salesChart.options
+      });
+    };
+
+    window.updateRevenueChartType = (type, viewBy = modeSwitcher.value) => {
+      revenueChart.destroy();
+      revenueChart = new Chart(revenueCtx, {
+        type,
+        data: buildRevenueDataset(viewBy),
+        options: revenueChart.options
+      });
+    };
+
+    // HOMEPAGE VIEWS DUMMY
+    homepageChart = new Chart(homepageCtx, {
       type: 'line',
       data: {
-        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        labels: weekdays,
         datasets: [{
           label: 'Homepage Views',
           data: [120, 140, 115, 180, 130, 160, 190],
@@ -196,149 +261,22 @@
         plugins: { legend: { labels: { color: 'white' } } },
         scales: {
           x: { ticks: { color: 'white' } },
-          y: { ticks: { color: 'white' } }
+          y: { ticks: { color: 'white' }, beginAtZero: true }
         }
       }
     });
 
-    function updateSalesChartType(type) {
-      salesChart.destroy();
-      salesChart = new Chart(salesCtx, {
-        type: type,
-        data: salesChart.data,
-        options: salesChart.options
-      });
-    }
-
-    function updateRevenueChartType(type) {
-      revenueChart.destroy();
-      revenueChart = new Chart(revenueCtx, {
-        type: type,
-        data: revenueChart.data,
-        options: revenueChart.options
-      });
-    }
-
-    function updateHomepageChartType(type) {
+    window.updateHomepageChartType = (type) => {
       homepageChart.destroy();
       homepageChart = new Chart(homepageCtx, {
-        type: type,
+        type,
         data: homepageChart.data,
         options: homepageChart.options
       });
-    }
-  </script>
-  
-  <script>
-  let currentSalesView = 'day';
-  let currentRevenueView = 'day';
-
-  function updateSalesView(viewBy) {
-    currentSalesView = viewBy;
-    renderSalesChart();
+    };
   }
 
-  function updateRevenueView(viewBy) {
-    currentRevenueView = viewBy;
-    renderRevenueChart();
-  }
-
-  function updateSalesChartType(type) {
-    salesChart.destroy();
-    salesChart = new Chart(salesCtx, {
-      type,
-      data: getSalesChartData(currentSalesView),
-      options: baseChartOptions
-    });
-  }
-
-  function updateRevenueChartType(type) {
-    revenueChart.destroy();
-    revenueChart = new Chart(revenueCtx, {
-      type,
-      data: getRevenueChartData(currentRevenueView),
-      options: baseChartOptions
-    });
-  }
-
-  const baseChartOptions = {
-    plugins: { legend: { labels: { color: 'white' } } },
-    scales: {
-      x: { ticks: { color: 'white' } },
-      y: { ticks: { color: 'white' } }
-    }
-  };
-
-  function getSalesChartData(viewBy) {
-    if (viewBy === 'product') {
-      return {
-        labels: ['iPhone Quiz', 'Shein Box', 'Temu Box'],
-        datasets: [{
-          label: 'Sales by Product',
-          data: [35, 21, 18],
-          borderColor: 'rgb(34,197,94)',
-          backgroundColor: 'rgba(34,197,94,0.2)',
-          tension: 0.3,
-        }]
-      };
-    } else {
-      return {
-        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-        datasets: [{
-          label: 'Sales by Day',
-          data: [5, 10, 7, 14, 9, 12, 6],
-          borderColor: 'rgb(34,197,94)',
-          backgroundColor: 'rgba(34,197,94,0.2)',
-          tension: 0.3,
-        }]
-      };
-    }
-  }
-
-  function getRevenueChartData(viewBy) {
-    if (viewBy === 'product') {
-      return {
-        labels: ['iPhone Quiz', 'Shein Box', 'Temu Box'],
-        datasets: [{
-          label: 'Revenue by Product',
-          data: [350, 210, 180],
-          backgroundColor: 'rgba(34,197,94,0.6)',
-        }]
-      };
-    } else {
-      return {
-        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-        datasets: [{
-          label: 'Revenue by Day',
-          data: [50, 100, 70, 140, 90, 120, 60],
-          backgroundColor: 'rgba(34,197,94,0.6)',
-        }]
-      };
-    }
-  }
-
-  function renderSalesChart() {
-    salesChart.destroy();
-    salesChart = new Chart(salesCtx, {
-      type: document.getElementById('salesChartType').value,
-      data: getSalesChartData(currentSalesView),
-      options: baseChartOptions
-    });
-  }
-
-  function renderRevenueChart() {
-    revenueChart.destroy();
-    revenueChart = new Chart(revenueCtx, {
-      type: document.getElementById('revenueChartType').value,
-      data: getRevenueChartData(currentRevenueView),
-      options: baseChartOptions
-    });
-  }
-
-  renderSalesChart();
-  renderRevenueChart();
+  setupCharts();
 </script>
-
-
 </body>
-</html>
+</head>
