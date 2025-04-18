@@ -32,31 +32,6 @@
     </section>
 
     <!-- 💰 SALES -->
-    <div id="tab-sales" class="tab-content">
-      <h2 class="text-green-400 text-xl font-bold mb-4">Sales Charts</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-black rounded-2xl shadow p-4">
-          <h3 class="text-white mb-2">Sales Over Time</h3>
-          <select id="salesChartType" class="tab-btn" onchange="updateSalesChartType(this.value)">
-            <option value="line">Line</option>
-            <option value="bar">Bar</option>
-          </select>
-          
-          <canvas id="salesOverTimeChart" height="200"></canvas>
-        </div>
-        <div class="bg-black rounded-2xl shadow p-4">
-          <h3 class="text-white mb-2">Revenue Breakdown</h3>
-          <select id="revenueChartType" class="tab-btn" onchange="updateRevenueChartType(this.value)">
-            <option value="bar">Bar</option>
-            <option value="line">Line</option>
-          </select>
-          <select id="salesViewBy" class="tab-btn" onchange="updateSalesView(this.value)">
-    <option value="day">View by Day</option>
-    <option value="product">View by Product</option>
-  </select>
-  <canvas id="salesOverTimeChart" height="200"></canvas>
-  </div>
-  
   <!-- Revenue Breakdown -->
 <div class="bg-black rounded-2xl shadow p-4">
   <h3 class="text-white mb-2">Revenue Breakdown</h3>
