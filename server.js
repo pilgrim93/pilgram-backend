@@ -6,15 +6,50 @@ const sqlite3 = require("sqlite3").verbose();
 const fetch = require("node-fetch");
 require("dotenv").config();
 
+const { google } = require('googleapis');
+
+async function fetchGAViews() {
+  try {
+    const auth = new google.auth.GoogleAuth({
+      keyFile: path.join(__dirname, 'pilgrims-pages-1d3f856f222d.json'),
+      scopes: ['https://www.googleapis.com/auth/analytics.readonly'],
+    });
+
+    const analytics = google.analyticsreporting({
+      version: 'v4',
+      auth: await auth.getClient(),
+    });
+
+    const response = await analytics.reports.batchGet({
+      requestBody: {
+        reportRequests: [
+          {
+            viewId: process.env.GA_VIEW_ID || "486157365",
+            dateRanges: [{ startDate: "7daysAgo", endDate: "today" }],
+            metrics: [{ expression: "ga:pageviews" }],
+            dimensions: [{ name: "ga:date" }]
+          }
+        ],
+      },
+    });
+
+    const rows = response.data.reports[0].data.rows || [];
+    return rows.map(row => ({
+      date: row.dimensions[0],
+      views: parseInt(row.metrics[0].values[0]),
+    }));
+  } catch (err) {
+    console.error("Google Analytics fetch error:", err);
+    return [];
+  }
+}
+
+
 app.get("/", (req, res) => {
   res.redirect("/login");
 });
 
-const { BetaAnalyticsDataClient } = require('@google-analytics/data');
 
-const analyticsClient = new BetaAnalyticsDataClient({
-  keyFilename: path.join(__dirname, 'pilgrims-pages-1d3f856f222d.json')
-});
 
 async function fetchGAViews() {
   try {
