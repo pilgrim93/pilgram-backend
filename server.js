@@ -6,7 +6,10 @@ const path = require("path");
 const sqlite3 = require("sqlite3").verbose();
 const fetch = require("node-fetch");
 const axios = require("axios");
+const { parse } = require("json2csv");
+const fs = require("fs");
 const { google } = require("googleapis");
+
 require("dotenv").config();
 
 const PORT = process.env.PORT || 3000;
@@ -30,6 +33,10 @@ function requireLogin(req, res, next) {
 }
 
 // Routes
+app.get("/", (req, res) => {
+  res.redirect("/login");
+});
+
 app.get("/login", (req, res) => {
   res.sendFile(path.join(__dirname, "views/login.html"));
 });
@@ -44,21 +51,17 @@ app.post("/login", (req, res) => {
   }
 });
 
-app.get("/dashboard", requireLogin, (req, res) => {
-  res.sendFile(path.join(__dirname, "views/dashboard.html"));
-});
-
 app.get("/logout", (req, res) => {
   req.session.destroy(() => {
     res.redirect("/login");
   });
 });
 
-app.get("/", (req, res) => {
-  res.redirect("/login");
+app.get("/dashboard", requireLogin, (req, res) => {
+  res.sendFile(path.join(__dirname, "views/dashboard.html"));
 });
 
-// SQLite DB Setup
+// SQLite DB setup
 const db = new sqlite3.Database("./analytics.db");
 
 db.serialize(() => {
@@ -69,8 +72,7 @@ db.serialize(() => {
       clicks INTEGER,
       time_on_page INTEGER,
       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+    )`);
   db.run(`
     CREATE TABLE IF NOT EXISTS user_behavior (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -78,8 +80,7 @@ db.serialize(() => {
       type TEXT,
       value TEXT,
       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+    )`);
   db.run(`
     CREATE TABLE IF NOT EXISTS orders (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -87,40 +88,10 @@ db.serialize(() => {
       product_id TEXT,
       product_name TEXT,
       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+    )`);
 });
 
-// ✅ Export orders as JSON
-app.get("/export/orders/json", requireLogin, (req, res) => {
-  db.all("SELECT email, product_id, product_name, timestamp FROM orders", [], (err, rows) => {
-    if (err) return res.status(500).send("Error exporting JSON orders");
-    res.json(rows);
-  });
-});
-
-const { parse } = require("json2csv");
-
-app.get("/export/orders/csv", requireLogin, (req, res) => {
-  db.all("SELECT email, product_id, product_name, timestamp FROM orders", [], (err, rows) => {
-    if (err) return res.status(500).send("Error exporting CSV");
-
-    try {
-      const csv = parse(rows);
-      res.header("Content-Type", "text/csv");
-      res.attachment("orders.csv");
-      res.send(csv);
-    } catch (err) {
-      res.status(500).send("Failed to generate CSV");
-    }
-  });
-});
-
-app.get("/export/orders", requireLogin, (req, res) => {
-  res.redirect("/export/orders/csv");
-});
-
-// ✅ Traffic Analytics from Google
+// Google Analytics API for traffic data
 app.get("/api/traffic", requireLogin, async (req, res) => {
   try {
     const auth = new google.auth.GoogleAuth({
@@ -158,6 +129,7 @@ app.get("/api/traffic", requireLogin, async (req, res) => {
     rows.forEach(row => {
       const [country, device, source] = row.dimensions;
       const count = parseInt(row.metrics[0].values[0]);
+
       geo[country] = (geo[country] || 0) + count;
       devices[device] = (devices[device] || 0) + count;
       referrals[source] = (referrals[source] || 0) + count;
@@ -170,7 +142,7 @@ app.get("/api/traffic", requireLogin, async (req, res) => {
   }
 });
 
-// ✅ Shoppy Orders via API
+// Shoppy API orders (secured via env var)
 app.get("/api/shoppy/orders", requireLogin, async (req, res) => {
   try {
     const response = await fetch("https://shoppy.gg/api/v1/orders", {
@@ -186,41 +158,46 @@ app.get("/api/shoppy/orders", requireLogin, async (req, res) => {
   }
 });
 
-// ✅ Telegram Sale Notification (function)
+// Export JSON
+app.get("/export/orders/json", requireLogin, (req, res) => {
+  db.all("SELECT email, product_id, product_name, timestamp FROM orders", [], (err, rows) => {
+    if (err) return res.status(500).send("Error exporting JSON orders");
+    res.json(rows);
+  });
+});
+
+// Export CSV
+app.get("/export/orders/csv", requireLogin, (req, res) => {
+  db.all("SELECT email, product_id, product_name, timestamp FROM orders", [], (err, rows) => {
+    if (err) return res.status(500).send("Error exporting CSV");
+    try {
+      const csv = parse(rows);
+      res.header("Content-Type", "text/csv");
+      res.attachment("orders.csv");
+      res.send(csv);
+    } catch (err) {
+      res.status(500).send("Failed to generate CSV");
+    }
+  });
+});
+
+// Telegram Notifications
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
 function sendTelegramNotification(text) {
   if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_ID) {
-    console.warn("Telegram credentials missing");
-    return;
+    return console.warn("Telegram token or chat ID not set.");
   }
-
   return axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
     chat_id: TELEGRAM_CHAT_ID,
     text,
   }).catch(err => {
-    console.error("Telegram notification failed:", err.message);
+    console.error("Failed to send Telegram message:", err.message);
   });
 }
 
-// ✅ Webhook Endpoint Example
-app.post("/shoppy-webhook", (req, res) => {
-  const secret = req.headers["x-shoppy-secret"];
-  if (secret !== process.env.SHOPPY_WEBHOOK_SECRET) {
-    return res.status(403).send("Invalid secret");
-  }
-
-  const { email, product_id, product_title } = req.body;
-  db.run(
-    `INSERT INTO orders (email, product_id, product_name) VALUES (?, ?, ?)`,
-    [email, product_id || "unknown", product_title || "unknown"]
-  );
-
-  // Send Telegram alert
-  sendTelegramNotification(`🛒 New Shoppy Sale: ${email} bought ${product_title}`);
-  res.sendStatus(200);
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
-
-// ✅ Start Server
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
