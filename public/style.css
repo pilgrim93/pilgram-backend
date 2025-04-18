@@ -173,6 +173,15 @@ canvas {
   font-size: 0.9rem;
 }
 
+.tab-btn.active {
+  background-color: #22c55e;
+  color: #000000;
+  font-weight: bold;
+  border: 1px solid #16a34a;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+
 
 /* Tablet size and up */
 @media (min-width: 768px) {
@@ -201,14 +210,7 @@ canvas {
   .card p, .card ul, .card table {
     font-size: 1.1rem;
   }
-  .tab-btn.active {
-  background-color: #22c55e;
-  color: #000000;
-  font-weight: bold;
-   border: 1px solid #16a34a;
-   box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
-   transition: background-color 0.3s, box-shadow 0.3s;
-	}
+
 }
 
 .chart-section {
