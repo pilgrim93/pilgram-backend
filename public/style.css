@@ -172,6 +172,12 @@ canvas {
   font-size: 0.9rem;
 }
 
+.tab-btn.active {
+  background-color: #FFBF00;
+  color: #ffffff;
+  font-weight: bold;
+}
+
 /* Tablet size and up */
 @media (min-width: 768px) {
   .tab-btn {
@@ -185,6 +191,7 @@ canvas {
   .tab-btn {
     font-size: 1.3rem;
     padding: 16px 28px;
+    background-color: #00ff99;
   }
 
   .tab-content {
@@ -205,6 +212,7 @@ canvas {
   color: #ffffff;
   font-weight: bold;
 }
+
 .chart-section {
   max-width: 900px;
   margin: 0 auto;
