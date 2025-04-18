@@ -15,6 +15,77 @@
   </header>
 
   <main>
+
+<section class="tab-buttons">
+  <button class="tab-btn" onclick="showTab('sales')">💰 Sales</button>
+  <button class="tab-btn" onclick="showTab('behavior')">👥 User Behavior</button>
+  <button class="tab-btn" onclick="showTab('traffic')">🌐 Traffic</button>
+</section>
+
+<div id="tab-sales" class="tab-content">
+  <section class="chart-section">
+    <h2>Analytics Chart</h2>
+    <canvas id="analyticsChart" height="100"></canvas>
+  </section>
+
+  <section class="stats-grid">
+    <div class="card">
+      <h2>Filtered Page Views</h2>
+      <ul id="views"></ul>
+    </div>
+    <div class="card">
+      <h2>Sorted Orders</h2>
+      <a href="/export/orders" class="export-btn">⬇️ Download Orders CSV</a>
+      <table><thead><tr><th>Email</th><th>Product</th><th>ID</th><th>Time</th></tr></thead><tbody id="orders"></tbody></table>
+    </div>
+    <div class="card">
+      <h2>Live Shoppy Orders</h2>
+      <ul id="shoppyOrders"></ul>
+    </div>
+  </section>
+</div>
+
+<div id="tab-behavior" class="tab-content" style="display:none">
+  <div class="card"><h2>Scroll Depth, Clicks, Time on Page</h2><p>Coming soon...</p></div>
+</div>
+
+<div id="tab-traffic" class="tab-content" style="display:none">
+  <div class="card"><h2>Geo Map, Referral Source, Device Type</h2><p>Coming soon...</p></div>
+</div>
+
+<script>
+function showTab(tabName) {
+  document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+  document.getElementById('tab-' + tabName).style.display = 'block';
+}
+</script>
+
+<style>
+.tab-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+.tab-btn {
+  background: #111;
+  border: 1px solid #333;
+  padding: 10px 15px;
+  border-radius: 10px;
+  color: #77ff77;
+  cursor: pointer;
+}
+.tab-btn:hover {
+  background: #222;
+}
+.tab-content {
+  animation: fadeIn 0.3s ease-in;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+</style>
+
     <section class="filters">
       <label for="productFilter">Filter Views by Product:</label>
       <select id="productFilter">
