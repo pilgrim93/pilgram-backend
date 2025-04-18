@@ -2,40 +2,75 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --primary: #00ff88;
+      --bg: #111;
+      --panel: #1e1e1e;
+      --accent: #47f58b;
+      --text: #fff;
+    }
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: 'Inter', sans-serif;
-      background-color: #111;
-      color: #fff;
+      background-color: var(--bg);
+      color: var(--text);
     }
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--panel);
+      padding: 10px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .navbar img {
+      position: absolute;
+      left: 20px;
+      height: 40px;
+    }
+    .tabs {
+      display: flex;
+      gap: 30px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .tabs div {
+      cursor: pointer;
+      padding: 8px 16px;
+      border-radius: 10px;
+    }
+    .tabs .active {
+      background-color: var(--primary);
+      color: #000;
+    }
+    .tab-content {
+      display: none;
+      padding: 20px;
+    }
+    .tab-content.active { display: block; }
     .chart-container {
       width: 100%;
       max-width: 900px;
       margin: 30px auto;
     }
-    canvas {
-      background-color: #1e1e1e;
-      border-radius: 10px;
-      padding: 20px;
+    .toggle {
+      text-align: center;
+      margin-bottom: 10px;
     }
     .orders-container {
       max-width: 1100px;
       margin: 30px auto;
-      background-color: #1e1e1e;
+      background-color: var(--panel);
       padding: 30px;
       border-radius: 20px;
-      box-shadow: 0 0 20px #00ff8833;
-    }
-    .orders-title {
-      font-size: 24px;
-      font-weight: 800;
-      color: #47f58b;
-      margin-bottom: 20px;
     }
     table {
       width: 100%;
@@ -43,207 +78,131 @@
       background-color: #222;
     }
     th, td {
-      padding: 15px;
+      padding: 12px;
       text-align: left;
       border-bottom: 1px solid #333;
     }
-    th {
-      background-color: #111;
-      color: #ccc;
-    }
-    tr:hover {
-      background-color: #333;
-    }
-    .export-button {
-      background-color: #47f58b;
-      color: #000;
+    .export-btn {
+      background: var(--primary);
       border: none;
-      padding: 10px 18px;
+      padding: 10px 16px;
+      font-weight: bold;
       border-radius: 8px;
       cursor: pointer;
-      font-weight: 600;
-      margin-bottom: 20px;
+      float: right;
+      margin-bottom: 10px;
+    }
+    @media (max-width: 768px) {
+      .tabs { flex-wrap: wrap; gap: 15px; justify-content: center; }
+      .navbar img { position: static; margin-bottom: 10px; }
     }
   </style>
 </head>
 <body>
-
-  <main class="p-4">
-    <!-- Tabs -->
-    <section class="tab-buttons flex gap-2 mb-4">
-      <button class="tab-btn active" onclick="showTab('sales', this)">💰 Sales</button>
-      <button class="tab-btn" onclick="showTab('behavior', this)">👥 User Behavior</button>
-      <button class="tab-btn" onclick="showTab('traffic', this)">🌐 Traffic</button>
-    </section>
-
-    <!-- 💰 SALES TAB -->
-    <div id="tab-sales" class="tab-content">
-      <h2 class="text-green-400 text-xl font-bold mb-4">Sales Charts</h2>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Sales Over Time -->
-        <div class="bg-[#181818] rounded-2xl shadow p-4">
-          <div class="flex justify-between items-center mb-2">
-            <h3 class="text-white font-semibold">Sales Over Time</h3>
-            <select id="salesChartType" class="tab-btn" onchange="updateSalesChartType(this.value)">
-              <option value="line">Line</option>
-              <option value="bar">Bar</option>
-            </select>
-          </div>
-          <canvas id="salesOverTimeChart" height="200"></canvas>
-        </div>
-
-        <!-- Revenue Breakdown -->
-        <div class="bg-[#181818] rounded-2xl shadow p-4">
-          <div class="flex justify-between items-center mb-2">
-            <h3 class="text-white font-semibold">Revenue Breakdown</h3>
-            <select id="revenueChartType" class="tab-btn" onchange="updateRevenueChartType(this.value)">
-              <option value="bar">Bar</option>
-              <option value="line">Line</option>
-            </select>
-          </div>
-          <canvas id="revenueChart" height="200"></canvas>
-          <p id="revenueComparison" class="text-green-500 mt-2 text-sm"></p>
-        </div>
-      </div>
-      
-       <!-- 🌐 TRAFFIC TAB -->
-    <div id="tab-traffic" class="tab-content hidden">
-      <section class="stats-grid grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="card bg-[#181818] p-4 rounded-2xl shadow">
-          <h2 class="text-white mb-2">Top Countries</h2>
-          <ul id="geoData" class="text-sm text-gray-300"></ul>
-        </div>
-        <div class="card bg-[#181818] p-4 rounded-2xl shadow">
-          <h2 class="text-white mb-2">Devices</h2>
-          <ul id="deviceData" class="text-sm text-gray-300"></ul>
-        </div>
-        <div class="card bg-[#181818] p-4 rounded-2xl shadow">
-          <h2 class="text-white mb-2">Referrals</h2>
-          <ul id="referralData" class="text-sm text-gray-300"></ul>
-        </div>
-      </section>
-
-      <div class="bg-[#181818] rounded-2xl shadow p-4 mt-6">
-        <div class="flex justify-between items-center mb-2">
-          <h3 class="text-white font-semibold">Views Over Time</h3>
-          <select id="homepageChartType" class="tab-btn" onchange="updateHomepageChartType(this.value)">
-            <option value="line">Line</option>
-            <option value="bar">Bar</option>
-          </select>
-        </div>
-        <canvas id="homepageChart" height="200"></canvas>
-      </div>
+  <div class="navbar">
+    <img src="/logo1.png" alt="Logo" />
+    <div class="tabs">
+      <div class="active" onclick="switchTab('sales')">💰 Sales</div>
+      <div onclick="switchTab('traffic')">🌐 Traffic</div>
+      <div onclick="switchTab('behavior')">👥 User Behavior</div>
     </div>
-  </main>
-
-  <div class="orders-container">
-    <div class="orders-title">Sorted Orders</div>
-    <button class="export-button" onclick="exportOrders()">Export Orders</button>
-    <table>
-      <thead>
-        <tr>
-          <th>Email</th>
-          <th>Product</th>
-          <th>Price</th>
-          <th>ID</th>
-          <th>Time</th>
-        </tr>
-      </thead>
-      <tbody id="ordersTableBody">
-        <!-- Orders will be inserted here -->
-      </tbody>
-    </table>
   </div>
-  
+
+  <div id="sales" class="tab-content active">
+    <div class="chart-container">
+      <div class="toggle">
+        <button onclick="toggleChartType('salesChart')">Toggle Line/Bar</button>
+        <button onclick="toggleTimeframe('sales')">Daily/Weekly</button>
+      </div>
+      <canvas id="salesChart"></canvas>
+    </div>
+    <div class="chart-container">
+      <div class="toggle">
+        <button onclick="toggleChartType('revenueChart')">Toggle Line/Bar</button>
+        <button onclick="toggleRevenueMode()">Per Day/Product</button>
+      </div>
+      <canvas id="revenueChart"></canvas>
+    </div>
+    <div class="orders-container">
+      <button class="export-btn" onclick="exportCSV()">Export CSV</button>
+      <table id="ordersTable">
+        <thead>
+          <tr><th>Order ID</th><th>Price</th><th>Email</th><th>Date</th></tr>
+        </thead>
+        <tbody>
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="traffic" class="tab-content">
+    <div class="chart-container">
+      <div class="toggle">Filters: Country, Device, Referrer</div>
+      <canvas id="trafficChart"></canvas>
+    </div>
+  </div>
+
+  <div id="behavior" class="tab-content">
+    <div class="chart-container">
+      <canvas id="scrollDepthChart"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="clickChart"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="timeChart"></canvas>
+    </div>
+  </div>
+
   <script>
-    // Sample data
-    const orders = [
-      { email: "user1@example.com", product: "Shein Box", price: "$49.99", id: "001", time: "2025-04-17 12:30" },
-      { email: "user2@example.com", product: "iPhone Quiz", price: "$99.99", id: "002", time: "2025-04-17 14:10" },
-      { email: "user3@example.com", product: "Temu Box", price: "$39.99", id: "003", time: "2025-04-17 15:45" }
-    ];
+    let chartTypes = { salesChart: 'bar', revenueChart: 'bar' };
+    let revenueMode = 'perDay';
+    let timeframe = 'daily';
 
-    const tableBody = document.getElementById('ordersTableBody');
-    orders.forEach(order => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${order.email}</td>
-        <td>${order.product}</td>
-        <td>${order.price}</td>
-        <td>${order.id}</td>
-        <td>${order.time}</td>
-      `;
-      tableBody.appendChild(row);
-    });
+    const salesData = {
+      daily: [10, 20, 30, 40, 50, 60, 70],
+      weekly: [150, 200, 170, 240]
+    };
+    const revenueData = {
+      perDay: [200, 300, 250, 400],
+      byProduct: ["Quiz": 500, "Box A": 300, "Box B": 350]
+    };
 
-    function exportOrders() {
-      const csv = [
-        ["Email", "Product", "Price", "ID", "Time"],
-        ...orders.map(o => [o.email, o.product, o.price, o.id, o.time])
-      ].map(e => e.join(",")).join("\n");
-
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "orders.csv";
-      a.click();
-      URL.revokeObjectURL(url);
+    function renderCharts() {
+      // Stub — will implement chart rendering in JS after base layout
     }
 
-    // Chart.js - Weekly Sales
-    const ctx1 = document.getElementById('weeklyChart').getContext('2d');
-    new Chart(ctx1, {
-      type: 'bar',
-      data: {
-        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-        datasets: [{
-          label: 'Sales',
-          data: [5, 8, 4, 10, 7, 9, 3],
-          backgroundColor: '#4caf50'
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            labels: { color: '#fff' }
-          }
-        },
-        scales: {
-          x: { ticks: { color: '#fff' } },
-          y: { ticks: { color: '#fff' } }
-        }
-      }
-    });
-
-    // Chart.js - Revenue by Product
-    const ctx2 = document.getElementById('revenueChart').getContext('2d');
-    new Chart(ctx2, {
-      type: 'bar',
-      data: {
-        labels: ['Shein Box', 'iPhone Quiz', 'Temu Box'],
-        datasets: [{
-          label: 'Revenue by Product',
-          data: [150, 300, 90],
-          backgroundColor: ['#66bb6a', '#42a5f5', '#ffa726']
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            labels: { color: '#fff' }
-          }
-        },
-        scales: {
-          x: { ticks: { color: '#fff' } },
-          y: { ticks: { color: '#fff' } }
-        }
-      }
-    });
+    function toggleChartType(id) {
+      chartTypes[id] = chartTypes[id] === 'bar' ? 'line' : 'bar';
+      renderCharts();
+    }
+    function toggleRevenueMode() {
+      revenueMode = revenueMode === 'perDay' ? 'byProduct' : 'perDay';
+      renderCharts();
+    }
+    function toggleTimeframe(tab) {
+      timeframe = timeframe === 'daily' ? 'weekly' : 'daily';
+      renderCharts();
+    }
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.getElementById(tab).classList.add('active');
+      document.querySelectorAll('.tabs div').forEach(t => t.classList.remove('active'));
+      document.querySelector(`.tabs div[onclick="switchTab('${tab}')"]`).classList.add('active');
+    }
+    function exportCSV() {
+      let csv = 'Order ID,Price,Email,Date\n';
+      document.querySelectorAll('#ordersTable tbody tr').forEach(row => {
+        csv += [...row.children].map(td => td.textContent).join(',') + '\n';
+      });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'orders.csv';
+      a.click();
+    }
   </script>
-
 </body>
 </html>
