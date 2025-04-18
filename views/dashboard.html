@@ -6,7 +6,6 @@
   <title>Pilgram Admin Dashboard</title>
   <link rel="stylesheet" href="/style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-geo@4.3.0/build/index.umd.min.js"></script>
 </head>
 <body>
   <header>
@@ -15,26 +14,53 @@
   </header>
 
   <main>
+
     <section class="tab-buttons">
       <button class="tab-btn" onclick="showTab('sales')">💰 Sales</button>
       <button class="tab-btn" onclick="showTab('behavior')">👥 User Behavior</button>
       <button class="tab-btn" onclick="showTab('traffic')">🌐 Traffic</button>
     </section>
 
+    <!-- 💰 SALES -->
     <div id="tab-sales" class="tab-content">
-      <div class="card"><h2>Sales Charts</h2><canvas id="analyticsChart"></canvas></div>
+      <section class="chart-section">
+        <h2>Analytics Chart</h2>
+        <canvas id="analyticsChart" height="100"></canvas>
+      </section>
+
+      <section class="stats-grid">
+        <div class="card">
+          <h2>Filtered Page Views</h2>
+          <ul id="views"></ul>
+        </div>
+        <div class="card">
+          <h2>Sorted Orders</h2>
+          <a href="/export/orders" class="export-btn">⬇️ Download Orders CSV</a>
+          <table><thead><tr><th>Email</th><th>Product</th><th>ID</th><th>Time</th></tr></thead><tbody id="orders"></tbody></table>
+        </div>
+        <div class="card">
+          <h2>Live Shoppy Orders</h2>
+          <ul id="shoppy-orders"></ul>
+        </div>
+      </section>
     </div>
 
+    <!-- 👥 USER BEHAVIOR -->
     <div id="tab-behavior" class="tab-content" style="display:none">
-      <div class="card"><h2>User Behavior</h2><canvas id="behaviorChart"></canvas></div>
+      <section class="stats-grid">
+        <div class="card"><h2>Avg Scroll Depth</h2><p id="scrollDepth">–</p></div>
+        <div class="card"><h2>Avg Clicks</h2><p id="clicks">–</p></div>
+        <div class="card"><h2>Avg Time on Page (s)</h2><p id="timeOnPage">–</p></div>
+      </section>
     </div>
 
+    <!-- 🌐 TRAFFIC -->
     <div id="tab-traffic" class="tab-content" style="display:none">
-      <div class="card"><h2>Visitor Geo Map</h2><canvas id="geoChart"></canvas></div>
-      <div class="card"><h2>Device & Referral Source</h2>
-        <canvas id="deviceChart"></canvas>
-        <canvas id="referralChart"></canvas>
-      </div>
+      <section class="stats-grid">
+        <div class="card"><h2>Top Countries</h2><ul id="geoData"></ul></div>
+        <div class="card"><h2>Devices</h2><ul id="deviceData"></ul></div>
+        <div class="card"><h2>Referrals</h2><ul id="referralData"></ul></div>
+      </section>
     </div>
   </main>
 
@@ -44,64 +70,29 @@
       document.getElementById('tab-' + tabName).style.display = 'block';
     }
 
-    async function renderTrafficCharts() {
+    async function fetchUserBehavior() {
+      const res = await fetch('/api/user-behavior');
+      const data = await res.json();
+      document.getElementById('scrollDepth').textContent = data.avgScrollDepth ?? '–';
+      document.getElementById('clicks').textContent = data.avgClicks ?? '–';
+      document.getElementById('timeOnPage').textContent = data.avgTimeOnPage ?? '–';
+    }
+
+    async function fetchTraffic() {
       const res = await fetch('/api/traffic');
       const data = await res.json();
 
-      const countries = await fetch('https://cdn.jsdelivr.net/npm/chartjs-chart-geo@4.3.0/world.geo.json').then(res => res.json());
-      new Chart(document.getElementById('geoChart'), {
-        type: 'choropleth',
-        data: {
-          labels: data.geo.map(d => d.country),
-          datasets: [{
-            label: 'Visitors by Country',
-            data: data.geo.map(d => ({
-              feature: countries.features.find(f => f.properties.iso_a2 === d.code),
-              value: d.count
-            }))
-          }]
-        },
-        options: {
-          showOutline: true,
-          showGraticule: true,
-          scales: {
-            xy: {projection: 'equalEarth'}
-          }
-        }
-      });
+      const geoList = document.getElementById('geoData');
+      const deviceList = document.getElementById('deviceData');
+      const referralList = document.getElementById('referralData');
 
-      new Chart(document.getElementById('deviceChart'), {
-        type: 'doughnut',
-        data: {
-          labels: data.devices.map(d => d.type),
-          datasets: [{
-            data: data.devices.map(d => d.count),
-            backgroundColor: ['#00ff99', '#0099ff', '#ff0099']
-          }]
-        }
-      });
-
-      new Chart(document.getElementById('referralChart'), {
-        type: 'bar',
-        data: {
-          labels: data.referrals.map(d => d.source),
-          datasets: [{
-            label: 'Referrals',
-            data: data.referrals.map(d => d.count),
-            backgroundColor: '#ffa500'
-          }]
-        },
-        options: {
-          scales: {
-            y: {beginAtZero: true}
-          }
-        }
-      });
+      geoList.innerHTML = Object.entries(data.geo || {}).map(([k, v]) => `<li>${k}: ${v}</li>`).join('');
+      deviceList.innerHTML = Object.entries(data.devices || {}).map(([k, v]) => `<li>${k}: ${v}</li>`).join('');
+      referralList.innerHTML = Object.entries(data.referrals || {}).map(([k, v]) => `<li>${k}: ${v}</li>`).join('');
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      renderTrafficCharts();
-    });
+    fetchUserBehavior();
+    fetchTraffic();
   </script>
 
   <style>
@@ -128,15 +119,22 @@
       from { opacity: 0; }
       to { opacity: 1; }
     }
-    .card {
-      background: #1c1c1c;
-      padding: 20px;
-      border-radius: 15px;
-      margin-bottom: 20px;
-      color: white;
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 1rem;
     }
-    canvas {
-      max-width: 100%;
+    .card {
+      background: #111;
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    }
+    .export-btn {
+      display: inline-block;
+      margin-bottom: 10px;
+      color: #00ff99;
     }
   </style>
 </body>
