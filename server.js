@@ -177,17 +177,21 @@ app.set('views', path.join(__dirname, 'views'));
 
 app.get("/api/data", requireLogin, async (req, res) => {
   const stats = {};
+
   db.all("SELECT product, type, COUNT(*) as count FROM page_views GROUP BY product, type", [], (err, views) => {
     if (err) {
       console.error("Error fetching views:", err);
       return res.status(500).send("Error fetching page views");
     }
+
     stats.views = views || [];
+
     db.all("SELECT * FROM orders ORDER BY timestamp DESC", [], async (err, orders) => {
       if (err) {
         console.error("Error fetching orders:", err);
         return res.status(500).send("Error fetching orders");
       }
+
       stats.orders = orders || [];
       stats.pageViews = await fetchGAViews();
       res.json(stats);
@@ -195,9 +199,14 @@ app.get("/api/data", requireLogin, async (req, res) => {
   });
 });
 
+// Set up view engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
 
