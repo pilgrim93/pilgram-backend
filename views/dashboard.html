@@ -6,6 +6,17 @@
   <title>Pilgram Admin Dashboard</title>
   <link rel="stylesheet" href="/style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .tab-btn.active {
+      border: 2px solid #10b981;
+      background: #222;
+    }
+    @media (min-width: 768px) {
+      canvas {
+        max-height: 250px !important;
+      }
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -15,9 +26,9 @@
 
   <main>
     <section class="tab-buttons">
-      <button class="tab-btn" onclick="showTab('sales')">💰 Sales</button>
-      <button class="tab-btn" onclick="showTab('behavior')">👥 User Behavior</button>
-      <button class="tab-btn" onclick="showTab('traffic')">🌐 Traffic</button>
+      <button class="tab-btn active" onclick="showTab('sales', this)">💰 Sales</button>
+      <button class="tab-btn" onclick="showTab('behavior', this)">👥 User Behavior</button>
+      <button class="tab-btn" onclick="showTab('traffic', this)">🌐 Traffic</button>
     </section>
 
     <!-- 💰 SALES -->
@@ -42,16 +53,15 @@
         </div>
       </div>
       <div class="card">
-  <h2>Sorted Orders</h2>
-  <a href="/export/orders" class="export-btn">Export Orders</a>
-  <table>
-    <thead>
-      <tr><th>Email</th><th>Product</th><th>ID</th><th>Time</th></tr>
-    </thead>
-    <tbody id="orders"></tbody>
-  </table>
-</div>
-
+        <h2>Sorted Orders</h2>
+        <a href="/export/orders" class="export-btn">Export Orders</a>
+        <table>
+          <thead>
+            <tr><th>Email</th><th>Product</th><th>ID</th><th>Time</th></tr>
+          </thead>
+          <tbody id="orders"></tbody>
+        </table>
+      </div>
     </div>
 
     <!-- 👥 USER BEHAVIOR -->
@@ -70,23 +80,23 @@
         <div class="card"><h2>Devices</h2><ul id="deviceData"></ul></div>
         <div class="card"><h2>Referrals</h2><ul id="referralData"></ul></div>
       </section>
-      <!-- Add inside the TRAFFIC tab, below the stats-grid section -->
-<div class="bg-black rounded-2xl shadow p-4 mt-6">
-  <h3 class="text-white mb-2">Views Over Time</h3>
-  <select id="homepageChartType" class="tab-btn" onchange="updateHomepageChartType(this.value)">
-    <option value="line">Line</option>
-    <option value="bar">Bar</option>
-  </select>
-  <canvas id="homepageChart" height="200"></canvas>
-</div>
-
+      <div class="bg-black rounded-2xl shadow p-4 mt-6">
+        <h3 class="text-white mb-2">Views Over Time</h3>
+        <select id="homepageChartType" class="tab-btn" onchange="updateHomepageChartType(this.value)">
+          <option value="line">Line</option>
+          <option value="bar">Bar</option>
+        </select>
+        <canvas id="homepageChart" height="200"></canvas>
+      </div>
     </div>
   </main>
 
   <script>
-    function showTab(tabName) {
+    function showTab(tabName, btn) {
       document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('tab-' + tabName).style.display = 'block';
+      btn.classList.add('active');
     }
 
     async function fetchUserBehavior() {
@@ -110,11 +120,10 @@
 
     fetchUserBehavior();
     fetchTraffic();
-  </script>
 
-  <script>
     const salesCtx = document.getElementById('salesOverTimeChart').getContext('2d');
     const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    const homepageCtx = document.getElementById('homepageChart').getContext('2d');
 
     let salesChart = new Chart(salesCtx, {
       type: 'line',
@@ -129,9 +138,7 @@
         }]
       },
       options: {
-        plugins: {
-          legend: { labels: { color: 'white' } }
-        },
+        plugins: { legend: { labels: { color: 'white' } } },
         scales: {
           x: { ticks: { color: 'white' } },
           y: { ticks: { color: 'white' } }
@@ -150,9 +157,30 @@
         }]
       },
       options: {
-        plugins: {
-          legend: { labels: { color: 'white' } }
-        },
+        plugins: { legend: { labels: { color: 'white' } } },
+        scales: {
+          x: { ticks: { color: 'white' } },
+          y: { ticks: { color: 'white' } }
+        }
+      }
+    });
+
+    let homepageChart = new Chart(homepageCtx, {
+      type: 'line',
+      data: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [{
+          label: 'Homepage Views',
+          data: [120, 140, 115, 180, 130, 160, 190],
+          backgroundColor: 'rgba(59,130,246,0.3)',
+          borderColor: '#3b82f6',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        plugins: { legend: { labels: { color: 'white' } } },
         scales: {
           x: { ticks: { color: 'white' } },
           y: { ticks: { color: 'white' } }
@@ -161,39 +189,31 @@
     });
 
     function updateSalesChartType(type) {
-    
-      const homepageCtx = document.getElementById('homepageChart').getContext('2d');
-  let homepageChart = new Chart(homepageCtx, {
-    type: 'line',
-    data: {
-      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-      datasets: [{
-        label: 'Page Views',
-        data: [120, 140, 115, 180, 130, 160, 190],
-        backgroundColor: 'rgba(59,130,246,0.3)',
-        borderColor: '#3b82f6',
-        borderWidth: 2,
-        fill: true,
-        tension: 0.4
-      }]
-    },
-    options: {
-      plugins: {
-        legend: { labels: { color: 'white' } }
-      },
-      scales: {
-        x: { ticks: { color: 'white' } },
-        y: { ticks: { color: 'white' } }
-      }
+      salesChart.destroy();
+      salesChart = new Chart(salesCtx, {
+        type: type,
+        data: salesChart.data,
+        options: salesChart.options
+      });
     }
-  });
 
-  function updateHomepageChartType(type) {
-    homepageChart.destroy();
-    homepageChart = new Chart(homepageCtx, {
-      type: type,
-      data: homepageChart.data,
-      options: homepageChart.options
-    });
-  }
+    function updateRevenueChartType(type) {
+      revenueChart.destroy();
+      revenueChart = new Chart(revenueCtx, {
+        type: type,
+        data: revenueChart.data,
+        options: revenueChart.options
+      });
+    }
+
+    function updateHomepageChartType(type) {
+      homepageChart.destroy();
+      homepageChart = new Chart(homepageCtx, {
+        type: type,
+        data: homepageChart.data,
+        options: homepageChart.options
+      });
+    }
   </script>
+</body>
+</html>
