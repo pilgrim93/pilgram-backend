@@ -199,3 +199,19 @@ canvas {
     font-size: 1.1rem;
   }
 }
+
+.tab-btn.active {
+  background-color: #00ff99;
+  color: #000;
+  font-weight: bold;
+}
+.chart-section {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+@media (min-width: 1024px) {
+  .chart-section canvas {
+    max-height: 300px;
+  }
+}

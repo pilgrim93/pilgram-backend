@@ -193,4 +193,12 @@ app.get("/api/shoppy/orders", requireLogin, async (req, res) => {
   }
 });
 
+function showTab(tabName) {
+  document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+  document.getElementById('tab-' + tabName).style.display = 'block';
+
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`.tab-btn[onclick="showTab('${tabName}')"]`).classList.add('active');
+}
+
 
