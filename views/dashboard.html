@@ -6,6 +6,7 @@
   <title>Pilgram Admin Dashboard</title>
   <link rel="stylesheet" href="/style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-geo@4.3.0/build/index.umd.min.js"></script>
 </head>
 <body>
   <header>
@@ -21,27 +22,19 @@
     </section>
 
     <div id="tab-sales" class="tab-content">
-      <!-- existing sales content stays unchanged -->
+      <div class="card"><h2>Sales Charts</h2><canvas id="analyticsChart"></canvas></div>
     </div>
 
     <div id="tab-behavior" class="tab-content" style="display:none">
-  <div class="card">
-    <h2>Avg Scroll Depth</h2>
-    <p id="scrollDepth">Loading...</p>
-  </div>
-  <div class="card">
-    <h2>Avg Clicks</h2>
-    <p id="clicks">Loading...</p>
-  </div>
-  <div class="card">
-    <h2>Avg Time on Page (sec)</h2>
-    <p id="timeOnPage">Loading...</p>
-  </div>
-</div>
-
+      <div class="card"><h2>User Behavior</h2><canvas id="behaviorChart"></canvas></div>
+    </div>
 
     <div id="tab-traffic" class="tab-content" style="display:none">
-      <div class="card"><h2>Geo Map, Referral Source, Device Type</h2><p>Coming soon...</p></div>
+      <div class="card"><h2>Visitor Geo Map</h2><canvas id="geoChart"></canvas></div>
+      <div class="card"><h2>Device & Referral Source</h2>
+        <canvas id="deviceChart"></canvas>
+        <canvas id="referralChart"></canvas>
+      </div>
     </div>
   </main>
 
@@ -51,39 +44,64 @@
       document.getElementById('tab-' + tabName).style.display = 'block';
     }
 
-    // Behavior Tracking
-    let clickCount = 0;
-    let maxScroll = 0;
-    const sessionStart = Date.now();
+    async function renderTrafficCharts() {
+      const res = await fetch('/api/traffic');
+      const data = await res.json();
 
-    document.addEventListener("click", () => clickCount++);
-    document.addEventListener("scroll", () => {
-      const scrollTop = window.scrollY;
-      const docHeight = document.body.scrollHeight - window.innerHeight;
-      const percent = Math.round((scrollTop / docHeight) * 100);
-      if (percent > maxScroll) maxScroll = percent;
-    });
+      const countries = await fetch('https://cdn.jsdelivr.net/npm/chartjs-chart-geo@4.3.0/world.geo.json').then(res => res.json());
+      new Chart(document.getElementById('geoChart'), {
+        type: 'choropleth',
+        data: {
+          labels: data.geo.map(d => d.country),
+          datasets: [{
+            label: 'Visitors by Country',
+            data: data.geo.map(d => ({
+              feature: countries.features.find(f => f.properties.iso_a2 === d.code),
+              value: d.count
+            }))
+          }]
+        },
+        options: {
+          showOutline: true,
+          showGraticule: true,
+          scales: {
+            xy: {projection: 'equalEarth'}
+          }
+        }
+      });
 
-    window.addEventListener("beforeunload", () => {
-      const timeOnPage = Math.round((Date.now() - sessionStart) / 1000);
-      navigator.sendBeacon("/log-behavior", JSON.stringify({
-        scrollDepth: maxScroll,
-        clicks: clickCount,
-        timeOnPage: timeOnPage
-      }));
-    });
+      new Chart(document.getElementById('deviceChart'), {
+        type: 'doughnut',
+        data: {
+          labels: data.devices.map(d => d.type),
+          datasets: [{
+            data: data.devices.map(d => d.count),
+            backgroundColor: ['#00ff99', '#0099ff', '#ff0099']
+          }]
+        }
+      });
 
-    function loadBehaviorStats() {
-      fetch("/api/user-behavior")
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById("scrollDepthAvg").textContent = data.avgScrollDepth || 0;
-          document.getElementById("clicksAvg").textContent = data.avgClicks || 0;
-          document.getElementById("timeAvg").textContent = data.avgTimeOnPage || 0;
-        });
+      new Chart(document.getElementById('referralChart'), {
+        type: 'bar',
+        data: {
+          labels: data.referrals.map(d => d.source),
+          datasets: [{
+            label: 'Referrals',
+            data: data.referrals.map(d => d.count),
+            backgroundColor: '#ffa500'
+          }]
+        },
+        options: {
+          scales: {
+            y: {beginAtZero: true}
+          }
+        }
+      });
     }
 
-    loadBehaviorStats();
+    document.addEventListener("DOMContentLoaded", () => {
+      renderTrafficCharts();
+    });
   </script>
 
   <style>
@@ -110,18 +128,16 @@
       from { opacity: 0; }
       to { opacity: 1; }
     }
+    .card {
+      background: #1c1c1c;
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 20px;
+      color: white;
+    }
+    canvas {
+      max-width: 100%;
+    }
   </style>
-  <script>
-function loadBehaviorStats() {
-  fetch("/api/user-behavior").then(res => res.json()).then(data => {
-    document.getElementById("scrollDepth").textContent = data.avgScrollDepth + "%";
-    document.getElementById("clicks").textContent = data.avgClicks;
-    document.getElementById("timeOnPage").textContent = data.avgTimeOnPage + "s";
-  });
-}
-
-document.querySelector('[onclick="showTab(\'behavior\')"]').addEventListener("click", loadBehaviorStats);
-</script>
-
 </body>
 </html>

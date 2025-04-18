@@ -72,4 +72,56 @@ db.serialize(() => {
   `);
 });
 
+app.get("/api/traffic", requireLogin, async (req, res) => {
+  try {
+    const auth = new google.auth.GoogleAuth({
+      keyFile: path.join(__dirname, "pilgrims-pages-1d3f856f222d.json"),
+      scopes: ["https://www.googleapis.com/auth/analytics.readonly"],
+    });
+
+    const analytics = google.analyticsreporting({
+      version: "v4",
+      auth: await auth.getClient(),
+    });
+
+    const response = await analytics.reports.batchGet({
+      requestBody: {
+        reportRequests: [
+          {
+            viewId: process.env.GA_VIEW_ID || "486157365",
+            dateRanges: [{ startDate: "7daysAgo", endDate: "today" }],
+            metrics: [{ expression: "ga:sessions" }],
+            dimensions: [
+              { name: "ga:country" },
+              { name: "ga:deviceCategory" },
+              { name: "ga:source" }
+            ]
+          }
+        ]
+      }
+    });
+
+    const geo = {};
+    const devices = {};
+    const referrals = {};
+
+    const rows = response.data.reports[0].data.rows || [];
+
+    rows.forEach(row => {
+      const [country, device, source] = row.dimensions;
+      const count = parseInt(row.metrics[0].values[0]);
+
+      geo[country] = (geo[country] || 0) + count;
+      devices[device] = (devices[device] || 0) + count;
+      referrals[source] = (referrals[source] || 0) + count;
+    });
+
+    res.json({ geo, devices, referrals });
+
+  } catch (err) {
+    console.error("Failed to fetch traffic data:", err);
+    res.status(500).send("Error fetching traffic data");
+  }
+});
+
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
