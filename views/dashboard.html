@@ -269,7 +269,7 @@
   initializeOrdersWithAPI();
 </script>
 
-<!-- ✅ Orders Export CSV Button + Existing Orders Table -->
+<!--  Orders Table with Price, Responsive + Export + Pagination -->
 <div class="card">
   <h2 class="text-white mb-2">Sorted Orders</h2>
   <a href="/export/orders/csv" class="export-btn">Export Orders as CSV</a>
@@ -291,6 +291,34 @@
 </div>
 
 <style>
+  .sorted-orders-container {
+    background-color: #111;
+    padding: 1rem;
+    border-radius: 1rem;
+    box-shadow: 0 0 10px rgba(0,255,0,0.2);
+    max-width: 100%;
+    overflow-x: auto;
+    margin-top: 2rem;
+  }
+
+  .sorted-orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+
+  .sorted-orders-table th, .sorted-orders-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #333;
+    white-space: nowrap;
+  }
+
+  .sorted-orders-table thead {
+    background-color: #1f1f1f;
+    color: #ccc;
+  }
+
   #pagination {
     display: flex;
     justify-content: center;
@@ -310,11 +338,7 @@
     transition: background 0.3s, color 0.3s;
   }
 
-  #pagination .tab-btn:hover {
-    background: #00ff99;
-    color: #000;
-  }
-
+  #pagination .tab-btn:hover,
   #pagination .tab-btn.active {
     background: #00ff99;
     color: #000;
@@ -324,9 +348,20 @@
   th {
     cursor: pointer;
   }
+
   th:hover {
     text-decoration: underline;
     color: #00ff99;
+  }
+
+  @media screen and (max-width: 768px) {
+    .sorted-orders-table th, .sorted-orders-table td {
+      font-size: 0.8rem;
+      padding: 0.5rem;
+    }
+    .sorted-orders-container {
+      padding: 0.5rem;
+    }
   }
 </style>
 
@@ -340,24 +375,24 @@
     try {
       const response = await fetch('/api/shoppy/orders');
       const orders = await response.json();
-      if (!Array.isArray(orders)) throw new Error('Invalid data format');
+      if (!Array.isArray(orders)) throw new Error('Invalid format');
       window.allOrders = orders;
     } catch (err) {
-      console.warn("Using fallback orders", err);
+      console.warn("Using dummy orders due to fetch error:", err);
       window.allOrders = dummyOrders;
     }
     renderOrders();
   }
 
   const dummyOrders = [
-    { email: "john@example.com", product_name: "iPhone Quiz", price: "$10.00", product_id: "001", timestamp: "2025-04-18 10:00" },
-    { email: "jane@example.com", product_name: "Shein Box", price: "$15.00", product_id: "002", timestamp: "2025-04-18 11:00" },
-    { email: "mike@example.com", product_name: "Temu Box", price: "$12.00", product_id: "003", timestamp: "2025-04-18 12:00" },
-    { email: "sara@example.com", product_name: "iPhone Quiz", price: "$10.00", product_id: "004", timestamp: "2025-04-18 13:00" },
-    { email: "alex@example.com", product_name: "Shein Box", price: "$15.00", product_id: "005", timestamp: "2025-04-18 14:00" },
-    { email: "lucy@example.com", product_name: "Temu Box", price: "$12.00", product_id: "006", timestamp: "2025-04-18 15:00" },
-    { email: "dan@example.com", product_name: "iPhone Quiz", price: "$10.00", product_id: "007", timestamp: "2025-04-18 16:00" },
-    { email: "lisa@example.com", product_name: "Shein Box", price: "$15.00", product_id: "008", timestamp: "2025-04-18 17:00" }
+    { email: "john@example.com", product_name: "iPhone Quiz", price: 10, product_id: "001", timestamp: "2025-04-18 10:00" },
+    { email: "jane@example.com", product_name: "Shein Box", price: 20, product_id: "002", timestamp: "2025-04-18 11:00" },
+    { email: "mike@example.com", product_name: "Temu Box", price: 15, product_id: "003", timestamp: "2025-04-18 12:00" },
+    { email: "sara@example.com", product_name: "iPhone Quiz", price: 10, product_id: "004", timestamp: "2025-04-18 13:00" },
+    { email: "alex@example.com", product_name: "Shein Box", price: 20, product_id: "005", timestamp: "2025-04-18 14:00" },
+    { email: "lucy@example.com", product_name: "Temu Box", price: 15, product_id: "006", timestamp: "2025-04-18 15:00" },
+    { email: "dan@example.com", product_name: "iPhone Quiz", price: 10, product_id: "007", timestamp: "2025-04-18 16:00" },
+    { email: "lisa@example.com", product_name: "Shein Box", price: 20, product_id: "008", timestamp: "2025-04-18 17:00" }
   ];
 
   function sortOrders(key) {
@@ -368,8 +403,8 @@
       sortDirection = 1;
     }
     allOrders.sort((a, b) => {
-      const aVal = a[key]?.toString().toLowerCase() || '';
-      const bVal = b[key]?.toString().toLowerCase() || '';
+      const aVal = (a[key] ?? '').toString().toLowerCase();
+      const bVal = (b[key] ?? '').toString().toLowerCase();
       return aVal.localeCompare(bVal) * sortDirection;
     });
     currentPage = 1;
@@ -380,24 +415,28 @@
     const tbody = document.getElementById('orders');
     tbody.innerHTML = '';
     const start = (currentPage - 1) * rowsPerPage;
-    const end = start + rowsPerPage;
-    const pageOrders = allOrders.slice(start, end);
+    const pageOrders = allOrders.slice(start, start + rowsPerPage);
     pageOrders.forEach(order => {
-      const row = `<tr><td>${order.email}</td><td>${order.product_name}</td><td>${order.price}</td><td>${order.product_id}</td><td>${order.timestamp}</td></tr>`;
-      tbody.innerHTML += row;
+      tbody.innerHTML += `
+        <tr>
+          <td>${order.email}</td>
+          <td>${order.product_name}</td>
+          <td>$${order.price?.toFixed(2) || '—'}</td>
+          <td>${order.product_id}</td>
+          <td>${order.timestamp}</td>
+        </tr>`;
     });
     renderPagination();
   }
 
   function renderPagination() {
-    const totalPages = Math.ceil(allOrders.length / rowsPerPage);
     const pagination = document.getElementById('pagination');
+    const totalPages = Math.ceil(allOrders.length / rowsPerPage);
     pagination.innerHTML = '';
     for (let i = 1; i <= totalPages; i++) {
       const btn = document.createElement('button');
       btn.textContent = i;
-      btn.className = 'tab-btn';
-      if (i === currentPage) btn.classList.add('active');
+      btn.className = 'tab-btn' + (i === currentPage ? ' active' : '');
       btn.onclick = () => {
         currentPage = i;
         renderOrders();
@@ -408,7 +447,6 @@
 
   fetchAndDisplayOrders();
 </script>
-
 
 </body>
 </html>
