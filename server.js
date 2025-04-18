@@ -134,3 +134,10 @@ app.get("/api/traffic-stats", async (req, res) => {
   }
 });
 
+function logout() {
+  fetch('/logout', { method: 'POST' }).then(() => {
+    window.location.href = '/login';
+  });
+}
+
+

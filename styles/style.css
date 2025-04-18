@@ -274,4 +274,20 @@ canvas {
   border-radius: 10px;
   margin-bottom: 30px;
 }
+.logout-btn {
+  margin-left: auto;
+  background: transparent;
+  color: var(--text);
+  border: 2px solid var(--primary);
+  padding: 8px 14px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.logout-btn:hover {
+  background: var(--primary);
+  color: #000;
+}
 

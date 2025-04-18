@@ -6,7 +6,8 @@
   <title>Admin Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles/style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+<script src="/scripts/chart-setup.js" defer></script>
   <style>
     :root {
       --primary: #00ff88;
@@ -42,7 +43,15 @@
       gap: 30px;
       font-size: 18px;
       font-weight: 600;
+      margin-top: 20px; /* adds space between navbar and tabs */
     }
+    
+    .tab-content {
+     display: none;
+     padding: 20px;
+      margin-top: 10px;
+	}
+
     .tabs div {
       cursor: pointer;
       padding: 8px 16px;
@@ -50,7 +59,7 @@
     }
     .tabs .active {
       background-color: var(--primary);
-      color: #000;
+      color: #e0e0e0;
     }
     .tab-content {
       display: none;
@@ -97,18 +106,24 @@
       .tabs { flex-wrap: wrap; gap: 15px; justify-content: center; }
       .navbar img { position: static; margin-bottom: 10px; }
     }
+    
+}
+
   </style>
   
 </head>
 <body>
   <div class="navbar">
     <img src="/public/logo1.png" alt="Logo" />
+    </div>
     <div class="tabs">
 
       <div class="tab active" data-tab="sales">💰 Sales</div>
       <div class="tab" data-tab="traffic">🌐 Traffic</div>
       <div class="tab" data-tab="behavior">👥 User Behavior</div>
     </div>
+    <button onclick="logout()" class="logout-btn">Logout</button>
+
   </div>
 
   <div id="sales" class="tab-content active">
@@ -186,11 +201,9 @@ tabs.forEach(tab => {
 });
 </script>
 
-</script>
 </body>
 </html>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 let chartTypes = { salesChart: 'bar', revenueChart: 'bar' };
 let timeframe = 'daily';
@@ -248,6 +261,14 @@ async function renderCharts() {
       { id: "D3", amount: "29.99", email: "test3@example.com", created_at: "2025-04-19T16:00:00Z", product_title: "Shein Mystery Box" }
     ];
   }
+
+function getWeekYear(date) {
+  const onejan = new Date(date.getFullYear(), 0, 1);
+  const millisecsInDay = 86400000;
+  const dayOfYear = Math.floor((date - onejan) / millisecsInDay) + 1;
+  const weekNumber = Math.ceil(dayOfYear / 7);
+  return `${date.getFullYear()}-W${weekNumber}`;
+}
 
   const tbody = document.querySelector("#ordersTable tbody");
   tbody.innerHTML = "";
