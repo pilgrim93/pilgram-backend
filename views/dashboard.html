@@ -101,7 +101,7 @@
 </head>
 <body>
   <div class="navbar">
-    <img src="/public/logo1.png" alt="Logo" />
+    <img src="public/logo1.png" alt="Logo" />
     <div class="tabs">
       <div class="active" onclick="switchTab('sales')">💰 Sales</div>
       <div onclick="switchTab('traffic')">🌐 Traffic</div>
@@ -139,8 +139,18 @@
 
   <div id="traffic" class="tab-content">
     <div class="chart-container">
-      <div class="toggle">Filters: Country, Device, Referrer</div>
-      <canvas id="trafficChart"></canvas>
+  <h3>🌍 Top Countries</h3>
+  <canvas id="countryChart"></canvas>
+</div>
+<div class="chart-container">
+  <h3>📱 Top Devices</h3>
+  <canvas id="deviceChart"></canvas>
+</div>
+<div class="chart-container">
+  <h3>🔗 Top Referrers</h3>
+  <canvas id="referrerChart"></canvas>
+</div>
+
     </div>
   </div>
 
@@ -170,11 +180,24 @@
       byProduct: ["Quiz": 500, "Box A": 300, "Box B": 350]
     };
 
-   async function renderCharts() {
-  const res = await fetch('/api/orders');
-  const orders = await res.json();
+   
+async function renderCharts() {
+  let orders = [];
+  try {
+    const res = await fetch('/api/orders');
+    orders = await res.json();
+  } catch (err) {
+    console.warn('Failed to fetch Shoppy orders. Using fallback.');
+  }
 
-  // --- TABLE ---
+  if (!orders || !orders.length) {
+    orders = [
+      { id: "DUMMY1", amount: "19.99", email: "test1@example.com", created_at: "2025-04-17T12:00:00Z", product_title: "iPhone Quiz" },
+      { id: "DUMMY2", amount: "9.99", email: "test2@example.com", created_at: "2025-04-17T14:00:00Z", product_title: "Temu Mystery Box" },
+      { id: "DUMMY3", amount: "29.99", email: "test3@example.com", created_at: "2025-04-17T16:00:00Z", product_title: "Shein Mystery Box" }
+    ];
+  }
+
   const tbody = document.querySelector('#ordersTable tbody');
   tbody.innerHTML = "";
   orders.forEach(order => {
@@ -188,34 +211,147 @@
     tbody.appendChild(row);
   });
 
-  // --- CHART DATA ---
-  const salesByDay = {};
-  const salesByWeek = {};
-  const revenueByDay = {};
-  const revenueByProduct = {};
-
+  const salesByDay = {}, salesByWeek = {}, revenueByDay = {}, revenueByProduct = {};
   orders.forEach(order => {
     const date = new Date(order.created_at);
-    const dayKey = date
+    const dayKey = date.toISOString().split("T")[0];
+    const weekKey = getWeekYear(date);
+    const product = order.product_title || "Unknown";
+
+    salesByDay[dayKey] = (salesByDay[dayKey] || 0) + 1;
+    salesByWeek[weekKey] = (salesByWeek[weekKey] || 0) + 1;
+    revenueByDay[dayKey] = (revenueByDay[dayKey] || 0) + parseFloat(order.amount);
+    revenueByProduct[product] = (revenueByProduct[product] || 0) + parseFloat(order.amount);
+  });
+
+  const salesLabels = timeframe === 'daily' ? Object.keys(salesByDay) : Object.keys(salesByWeek);
+  const salesData = timeframe === 'daily' ? Object.values(salesByDay) : Object.values(salesByWeek);
+  const revenueLabels = revenueMode === 'perDay' ? Object.keys(revenueByDay) : Object.keys(revenueByProduct);
+  const revenueData = revenueMode === 'perDay' ? Object.values(revenueByDay) : Object.values(revenueByProduct);
+
+  if (window.salesChart) window.salesChart.destroy();
+  if (window.revenueChart) window.revenueChart.destroy();
+
+  window.salesChart = new Chart(document.getElementById("salesChart").getContext("2d"), {
+    type: chartTypes.salesChart,
+    data: { labels: salesLabels, datasets: [{ label: 'Sales', data: salesData, backgroundColor: '#1c7ed6' }] },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  window.revenueChart = new Chart(document.getElementById("revenueChart").getContext("2d"), {
+    type: chartTypes.revenueChart,
+    data: { labels: revenueLabels, datasets: [{ label: 'Revenue ($)', data: revenueData, backgroundColor: '#12b886' }] },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+}
+
+function getWeekYear(date) {
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+  return `${d.getUTCFullYear()}-W${weekNo}`;
+}
 
 
-    function toggleChartType(id) {
-      chartTypes[id] = chartTypes[id] === 'bar' ? 'line' : 'bar';
-      renderCharts();
+renderCharts();
     }
     function toggleRevenueMode() {
       revenueMode = revenueMode === 'perDay' ? 'byProduct' : 'perDay';
-      renderCharts();
+      
+      }
+    });
+
+    const barConfig = (labels, data, label) => ({
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label,
+          data,
+          backgroundColor: '#12b886'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false
+      }
+    });
+
+    if (window.countryChart) window.countryChart.destroy();
+    if (window.deviceChart) window.deviceChart.destroy();
+    if (window.referrerChart) window.referrerChart.destroy();
+
+    window.countryChart = new Chart(document.getElementById('countryChart').getContext('2d'),
+      pieConfig(topCountries.map(c => c.label), topCountries.map(c => c.value), 'Top Countries'));
+
+    window.deviceChart = new Chart(document.getElementById('deviceChart').getContext('2d'),
+      pieConfig(topDevices.map(d => d.label), topDevices.map(d => d.value), 'Top Devices'));
+
+    window.referrerChart = new Chart(document.getElementById('referrerChart').getContext('2d'),
+      barConfig(topReferrers.map(r => r.label), topReferrers.map(r => r.value), 'Top Referrers'));
+
+  } catch (err) {
+    console.error("Failed to load traffic charts:", err);
+  }
+}
+
+
+renderCharts();
     }
     function toggleTimeframe(tab) {
       timeframe = timeframe === 'daily' ? 'weekly' : 'daily';
-      renderCharts();
+      
+      }
+    });
+
+    const barConfig = (labels, data, label) => ({
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label,
+          data,
+          backgroundColor: '#12b886'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false
+      }
+    });
+
+    if (window.countryChart) window.countryChart.destroy();
+    if (window.deviceChart) window.deviceChart.destroy();
+    if (window.referrerChart) window.referrerChart.destroy();
+
+    window.countryChart = new Chart(document.getElementById('countryChart').getContext('2d'),
+      pieConfig(topCountries.map(c => c.label), topCountries.map(c => c.value), 'Top Countries'));
+
+    window.deviceChart = new Chart(document.getElementById('deviceChart').getContext('2d'),
+      pieConfig(topDevices.map(d => d.label), topDevices.map(d => d.value), 'Top Devices'));
+
+    window.referrerChart = new Chart(document.getElementById('referrerChart').getContext('2d'),
+      barConfig(topReferrers.map(r => r.label), topReferrers.map(r => r.value), 'Top Referrers'));
+
+  } catch (err) {
+    console.error("Failed to load traffic charts:", err);
+  }
+}
+
+
+renderCharts();
     }
     function switchTab(tab) {
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
       document.getElementById(tab).classList.add('active');
       document.querySelectorAll('.tabs div').forEach(t => t.classList.remove('active'));
       document.querySelector(`.tabs div[onclick="switchTab('${tab}')"]`).classList.add('active');
+    if (tab === 'traffic') {
+  		renderTrafficCharts();
+	}
+
     }
     function exportCSV() {
       let csv = 'Order ID,Price,Email,Date\n';
@@ -230,7 +366,46 @@
       a.click();
     }
     
-    renderCharts();
+    
+      }
+    });
+
+    const barConfig = (labels, data, label) => ({
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label,
+          data,
+          backgroundColor: '#12b886'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false
+      }
+    });
+
+    if (window.countryChart) window.countryChart.destroy();
+    if (window.deviceChart) window.deviceChart.destroy();
+    if (window.referrerChart) window.referrerChart.destroy();
+
+    window.countryChart = new Chart(document.getElementById('countryChart').getContext('2d'),
+      pieConfig(topCountries.map(c => c.label), topCountries.map(c => c.value), 'Top Countries'));
+
+    window.deviceChart = new Chart(document.getElementById('deviceChart').getContext('2d'),
+      pieConfig(topDevices.map(d => d.label), topDevices.map(d => d.value), 'Top Devices'));
+
+    window.referrerChart = new Chart(document.getElementById('referrerChart').getContext('2d'),
+      barConfig(topReferrers.map(r => r.label), topReferrers.map(r => r.value), 'Top Referrers'));
+
+  } catch (err) {
+    console.error("Failed to load traffic charts:", err);
+  }
+}
+
+
+renderCharts();
 
   </script>
 </body>

@@ -79,3 +79,50 @@ app.post("/webhook/shoppy", async (req, res) => {
 
   res.sendStatus(200);
 });
+
+// === Google Analytics 4 Traffic Stats Endpoint ===
+const { BetaAnalyticsDataClient } = require('@google-analytics/data');
+const analyticsDataClient = new BetaAnalyticsDataClient();
+
+app.get("/api/traffic-stats", async (req, res) => {
+  try {
+    const propertyId = "486157365"; // Your GA4 property ID
+
+    const [countryRes] = await analyticsDataClient.runReport({
+      property: `properties/${propertyId}`,
+      dimensions: [{ name: "country" }],
+      metrics: [{ name: "sessions" }],
+      dateRanges: [{ startDate: "7daysAgo", endDate: "today" }],
+      limit: 5
+    });
+
+    const [deviceRes] = await analyticsDataClient.runReport({
+      property: `properties/${propertyId}`,
+      dimensions: [{ name: "deviceCategory" }],
+      metrics: [{ name: "sessions" }],
+      dateRanges: [{ startDate: "7daysAgo", endDate: "today" }],
+      limit: 5
+    });
+
+    const [referrerRes] = await analyticsDataClient.runReport({
+      property: `properties/${propertyId}`,
+      dimensions: [{ name: "sessionSource" }],
+      metrics: [{ name: "sessions" }],
+      dateRanges: [{ startDate: "7daysAgo", endDate: "today" }],
+      limit: 5
+    });
+
+    const parseRows = (rows) =>
+      rows.map(row => ({ label: row.dimensionValues[0].value, value: parseInt(row.metricValues[0].value) }));
+
+    res.json({
+      topCountries: parseRows(countryRes.rows || []),
+      topDevices: parseRows(deviceRes.rows || []),
+      topReferrers: parseRows(referrerRes.rows || [])
+    });
+
+  } catch (err) {
+    console.error("GA4 API error:", err);
+    res.status(500).json({ error: "Failed to fetch traffic stats" });
+  }
+});
