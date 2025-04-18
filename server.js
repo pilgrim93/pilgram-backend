@@ -21,13 +21,6 @@ app.use(
   })
 );
 
-function requireLogin(req, res, next) {
-  if (req.session && req.session.loggedIn) {
-    next();
-  } else {
-    res.redirect("/login");
-  }
-}
 
 // ✅ Middleware to protect routes
 function requireLogin(req, res, next) {
@@ -35,10 +28,10 @@ function requireLogin(req, res, next) {
   res.redirect("/login");
 }
 
-// ✅ Redirect root to /dashboard
-app.get("/", (req, res) => {
-  res.redirect("/dashboard");
+app.get("/login", (req, res) => {
+  res.sendFile(path.join(__dirname, "views/login.html"));
 });
+
 
 // ✅ Protected route
 app.get("/dashboard", requireLogin, (req, res) => {
@@ -131,5 +124,12 @@ app.get("/api/traffic", requireLogin, async (req, res) => {
     res.status(500).send("Error fetching traffic data");
   }
 });
+
+app.get("/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.redirect("/login");
+  });
+});
+
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
