@@ -7,7 +7,6 @@ const sqlite3 = require("sqlite3").verbose();
 const fetch = require("node-fetch");
 const PORT = process.env.PORT || 3000;
 // /routes/sales.js
-const express = require('express');
 const axios = require('axios');
 const router = express.Router();
 
