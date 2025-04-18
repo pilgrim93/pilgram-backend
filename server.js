@@ -38,6 +38,17 @@ app.get("/dashboard", requireLogin, (req, res) => {
   res.sendFile(path.join(__dirname, "views/dashboard.html"));
 });
 
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
+
+  // You can replace this with actual user verification logic
+  if (username === "admin" && password === "pilgram123") {
+    req.session.loggedIn = true;
+    res.redirect("/dashboard");
+  } else {
+    res.send("Login failed. <a href='/login'>Try again</a>");
+  }
+});
 
 app.get("/logout", (req, res) => {
   req.session.destroy(() => {
