@@ -351,5 +351,22 @@ canvas {
   }
 }
 
+.pagination-controls button {
+  background-color: #222;
+  color: #fff;
+  border: 1px solid #333;
+  padding: 6px 10px;
+  margin: 0 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.pagination-controls button:hover,
+.pagination-controls button.active {
+  background-color: #22c55e;
+  color: #000;
+}
+
 
 
