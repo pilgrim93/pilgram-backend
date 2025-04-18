@@ -101,11 +101,12 @@
 </head>
 <body>
   <div class="navbar">
-    <img src="public/logo1.png" alt="Logo" />
+    <img src="/public/logo1.png" alt="Logo" />
     <div class="tabs">
-      <div class="active" onclick="switchTab('sales')">💰 Sales</div>
-      <div onclick="switchTab('traffic')">🌐 Traffic</div>
-      <div onclick="switchTab('behavior')">👥 User Behavior</div>
+
+      <div class="tab active" data-tab="sales">💰 Sales</div>
+      <div class="tab" data-tab="traffic">🌐 Traffic</div>
+      <div class="tab" data-tab="behavior">👥 User Behavior</div>
     </div>
   </div>
 
@@ -187,3 +188,122 @@ tabs.forEach(tab => {
 </script>
 </body>
 </html>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let chartTypes = { salesChart: 'bar', revenueChart: 'bar' };
+let timeframe = 'daily';
+let revenueMode = 'perDay';
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+  document.getElementById(tab).classList.add('active');
+
+  if (tab === "sales") renderCharts();
+  if (tab === "traffic") renderTrafficCharts();
+}
+
+function toggleChartType(chartId) {
+  chartTypes[chartId] = chartTypes[chartId] === "bar" ? "line" : "bar";
+  renderCharts();
+}
+
+function toggleTimeframe() {
+  timeframe = timeframe === "daily" ? "weekly" : "daily";
+  renderCharts();
+}
+
+function toggleRevenueMode() {
+  revenueMode = revenueMode === "perDay" ? "perProduct" : "perDay";
+  renderCharts();
+}
+
+function exportCSV() {
+  const rows = Array.from(document.querySelectorAll("table tr"))
+    .map(row => Array.from(row.children).map(cell => cell.textContent).join(","));
+  const csv = rows.join("\n");
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "orders.csv";
+  a.click();
+}
+
+async function renderCharts() {
+  let orders = [];
+  try {
+    const res = await fetch('/api/orders');
+    orders = await res.json();
+  } catch {
+    console.warn("Falling back to dummy data");
+  }
+
+  if (!orders || !orders.length) {
+    orders = [
+      { id: "D1", amount: "19.99", email: "test1@example.com", created_at: "2025-04-17T12:00:00Z", product_title: "iPhone Quiz" },
+      { id: "D2", amount: "9.99", email: "test2@example.com", created_at: "2025-04-18T14:00:00Z", product_title: "Temu Mystery Box" },
+      { id: "D3", amount: "29.99", email: "test3@example.com", created_at: "2025-04-19T16:00:00Z", product_title: "Shein Mystery Box" }
+    ];
+  }
+
+  const tbody = document.querySelector("#ordersTable tbody");
+  tbody.innerHTML = "";
+  orders.forEach(o => {
+    tbody.innerHTML += `<tr><td>${o.id}</td><td>$${o.amount}</td><td>${o.email}</td><td>${new Date(o.created_at).toLocaleString()}</td></tr>`;
+  });
+
+  const salesByDay = {}, salesByWeek = {}, revByDay = {}, revByProduct = {};
+  orders.forEach(order => {
+    const d = new Date(order.created_at);
+    const day = d.toISOString().split("T")[0];
+    const week = getWeekYear(d);
+    const product = order.product_title || "Unknown";
+
+    salesByDay[day] = (salesByDay[day] || 0) + 1;
+    salesByWeek[week] = (salesByWeek[week] || 0) + 1;
+    revByDay[day] = (revByDay[day] || 0) + parseFloat(order.amount);
+    revByProduct[product] = (revByProduct[product] || 0) + parseFloat(order.amount);
+  });
+
+  const salesData = timeframe === "daily" ? salesByDay : salesByWeek;
+  const revenueData = revenueMode === "perDay" ? revByDay : revByProduct;
+
+  if (window.salesChart) window.salesChart.destroy();
+  if (window.revenueChart) window.revenueChart.destroy();
+
+  window.salesChart = new Chart(document.getElementById("salesChart").getContext("2d"), {
+    type: chartTypes.salesChart,
+    data: {
+      labels: Object.keys(salesData),
+      datasets: [{ label: "Sales", data: Object.values(salesData), backgroundColor: "#1c7ed6" }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  window.revenueChart = new Chart(document.getElementById("revenueChart").getContext("2d"), {
+    type: chartTypes.revenueChart,
+    data: {
+      labels: Object.keys(revenueData),
+      datasets: [{ label: "Revenue ($)", data: Object.values(revenueData), backgroundColor: "#12b886" }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+}
+
+function getWeekYear(d) {
+  const date = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const dayNum = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  const week = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  return `${date.getUTCFullYear()}-W${week}`;
+}
+
+async function renderTrafficCharts() {
+  // Placeholder for future GA4 chart logic
+  console.log("Traffic charts would render here.");
+}
+renderCharts();
+</script>
