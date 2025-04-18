@@ -12,6 +12,14 @@ app.use(express.static(path.join(__dirname, "public")));
 // (unchanged) ... all the way until:
 const db = new sqlite3.Database("./analytics.db");
 
+app.get("/", (req, res) => {
+  res.redirect("/dashboard");
+});
+
+app.get("/dashboard", requireLogin, (req, res) => {
+  res.sendFile(path.join(__dirname, "views/dashboard.html"));
+});
+
 // ✅ Create necessary tables if they don't exist
 db.serialize(() => {
   db.run(`
