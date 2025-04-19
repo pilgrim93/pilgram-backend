@@ -734,6 +734,11 @@
   initRealTimeUpdates();
   setupEventListeners();
   document.querySelector('[data-tab="sales"]').click();
+  updateSalesChart('daily');
+updateRevenueChart('product');
+updateSessionChart('daily');
+updateTrafficTimeChart('daily');
+updateTrafficSourcesChart('all');
 
   document.getElementById('save-notification-settings').addEventListener('click', function() {
     showNotification('Settings saved successfully!', 'Settings have been updated and will take effect immediately.');
@@ -763,6 +768,21 @@ const commonOptions = {
     }
   }
 };
+
+document.querySelectorAll('.nav-tabs .tab').forEach(tab => {
+  tab.addEventListener('click', function () {
+    // Deactivate all tabs
+    document.querySelectorAll('.nav-tabs .tab').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+
+    // Hide all sections
+    document.querySelectorAll('.dashboard-section').forEach(section => section.classList.remove('active'));
+
+    // Show the selected section
+    const selectedTab = this.getAttribute('data-tab');
+    document.querySelector(`[data-tab-content="${selectedTab}"]`)?.classList.add('active');
+  });
+});
 
     
     // Mock Data Object - in a real implementation, this would come from your API
@@ -1363,7 +1383,7 @@ trafficSourcesChart = new Chart(trafficSourcesCtx, {
 
         // Chart update functions
         function updateSalesChart(timeView) {
-            salesChart.data.labels = m salesData.labels[timeView];
+            salesChart.data.labels = salesData.labels[timeView];
             salesChart.data.datasets[0].data = mockData.sales[timeView];
             salesChart.update();
         }
@@ -1375,8 +1395,8 @@ trafficSourcesChart = new Chart(trafficSourcesCtx, {
 		revenueChart.update();
 }
 
-        function updateSessionChart(timeView) {
-            sessionChart.data.labels =salesData.labels[timeView];
+        function updateSessionChart(view) {
+            sessionChart.data.labels = salesData.labels[timeView];
             sessionChart.data.datasets[0].data = mockData.sessions[timeView];
             sessionChart.update();
         }
