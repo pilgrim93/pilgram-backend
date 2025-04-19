@@ -724,33 +724,23 @@
      <script>
     let salesData, revenueData, trafficData;
 
-        document.addEventListener('DOMContentLoaded', function () {
+       document.addEventListener('DOMContentLoaded', function () {
   initCharts();
-});
+  populateOrdersTable();
+  populateActivityTable();
+  populateTrafficTable();
+  makeTablesSortable();
+  addSearchToTables();
+  initRealTimeUpdates();
+  setupEventListeners();
+  document.querySelector('[data-tab="sales"]').click();
 
-populateOrdersTable();
-populateActivityTable();
-populateTrafficTable();
-  // Tab switching
-  const tabs = document.querySelectorAll('[data-tab]');
-  const tabContents = document.querySelectorAll('[data-tab-content]');
-
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      const target = tab.getAttribute('data-tab');
-
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-
-      tabContents.forEach(c => {
-        if (c.getAttribute('data-tab-content') === target) {
-          c.style.display = 'block';
-        } else {
-          c.style.display = 'none';
-        }
-      });
-    });
+  document.getElementById('save-notification-settings').addEventListener('click', function() {
+    showNotification('Settings saved successfully!', 'Settings have been updated and will take effect immediately.');
   });
+
+  document.getElementById('test-api').addEventListener('click', testApiConnection);
+});
 
 
 const commonOptions = {
@@ -1373,35 +1363,36 @@ trafficSourcesChart = new Chart(trafficSourcesCtx, {
 
         // Chart update functions
         function updateSalesChart(timeView) {
-            salesChart.data.labels = mockData.sales.labels[timeView];
+            salesChart.data.labels = m salesData.labels[timeView];
             salesChart.data.datasets[0].data = mockData.sales[timeView];
             salesChart.update();
         }
 
         function updateRevenueChart(view = 'product') {
  		 const data = view === 'product' ? revenueData.product : revenueData.category;
-  		  revenueChart.data.labels = data.labels;
-  		  revenueChart.data.datasets[0].data = data.data;
-  		   revenueChart.update();
+  		 revenueChart.data.labels = revenueData.product.labels;
+		revenueChart.data.datasets[0].data = revenueData.product.data;
+		revenueChart.update();
 }
 
-
         function updateSessionChart(timeView) {
-            sessionChart.data.labels = mockData.sales.labels[timeView];
+            sessionChart.data.labels =salesData.labels[timeView];
             sessionChart.data.datasets[0].data = mockData.sessions[timeView];
             sessionChart.update();
         }
 
         function updateTrafficSourcesChart(filter) {
-            trafficSourcesChart.data.labels = mockData.traffic.sources[filter].labels;
-            trafficSourcesChart.data.datasets[0].data = mockData.traffic.sources[filter].data;
-            trafficSourcesChart.update();
+           trafficSourcesChart.data.labels = trafficData.sources[view].labels;
+			trafficSourcesChart.data.datasets[0].data = trafficData.sources[view].data;
+			trafficSourcesChart.update();
+
         }
 
         function updateTrafficTimeChart(timeView) {
-            trafficTimeChart.data.labels = mockData.sales.labels[timeView];
-            trafficTimeChart.data.datasets[0].data = mockData.traffic.overtime[timeView];
-            trafficTimeChart.update();
+            trafficTimeChart.data.labels = salesData.labels[view];
+			trafficTimeChart.data.datasets[0].data = trafficData.overtime[view];
+			trafficTimeChart.update();
+
         }
 
         function updateChartType(chartId, type) {
