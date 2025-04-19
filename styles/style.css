@@ -7,11 +7,12 @@ body {
 
 header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   background-color: #121212;
   padding: 15px 20px;
   border-bottom: 1px solid #333;
+  flex-wrap: wrap;
 }
 
 header img.logo {
@@ -19,13 +20,27 @@ header img.logo {
 }
 
 .logout-btn {
-  background-color: #fbc531;
-  color: #000;
-  padding: 8px 16px;
-  font-weight: bold;
+  margin-left: auto;
+  padding: 8px 12px;
+  background-color: #ff4d4d;
+  color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 5px;
   cursor: pointer;
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .logout-btn {
+    margin-top: 10px;
+    width: 100%;
+    text-align: right;
+  }
 }
 
 .dashboard-tabs {
@@ -34,6 +49,7 @@ header img.logo {
   gap: 10px;
   margin-top: 20px;
   margin-bottom: 30px;
+  flex-wrap: wrap;
 }
 
 .dashboard-tab {
@@ -64,6 +80,44 @@ header img.logo {
   padding: 0 15px;
 }
 
+.chart-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.chart-half {
+  flex: 1 1 45%;
+  max-width: 45%;
+  background-color: #1e1e1e;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+  .chart-half {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  .chart-row {
+    flex-direction: column;
+  }
+
+  .chart-toggle select,
+  .chart-toggle input[type="date"] {
+    background-color: #1f1f1f;
+    color: #fff;
+    border: 1px solid #444;
+    padding: 6px 10px;
+    border-radius: 5px;
+    margin: 5px;
+    font-size: 14px;
+  }
+}
+
 canvas {
   width: 100% !important;
   height: auto !important;
@@ -74,6 +128,7 @@ canvas {
   justify-content: center;
   gap: 15px;
   margin: 10px auto 30px;
+  flex-wrap: wrap;
 }
 
 .chart-toggle button {
@@ -131,87 +186,9 @@ canvas {
   cursor: pointer;
 }
 
-@media (max-width: 768px) {
-  header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .dashboard-tabs {
-    flex-wrap:
-  }
-  
-  .chart-toggle select,
-.chart-toggle input[type="date"] {
-  background-color: #1f1f1f;
-  color: #fff;
-  border: 1px solid #444;
-  padding: 6px 10px;
-  border-radius: 5px;
-  margin: 5px;
-  font-size: 14px;
-}
-
-.chart-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  margin-bottom: 40px;
-}
-
-.chart-half {
-  flex: 1 1 45%;
-  max-width: 45%;
-  background-color: #1e1e1e;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
-}
-
-/* On small screens, make them stack */
-@media (max-width: 768px) {
-  .chart-half {
-    flex: 1 1 100%;
-    max-width: 100%;
-  }
-}
-
-@media (max-width: 768px) {
-  .chart-row {
-    flex-direction: column;
-  }
-}
-
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 20px;
-  flex-wrap: wrap;
-}
-
-.logout-btn {
-  margin-left: auto;
-  padding: 8px 12px;
-  background-color: #ff4d4d;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-@media (max-width: 768px) {
-  .logout-btn {
-    margin-top: 10px;
-    width: 100%;
-    text-align: right;
-  }
-}
-
 .total-sales {
   margin-bottom: 20px;
   font-size: 1.2rem;
   font-weight: bold;
   color: #fff;
 }
-

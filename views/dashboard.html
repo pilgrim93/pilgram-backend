@@ -48,8 +48,8 @@
         <button onclick="toggleRevenueView('daily')">By Day</button>
         <!-- Chart Type Toggle -->
 <div class="chart-toggle chart-type-toggle">
-  <button onclick="setSalesChartType('bar')">Bar</button>
-  <button onclick="setSalesChartType('line')">Line</button>
+  <button onclick="setRevenueChartType('bar')">Bar</button>
+  <button onclick="setRevenueChartType('line')">Line</button>
 </div>
 
       </div>
@@ -113,7 +113,7 @@ function renderSalesChart() {
   const labels = salesView === "daily" ? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] : ["Week 1", "Week 2", "Week 3"];
   const data = salesView === "daily" ? [5, 9, 4, 8, 12, 10, 6] : [45, 50, 65];
   window.salesChart = new Chart(ctx, {
-    type: "bar",
+    type: salesChartType,
     data: { labels, datasets: [{ label: "Sales", data, backgroundColor: "#00ffd0" }] },
     options: { responsive: true, maintainAspectRatio: false }
   });
@@ -135,12 +135,23 @@ function renderRevenueChart() {
   const ctx = document.getElementById("revenueChart").getContext("2d");
   const labels = revenueView === "product" ? ["iPhone Quiz", "Shein Box", "Temu Box"] : ["Mon", "Tue", "Wed", "Thu", "Fri"];
   const data = revenueView === "product" ? [300, 250, 400] : [90, 120, 150, 180, 200];
+
   window.revenueChart = new Chart(ctx, {
-    type: "line",
-    data: { labels, datasets: [{ label: "Revenue", data, backgroundColor: "#47f96c", borderColor: "#47f96c", fill: false }] },
+    type: revenueChartType, // ✅ dynamic chart type
+    data: {
+      labels,
+      datasets: [{
+        label: "Revenue",
+        data,
+        backgroundColor: "#47f96c",
+        borderColor: "#47f96c",
+        fill: false
+      }]
+    },
     options: { responsive: true, maintainAspectRatio: false }
   });
 }
+
 
 // BEHAVIOR CHARTS
 function renderBehaviorCharts() {
@@ -279,8 +290,6 @@ function calculateTotalSales() {
 }
 
 </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </body>
 </html>
