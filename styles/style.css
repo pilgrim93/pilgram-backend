@@ -1,293 +1,154 @@
-/* Reset & Base Styles */
-* {
+body {
   margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #111;
+  color: #fff;
 }
 
-html, body {
-  font-family: 'Inter', 'Helvetica Neue', sans-serif;
-  background: #f8f9fa;
-  color: #212529;
-  line-height: 1.6;
-  height: 100%;
-}
-
-/* Layout Container */
-.dashboard-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-/* Header */
-.header {
+header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #e0e0e0;
-  position: sticky;
-  top: 0;
-  z-index: 999;
+  background-color: #121212;
+  padding: 15px 20px;
+  border-bottom: 1px solid #333;
 }
 
-.header .logo {
+header img.logo {
   height: 40px;
-  width: auto;
 }
 
-/* Tabs */
-.tabs {
-  display: flex;
-  gap: 12px;
-  margin-top: 20px;
-  border-bottom: 2px solid #dee2e6;
-}
-
-.tab {
-  padding: 12px 18px;
-  font-weight: 500;
-  cursor: pointer;
-  border-radius: 8px 8px 0 0;
-  background-color: #f1f3f5;
-  color: #495057;
-  transition: all 0.2s ease;
-}
-
-.tab.active {
-  background-color: #ffffff;
-  color: #212529;
-  border: 1px solid #dee2e6;
-  border-bottom: none;
-}
-
-/* Section Content */
-.tab-content {
-  background-color: #ffffff;
-  border: 1px solid #dee2e6;
-  border-top: none;
-  padding: 24px;
-  border-radius: 0 0 8px 8px;
-  margin-bottom: 40px;
-}
-
-/* Product Card Style */
-.product-carousel {
-  display: flex;
-  overflow-x: auto;
-  gap: 20px;
-  padding: 20px 0;
-}
-
-.product-card {
-  flex: 0 0 300px;
-  background-color: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.2s ease;
-}
-
-.product-card:hover {
-  transform: translateY(-4px);
-}
-
-.product-card img {
-  width: 100%;
-  border-radius: 10px;
-  margin-bottom: 12px;
-}
-
-.product-card h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 10px;
-  color: #212529;
-}
-
-.product-card p {
-  font-size: 0.95rem;
-  margin-bottom: 14px;
-  color: #495057;
-}
-
-.product-card .buy-button {
-  background: #1c7ed6;
-  color: white;
-  padding: 10px 14px;
-  border: none;
-  border-radius: 6px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.product-card .buy-button:hover {
-  background: #1864ab;
-}
-
-/* Modal */
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 1000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgba(0,0,0,0.6);
-}
-
-.modal-content {
-  background-color: #ffffff;
-  margin: 10% auto;
-  padding: 20px;
-  border-radius: 10px;
-  width: 90%;
-  max-width: 500px;
-}
-
-.modal-header {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 16px;
-}
-
-.price-options {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
-
-.price-option {
-  background-color: #f1f3f5;
-  padding: 12px;
-  border-radius: 6px;
-  flex: 1;
-  margin: 0 5px;
-  text-align: center;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.price-option:hover {
-  background-color: #dee2e6;
-}
-
-.price-option.selected {
-  background-color: #1c7ed6;
-  color: white;
+.logout-btn {
+  background-color: #fbc531;
+  color: #000;
+  padding: 8px 16px;
   font-weight: bold;
-}
-
-.modal-buttons {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.modal-buttons button {
-  flex: 1;
-  padding: 12px;
   border: none;
   border-radius: 6px;
-  font-weight: 500;
   cursor: pointer;
 }
 
-.paypal-button {
-  background-color: #ffc439;
-  color: #212529;
-}
-
-.crypto-button {
-  background-color: #6f42c1;
-  color: white;
-}
-
-/* Coupon Box */
-.coupon-box {
+.dashboard-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
   margin-top: 20px;
+  margin-bottom: 30px;
 }
 
-.coupon-box input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ced4da;
-  border-radius: 6px;
-  margin-bottom: 10px;
+.dashboard-tab {
+  padding: 10px 20px;
+  border-radius: 8px;
+  background-color: #fbc531;
+  font-weight: bold;
+  color: #000;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s ease-in-out;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .tabs {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .tab {
-    border-radius: 8px;
-  }
-
-  .product-carousel {
-    flex-direction: column;
-    overflow-x: visible;
-  }
-
-  .product-card {
-    flex: 1 1 100%;
-  }
-
-  .modal-content {
-    margin: 30% auto;
-  }
+.dashboard-tab.active {
+  background-color: #111;
+  color: #fbc531;
+  border: 2px solid #fbc531;
 }
 
-body {
-  background: #0d0d0d;
-  color: #f8f9fa;
+.section-title {
+  font-size: 1.6rem;
+  margin: 25px 0 10px 10px;
 }
 
-.tab-content {
-  background: #1b1b1b;
-  color: #f8f9fa;
-  border: 1px solid #2b2b2b;
+.chart-container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 15px;
 }
 
 canvas {
   width: 100% !important;
-  max-width: 100%;
-  height: 300px !important;
-  margin: 20px 0;
-  background-color: transparent;
+  height: auto !important;
 }
 
-.chart-container {
-  padding: 20px;
-  background: #1e1e1e;
-  border-radius: 10px;
-  margin-bottom: 30px;
+.chart-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 10px auto 30px;
 }
-.logout-btn {
-  margin-left: auto;
-  background: transparent;
-  color: var(--text);
-  border: 2px solid var(--primary);
-  padding: 8px 14px;
-  font-weight: bold;
-  border-radius: 8px;
+
+.chart-toggle button {
+  padding: 6px 12px;
+  border-radius: 5px;
+  background-color: #333;
+  color: #fbc531;
+  border: 1px solid #555;
   cursor: pointer;
-  transition: 0.3s ease;
+  font-size: 14px;
 }
 
-.logout-btn:hover {
-  background: var(--primary);
+.chart-toggle button.active {
+  background-color: #fbc531;
   color: #000;
+}
+
+.orders-table-section {
+  background-color: #1a1a1a;
+  margin: 40px 15px;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.6);
+}
+
+.orders-table-section h2 {
+  color: #47f96c;
+  margin-bottom: 15px;
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.orders-table thead {
+  background-color: #333;
+  color: #fff;
+}
+
+.orders-table th,
+.orders-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #444;
+}
+
+.export-btn {
+  margin-top: 15px;
+  background-color: #47f96c;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dashboard-tabs {
+    flex-wrap:
+  }
+  
+  .chart-toggle select,
+.chart-toggle input[type="date"] {
+  background-color: #1f1f1f;
+  color: #fff;
+  border: 1px solid #444;
+  padding: 6px 10px;
+  border-radius: 5px;
+  margin: 5px;
+  font-size: 14px;
 }
 

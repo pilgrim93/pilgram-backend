@@ -103,44 +103,38 @@ app.get("/api/traffic-stats", async (req, res) => {
   try {
     const propertyId = "486157365";
 
-    const [countryRes] = await analyticsDataClient.runReport({
-      property: `properties/${propertyId}`,
-      dimensions: [{ name: "country" }],
-      metrics: [{ name: "sessions" }],
-      dateRanges: [{ startDate: "7daysAgo", endDate: "today" }],
-      limit: 5
-    });
+    // 🆕 Get query params or fallback
+    const startDate = req.query.start || "7daysAgo";
+    const endDate = req.query.end || "today";
 
-    const [deviceRes] = await analyticsDataClient.runReport({
-      property: `properties/${propertyId}`,
-      dimensions: [{ name: "deviceCategory" }],
-      metrics: [{ name: "sessions" }],
-      dateRanges: [{ startDate: "7daysAgo", endDate: "today" }],
-      limit: 5
-    });
+    const runReport = async (dimension) => {
+      const [response] = await analyticsDataClient.runReport({
+        property: `properties/${propertyId}`,
+        dimensions: [{ name: dimension }],
+        metrics: [{ name: "sessions" }],
+        dateRanges: [{ startDate, endDate }],
+        limit: 5
+      });
 
-    const [referrerRes] = await analyticsDataClient.runReport({
-      property: `properties/${propertyId}`,
-      dimensions: [{ name: "sessionSource" }],
-      metrics: [{ name: "sessions" }],
-      dateRanges: [{ startDate: "7daysAgo", endDate: "today" }],
-      limit: 5
-    });
+      return (response.rows || []).map(row => ({
+        label: row.dimensionValues[0].value,
+        value: parseInt(row.metricValues[0].value)
+      }));
+    };
 
-    const parseRows = (rows) =>
-      rows.map(row => ({ label: row.dimensionValues[0].value, value: parseInt(row.metricValues[0].value) }));
+    const [topCountries, topDevices, topReferrers] = await Promise.all([
+      runReport("country"),
+      runReport("deviceCategory"),
+      runReport("sessionSource")
+    ]);
 
-    res.json({
-      topCountries: parseRows(countryRes.rows || []),
-      topDevices: parseRows(deviceRes.rows || []),
-      topReferrers: parseRows(referrerRes.rows || [])
-    });
-
+    res.json({ topCountries, topDevices, topReferrers });
   } catch (err) {
     console.error("GA4 API error:", err);
     res.status(500).json({ error: "Failed to fetch traffic stats" });
   }
 });
+
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
