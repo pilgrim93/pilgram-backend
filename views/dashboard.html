@@ -117,6 +117,17 @@ function renderSalesChart() {
     data: { labels, datasets: [{ label: "Sales", data, backgroundColor: "#00ffd0" }] },
     options: { responsive: true, maintainAspectRatio: false }
   });
+  function calculateTotalSales() {
+  const sales = salesView === "daily"
+    ? [5, 9, 4, 8, 12, 10, 6]
+    : [45, 50, 65];
+
+  const avgRevenuePerSale = 15; // 💵 adjust if needed
+  const totalRevenue = sales.reduce((acc, val) => acc + val, 0) * avgRevenuePerSale;
+
+  const formatted = `$${totalRevenue.toLocaleString()}`;
+  document.getElementById("totalSalesAmount").textContent = formatted;
+}
 }
 
 function renderRevenueChart() {
@@ -257,30 +268,7 @@ function setRevenueChartType(type) {
   renderRevenueChart();
 }
 
-function renderSalesChart() {
-  if (window.salesChart) window.salesChart.destroy();
-
-  const ctx = document.getElementById("salesChart").getContext("2d");
-  const labels = salesView === "daily" ? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] : ["Week 1", "Week 2", "Week 3"];
-  const data = salesView === "daily" ? [5, 9, 4, 8, 12, 10, 6] : [45, 50, 65];
-
-  window.salesChart = new Chart(ctx, {
-    type: salesChartType || "bar",
-    data: {
-      labels,
-      datasets: [{
-        label: "Sales",
-        data,
-        backgroundColor: "#00ffd0"
-      }]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
-  });
-
-  calculateTotalSales(); // 👈 Add this line
-}
-
-
+	
 function calculateTotalSales() {
   const sales = salesView === "daily"
     ? [5, 9, 4, 8, 12, 10, 6]
