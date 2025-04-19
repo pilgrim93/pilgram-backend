@@ -546,7 +546,7 @@
     </div>
     
     <!-- User Behavior Section -->
-    <div id="user-section" data-tab-content="behavior" class="dashboard-section">
+    <div id="behavior-section" data-tab-content="behavior" class="dashboard-section">
         <h2 class="section-title">User Behavior</h2>
         
         <div class="charts-container">
@@ -555,10 +555,7 @@
                 <div class="chart-title">
                     <span>New vs Returning Users</span>
                     <div class="chart-controls">
-                        <select id="users-chart-type" class="chart-control">
-                            <option value="pie">Pie</option>
-                            <option value="bar">Bar</option>
-                        </select>
+                        
                     </div>
                 </div>
                 <canvas id="users-chart"></canvas>
@@ -735,11 +732,6 @@
   setupEventListeners();
   
   document.querySelector('[data-tab="sales"]').click();
-  updateSalesChart('daily');
-updateRevenueChart('product');
-updateSessionChart('daily');
-updateTrafficTimeChart('daily');
-updateTrafficSourcesChart('all');
 
   document.getElementById('save-notification-settings').addEventListener('click', function() {
     showNotification('Settings saved successfully!', 'Settings have been updated and will take effect immediately.');
@@ -927,13 +919,6 @@ async function fetchTrafficData() {
         let socket;
         let realTimeEnabled = false;
         let pollingInterval;
-
-   
-            
-            // Initialize tables
-            populateOrdersTable();
-            populateActivityTable();
-            populateTrafficTable();
             
             // Add sortable behavior to tables
             makeTablesSortable();
@@ -966,6 +951,32 @@ async function fetchTrafficData() {
  	 const sessions = salesData.sessions.daily[index];
   	 return sessions ? (sale / sessions * 100).toFixed(2) : 0;
 });
+
+const usersCtx = document.getElementById('users-chart').getContext('2d');
+usersChart = new Chart(usersCtx, {
+  type: 'pie',
+  data: {
+    labels: ['New Users', 'Returning Users'],
+    datasets: [{
+      data: [65, 35], // mock data
+      backgroundColor: ['rgba(76, 175, 80, 0.7)', 'rgba(63, 81, 181, 0.7)'],
+      borderColor: ['rgba(76, 175, 80, 1)', 'rgba(63, 81, 181, 1)'],
+      borderWidth: 1
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'right',
+        labels: {
+          color: 'white'
+        }
+      }
+    }
+  }
+});
+
 
   
   conversionChart = new Chart(conversionCtx, {
@@ -1099,6 +1110,11 @@ trafficSourcesChart = new Chart(trafficSourcesCtx, {
     },
     options: commonOptions
   });
+    updateSalesChart('daily');
+updateRevenueChart('product');
+updateSessionChart('daily');
+updateTrafficTimeChart('daily');
+updateTrafficSourcesChart('all');
 
 }
                 
@@ -1128,11 +1144,7 @@ trafficSourcesChart = new Chart(trafficSourcesCtx, {
             document.getElementById('sessions-time-view').addEventListener('change', function() {
                 updateSessionChart(this.value);
             });
-            
-            // Users chart type change
-            document.getElementById('users-chart-type').addEventListener('change', function() {
-                updateChartType('usersChart', this.value);
-            });
+        
             
             // Engagement time view change
             document.getElementById('engagement-time-view').addEventListener('change', function() {
