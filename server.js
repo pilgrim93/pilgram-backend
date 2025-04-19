@@ -25,6 +25,8 @@ app.use("/styles", express.static(path.join(__dirname, "styles")));
 app.use("/views", express.static(path.join(__dirname, "views")));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use('/styles', express.static(path.join(__dirname, 'styles')));
+
 
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
