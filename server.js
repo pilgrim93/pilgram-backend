@@ -36,7 +36,7 @@ const PORT = process.env.PORT || 3000;
 app.post("/logout", (req, res) => {
   req.session.destroy(() => {
     res.redirect("/login");
-  });
+  };
 });
 
 app.use("/public", express.static(path.join(__dirname, "public")));
