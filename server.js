@@ -47,7 +47,8 @@ app.post("/login", (req, res) => {
 
 app.post("/logout", (req, res) => {
   req.session.destroy(() => {
-    res.redirect("/login");
+   res.clearCookie('connect.sid');
+   res.sendStatus(200);
   });
 });
 

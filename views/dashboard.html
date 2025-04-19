@@ -1379,14 +1379,23 @@ fetchData('/api/user-activity', mockData.userActivity).then(renderUserActivityTa
         }
 
         // Table population functions
-        async function populateOrdersTable() {
+      async function populateOrdersTable(data = null) {
   const tbody = document.querySelector('#orders-table tbody');
   tbody.innerHTML = '';
 
-  let orders = [];
-  try {
-   const res = await fetch('/api/orders');
-    orders.forEach(order => {
+  let orders = data;
+  if (!orders) {
+    try {
+      const res = await fetch('/api/orders');
+      if (!res.ok) throw new Error("Failed to fetch");
+      orders = await res.json();
+    } catch (err) {
+      console.warn('Falling back to mockData.orders due to error:', err.message);
+      orders = mockData.orders;
+    }
+  }
+
+  orders.forEach(order => {
     const row = document.createElement('tr');
     row.innerHTML = `
       <td>${order.id}</td>
@@ -1400,19 +1409,20 @@ fetchData('/api/user-activity', mockData.userActivity).then(renderUserActivityTa
   });
 }
 
-
-       async function populateActivityTable() {
+     async function populateActivityTable(data = null) {
   const tbody = document.querySelector('#activity-table tbody');
   tbody.innerHTML = '';
 
-  let userActivity = [];
-  try {
-    const res = await fetch('/api/user-activity');
-    if (!res.ok) throw new Error("Failed to fetch");
-    userActivity = await res.json();
-  } catch (err) {
-    console.warn('Falling back to mockData.userActivity due to error:', err.message);
-    userActivity = mockData.userActivity;
+  let userActivity = data;
+  if (!userActivity) {
+    try {
+      const res = await fetch('/api/user-activity');
+      if (!res.ok) throw new Error("Failed to fetch");
+      userActivity = await res.json();
+    } catch (err) {
+      console.warn('Falling back to mockData.userActivity due to error:', err.message);
+      userActivity = mockData.userActivity;
+    }
   }
 
   userActivity.forEach(activity => {
@@ -1427,37 +1437,6 @@ fetchData('/api/user-activity', mockData.userActivity).then(renderUserActivityTa
     tbody.appendChild(row);
   });
 }
-
-
-      async function populateTrafficTable() {
-  const tbody = document.querySelector('#traffic-table tbody');
-  tbody.innerHTML = '';
-
-  let trafficDetails = [];
-  try {
-    const res = await fetch('/api/traffic-stats');
-    if (!res.ok) throw new Error("Failed to fetch");
-    const data = await res.json();
-    trafficDetails = data.details || [];
-  } catch (err) {
-    console.warn('Falling back to mockData.traffic.details due to error:', err.message);
-    trafficDetails = mockData.traffic.details;
-  }
-
-  trafficDetails.forEach(detail => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${detail.source}</td>
-      <td>${detail.visitors}</td>
-      <td>${detail.pageViews}</td>
-      <td>${detail.bounceRate}</td>
-      <td>${detail.avgTime}</td>
-    `;
-    tbody.appendChild(row);
-  });
-}
-
-
 
         // Make tables sortable
         function makeTablesSortable() {
@@ -1805,6 +1784,11 @@ fetchData('/api/user-activity', mockData.userActivity).then(renderUserActivityTa
             const sourceIndex = Math.floor(Math.random() * mockData.traffic.sources.all.labels.length);
             mockData.traffic.sources.all.data[sourceIndex] += additionalTraffic;
             traffic
-            
+          
+          document.querySelector('.logout-btn')?.addEventListener('click', () => {
+  fetch('/logout', { method: 'POST' })
+    .then(() => window.location.href = '/login.html')  // Change if your login is at a different path
+    .catch(err => console.error('Logout failed:', err));
+});  
 
 </script>
