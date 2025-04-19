@@ -1581,7 +1581,7 @@ document.querySelector('.logout-btn')?.addEventListener('click', () => {
   fetch('/logout', { method: 'POST' })
     .then(() => window.location.href = '/login.html')  // Adjust if login path is different
     .catch(err => console.error('Logout failed:', err));
-
+}
 
   </script>
 </body>
