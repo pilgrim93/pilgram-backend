@@ -401,22 +401,21 @@
         <button class="logout-btn">Logout</button>
     </div>
     
-  <!-- Navigation Tabs -->
-<div class="nav-tabs">
-    <button data-tab="sales" class="tab active">
-        <span class="tab-icon">💰</span> Sales
-    </button>
-    <button data-tab="behavior" class="tab">
-        <span class="tab-icon">👥</span> User Behavior
-    </button>
-    <button data-tab="traffic" class="tab">
-        <span class="tab-icon">🌐</span> Traffic
-    </button>
-    <button data-tab="settings" class="tab">
-        <span class="tab-icon">⚙️</span> Settings
-    </button>
-</div>
-
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+        <button data-tab="sales" class="tab active">
+            <span class="tab-icon">💰</span> Sales
+        </button>
+        <button data-tab="behavior" class="tab">
+            <span class="tab-icon">👥</span> User Behavior
+        </button>
+        <button data-tab="traffic" class="tab">
+            <span class="tab-icon">🌐</span> Traffic
+        </button>
+        <button data-tab="settings" class="tab">
+            <span class="tab-icon">⚙️</span> Settings
+        </button>
+    </div>
     
     <!-- Real-time Toggle -->
     <div class="real-time-toggle">
@@ -546,7 +545,7 @@
     </div>
     
     <!-- User Behavior Section -->
-    <div id="user-section" data-tab-content="behavior" class="dashboard-section" style="display: none;">
+    <div id="user-section" data-tab-content="behavior" class="dashboard-section">
         <h2 class="section-title">User Behavior</h2>
         
         <div class="charts-container">
@@ -605,7 +604,7 @@
     </div>
     
     <!-- Traffic Section -->
-    <div id="traffic-section" data-tab-content="traffic" class="dashboard-section" style="display: none;">
+    <div id="traffic-section" data-tab-content="traffic" class="dashboard-section">
         <h2 class="section-title">Traffic Analysis</h2>
         
         <div class="charts-container">
@@ -669,7 +668,7 @@
     </div>
     
     <!-- Settings Section -->
-    <div id="settings-section" data-tab-content="settings" class="dashboard-section" style="display: none;">
+    <div id="settings-section" data-tab-content="settings" class="dashboard-section">
         <h2 class="section-title">Settings</h2>
         
         <div class="settings-panel">
@@ -721,39 +720,8 @@
         </div>
     </div>
     
-     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-  initCharts();
-});
-
-populateOrdersTable();
-populateActivityTable();
-populateTrafficTable();
-
-
-const commonOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  scales: {
-    x: {
-      ticks: { color: 'white' },
-      grid: { color: 'rgba(255,255,255,0.1)' }
-    },
-    y: {
-      ticks: { color: 'white' },
-      grid: { color: 'rgba(255,255,255,0.1)' },
-      beginAtZero: true
-    }
-  },
-  plugins: {
-    legend: {
-      labels: { color: 'white' }
-    }
-  }
-};
-
-    
-    // Mock Data Object - in a real implementation, this would come from your API
+    <script>
+        // Mock Data Object - in a real implementation, this would come from your API
         const mockData = {
             sales: {
                 labels: {
@@ -819,763 +787,1018 @@ const commonOptions = {
                 { id: '12349', email: 'customer5@example.com', product: 'Basic Plan', price: 19.99, date: '2025-04-15', status: 'Completed' },
                 { id: '12350', email: 'customer6@example.com', product: 'Premium Plan', price: 49.99, date: '2025-04-15', status: 'Refunded' },
                 { id: '12351', email: 'customer7@example.com', product: 'Bundle', price: 79.99, date: '2025-04-14', status: 'Completed' },
-                { id: '12352', email: 'customer8@example.com', product: 'Basic Plan', price: 19.99, date: '2025-04-14
-                // Continuing from where we left off...
-
                 { id: '12352', email: 'customer8@example.com', product: 'Basic Plan', price: 19.99, date: '2025-04-14', status: 'Completed' },
                 { id: '12353', email: 'customer9@example.com', product: 'Premium Plan', price: 49.99, date: '2025-04-13', status: 'Completed' },
-                { id: '12354', email: 'customer10@example.com', product: 'Bundle', price: 79.99, date: '2025-04-13', status: 'Processing' }
+                { id: '12354', email: 'customer10@example.com', product: 'Bundle', price: 79.99, date: '2025-04-13', status: 'Completed' }
             ],
-            userActivity: [
-                { userId: '001', email: 'customer1@example.com', action: 'Login', page: '/dashboard', timestamp: '2025-04-18 09:23:15' },
-                { userId: '002', email: 'customer2@example.com', action: 'Purchase', page: '/checkout', timestamp: '2025-04-18 08:45:32' },
-                { userId: '003', email: 'customer3@example.com', action: 'View Product', page: '/product/premium', timestamp: '2025-04-18 08:12:47' },
-                { userId: '004', email: 'customer4@example.com', action: 'Signup', page: '/register', timestamp: '2025-04-17 22:37:09' },
-                { userId: '005', email: 'customer5@example.com', action: 'Add to Cart', page: '/product/bundle', timestamp: '2025-04-17 21:14:55' },
-                { userId: '001', email: 'customer1@example.com', action: 'View Product', page: '/product/basic', timestamp: '2025-04-17 18:56:22' },
-                { userId: '006', email: 'customer6@example.com', action: 'Login', page: '/dashboard', timestamp: '2025-04-17 17:42:11' },
-                { userId: '007', email: 'customer7@example.com', action: 'Cancel Subscription', page: '/account', timestamp: '2025-04-17 16:19:38' }
+            activities: [
+                { userId: 'U1001', email: 'user1@example.com', action: 'Login', page: 'Home', timestamp: '2025-04-17 09:23:45' },
+                { userId: 'U1002', email: 'user2@example.com', action: 'View Product', page: 'Product Detail', timestamp: '2025-04-17 10:15:28' },
+                { userId: 'U1003', email: 'user3@example.com', action: 'Add to Cart', page: 'Product Detail', timestamp: '2025-04-17 11:02:17' },
+                { userId: 'U1001', email: 'user1@example.com', action: 'Purchase', page: 'Checkout', timestamp: '2025-04-17 12:45:33' },
+                { userId: 'U1004', email: 'user4@example.com', action: 'Login', page: 'Home', timestamp: '2025-04-16 14:22:10' },
+                { userId: 'U1005', email: 'user5@example.com', action: 'View Product', page: 'Product List', timestamp: '2025-04-16 15:11:05' },
+                { userId: 'U1006', email: 'user6@example.com', action: 'Login', page: 'Home', timestamp: '2025-04-16 16:07:52' },
+                { userId: 'U1007', email: 'user7@example.com', action: 'Add to Cart', page: 'Product Detail', timestamp: '2025-04-16 17:33:41' },
+                { userId: 'U1008', email: 'user8@example.com', action: 'Purchase', page: 'Checkout', timestamp: '2025-04-15 09:12:38' },
+                { userId: 'U1009', email: 'user9@example.com', action: 'View Product', page: 'Product Detail', timestamp: '2025-04-15 10:35:19' }
             ]
         };
-    
-        async function fetchSalesData() {
-  try {
-    const res = await fetch('/api/sales-data');
-   if (!res.ok) throw new Error("Failed to fetch");
-    return await res.json();
-  } catch (err) {
-    console.warn('Falling back to mockData.sales due to error:', err.message);
-    return {
-      labels: mockData.sales.labels,
-      daily: mockData.sales.daily,
-      weekly: mockData.sales.weekly,
-      monthly: mockData.sales.monthly,
-      sessions: mockData.sessions // Sessions used in conversions
-    };
-  }
-}
 
-async function fetchRevenueData() {
-  try {
-    const res = await fetch('/api/revenue-data');
-    if (!res.ok) throw new Error("Failed to fetch");
-    return await res.json();
-  } catch (err) {
-    console.warn('Falling back to mockData.revenue due to error:', err.message);
-    return mockData.revenue;
-  }
-}
+        // Chart references
+        let charts = {};
 
-async function fetchTrafficData() {
-  try {
-    const res = await fetch('/api/traffic-stats');
-    if (!res.ok) throw new Error("Failed to fetch");
-    return await res.json();
-  } catch (err) {
-    console.warn('Falling back to mockData.traffic due to error:', err.message);
-    return mockData.traffic;
-  }
-}
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            // Tab functionality
+            initTabs();
 
-  // Tab switching
-  const tabs = document.querySelectorAll('[data-tab]');
-  const tabContents = document.querySelectorAll('[data-tab-content]');
-
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      const target = tab.getAttribute('data-tab');
-
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-
-      tabContents.forEach(c => {
-        if (c.getAttribute('data-tab-content') === target) {
-          c.style.display = 'block';
-        } else {
-          c.style.display = 'none';
-        }
-      });
-    });
-  });
-
-  // Default: show sales tab
-  document.querySelector('[data-tab="sales"]').click();
-  
-      async function fetchData(endpoint, fallback) {
-    try {
-        const response = await fetch(endpoint);
-        if (!response.ok) throw new Error("API error");
-        return await response.json();
-    } catch (error) {
-        console.warn(`Failed to load ${endpoint}, using mock data.`);
-        return fallback;
-    }
-}
-
-  
-        // Chart variables
-        let salesChart, revenueChart, sessionChart, usersChart, engagementChart, 
-            trafficSourcesChart, trafficTimeChart, conversionChart;
-        
-        // Real-time update variables
-        let socket;
-        let realTimeEnabled = false;
-        let pollingInterval;
-
-        // Initialize everything when DOM is loaded
-        document.addEventListener('DOMContentLoaded', function() {            
+            // Load initial data and create charts
+            initSalesCharts();
+            initUserBehaviorCharts();
+            initTrafficCharts();
             
+            // Populate tables
+            populateOrdersTable(mockData.orders);
+            populateActivityTable(mockData.activities);
+            populateTrafficTable(mockData.traffic.details);
             
-            // Initialize tables
-            populateOrdersTable();
-            populateActivityTable();
-            populateTrafficTable();
+            // Set up event listeners for chart controls
+            setupChartControls();
             
-            // Add sortable behavior to tables
-            makeTablesSortable();
+            // Init search functionality
+            setupSearchFunctionality();
             
-            // Add search to all tables
-            addSearchToTables();
+            // Setup real-time toggle
+            document.getElementById('real-time-toggle').addEventListener('change', toggleRealtime);
             
-            // Initialize real-time updates
-            initRealTimeUpdates();
+            // Set default date range
+            const today = new Date();
+            const lastMonth = new Date();
+            lastMonth.setMonth(today.getMonth() - 1);
             
-            // Setup event listeners for chart controls
-            setupEventListeners();
+            document.getElementById('start-date').valueAsDate = lastMonth;
+            document.getElementById('end-date').valueAsDate = today;
             
-            // Set up Telegram notification test
-            document.getElementById('save-notification-settings').addEventListener('click', function() {
-                showNotification('Settings saved successfully!', 'Settings have been updated and will take effect immediately.');
-            });
+            // Date filter button
+            document.getElementById('apply-date-filter').addEventListener('click', applyDateFilter);
             
+            // Setup settings buttons
+            document.getElementById('save-notification-settings').addEventListener('click', saveNotificationSettings);
             document.getElementById('test-api').addEventListener('click', testApiConnection);
+            
+            // Display a test notification after 3 seconds
+            setTimeout(showNotification, 3000);
         });
-
-        // Initialize all charts
-      async function initCharts() {
-  const salesData = await fetchSalesData();
-  const revenueData = await fetchRevenueData();
-  const trafficData = await fetchTrafficData();
-  const conversionCtx = document.getElementById('conversion-chart').getContext('2d');
-const conversionData = salesData.daily.map((sale, index) => {
-  const sessions = salesData.sessions.daily[index];
-  return sessions ? (sale / sessions * 100).toFixed(2) : 0;
-});
-
-  
-  conversionChart = new Chart(conversionCtx, {
-  type: 'line',
-  data: {
-    labels: salesData.labels.daily,
-    datasets: [{
-      label: 'Conversion Rate (%)',
-      data: conversionData,
-      backgroundColor: 'rgba(255, 193, 7, 0.2)',
-      borderColor: 'rgba(255, 193, 7, 1)',
-      borderWidth: 2,
-      tension: 0.4,
-      pointRadius: 5,
-      pointBackgroundColor: 'rgba(255, 193, 7, 1)'
-    }]
-  },
-  options: commonOptions
-});
-  
-const sessionCtx = document.getElementById('sessions-chart').getContext('2d');
-sessionChart = new Chart(sessionCtx, {
-  type: 'line',
-  data: {
-    labels: salesData.labels.daily,
-    datasets: [{
-      label: 'Sessions',
-      data: salesData.sessions.daily,
-      backgroundColor: 'rgba(23, 162, 184, 0.2)',
-      borderColor: 'rgba(23, 162, 184, 1)',
-      borderWidth: 2,
-      tension: 0.4
-    }]
-  },
-  options: commonOptions
-});
-
-
-const engagementCtx = document.getElementById('engagement-chart').getContext('2d');
-engagementChart = new Chart(engagementCtx, {
-  type: 'bar',
-  data: {
-    labels: salesData.labels.daily,
-    datasets: [{
-      label: 'Clicks per Session',
-      data: [10, 12, 14, 9, 15, 13, 11], // mock or from userActivity
-      backgroundColor: 'rgba(255, 206, 86, 0.2)',
-      borderColor: 'rgba(255, 206, 86, 1)',
-      borderWidth: 1
-    }]
-  },
-  options: commonOptions
-});
-
-const trafficTimeCtx = document.getElementById('traffic-time-chart').getContext('2d');
-trafficTimeChart = new Chart(trafficTimeCtx, {
-  type: 'line',
-  data: {
-    labels: salesData.labels.daily,
-    datasets: [{
-      label: 'Visitors',
-      data: trafficData.overtime.daily,
-      backgroundColor: 'rgba(153, 102, 255, 0.2)',
-      borderColor: 'rgba(153, 102, 255, 1)',
-      borderWidth: 2,
-      tension: 0.4
-    }]
-  },
-  options: commonOptions
-});
-
-const trafficSourcesCtx = document.getElementById('traffic-sources-chart').getContext('2d');
-trafficSourcesChart = new Chart(trafficSourcesCtx, {
-  type: 'doughnut',
-  data: {
-    labels: trafficData.sources.all.labels,
-    datasets: [{
-      label: 'Traffic Sources',
-      data: trafficData.sources.all.data,
-      backgroundColor: [
-        'rgba(0,123,255,0.6)',
-        'rgba(40,167,69,0.6)',
-        'rgba(255,193,7,0.6)',
-        'rgba(220,53,69,0.6)',
-        'rgba(108,117,125,0.6)'
-      ]
-    }]
-  },
-  options: {
-    plugins: {
-      legend: {
-        labels: {
-          color: 'white'
-        }
-      }
-    }
-  }
-});
-
-
-  // Sales Chart
-  const salesCtx = document.getElementById('sales-chart').getContext('2d');
-  salesChart = new Chart(salesCtx, {
-    type: 'line',
-    data: {
-      labels: salesData.labels.daily,
-      datasets: [{
-        label: 'Sales',
-        data: salesData.daily,
-        backgroundColor: 'rgba(0,123,255,0.2)',
-        borderColor: 'rgba(0,123,255,1)',
-        borderWidth: 2
-      }]
-    },
-    options: commonOptions
-  });
-
-  // Revenue Chart
-  const revenueCtx = document.getElementById('revenue-chart').getContext('2d');
-  revenueChart = new Chart(revenueCtx, {
-    type: 'bar',
-    data: {
-      labels: revenueData.product.labels,
-      datasets: [{
-        label: 'Revenue',
-        data: revenueData.product.data,
-        backgroundColor: 'rgba(40,167,69,0.2)',
-        borderColor: 'rgba(40,167,69,1)',
-        borderWidth: 2
-      }]
-    },
-    options: commonOptions
-  });
-
-}
-                
-        // Setup event listeners for chart controls
-        function setupEventListeners() {
-            // Sales chart type change
-            document.getElementById('sales-chart-type').addEventListener('change', function() {
-                updateChartType('salesChart', this.value);
-            });
+        
+        // Initialize tab functionality
+        function initTabs() {
+            const tabs = document.querySelectorAll('.tab');
             
-            // Sales time view change
-            document.getElementById('sales-time-view').addEventListener('change', function() {
-                updateSalesChart(this.value);
-            });
-            
-            // Revenue chart type change
-            document.getElementById('revenue-chart-type').addEventListener('change', function() {
-                updateChartType('revenueChart', this.value);
-            });
-            
-            // Revenue view change
-            document.getElementById('revenue-view').addEventListener('change', function() {
-                updateRevenueChart(this.value);
-            });
-            
-            // Sessions time view change
-            document.getElementById('sessions-time-view').addEventListener('change', function() {
-                updateSessionChart(this.value);
-            });
-            
-            // Users chart type change
-            document.getElementById('users-chart-type').addEventListener('change', function() {
-                updateChartType('usersChart', this.value);
-            });
-            
-            // Engagement time view change
-            document.getElementById('engagement-time-view').addEventListener('change', function() {
-                // In a real implementation, this would fetch new data for the selected time period
-                engagementChart.update();
-            });
-            
-            // Traffic filter change
-            document.getElementById('traffic-filter').addEventListener('change', function() {
-                updateTrafficSourcesChart(this.value);
-            });
-            
-            // Traffic time view change
-            document.getElementById('traffic-time-view').addEventListener('change', function() {
-                updateTrafficTimeChart(this.value);
-            });
-            
-            // Real-time toggle
-            document.getElementById('real-time-toggle').addEventListener('change', function() {
-                realTimeEnabled = this.checked;
-                if (realTimeEnabled) {
-                    startRealTimeUpdates();
-                } else {
-                    stopRealTimeUpdates();
-                }
-            });
-            
-            // Date filter apply button
-            document.getElementById('apply-date-filter').addEventListener('click', function() {
-                const startDate = document.getElementById('start-date').value;
-                const endDate = document.getElementById('end-date').value;
-                
-                if (startDate && endDate) {
-                    // In a real implementation, you would fetch filtered data from the server
-                    // For the mock, we'll just show a notification
-                    showNotification('Filter Applied', `Data filtered from ${startDate} to ${endDate}`);
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Remove active class from all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
                     
-                    // Mock updating the charts with "filtered" data
-                    updateAllCharts();
-                } else {
-                    showNotification('Missing Dates', 'Please select both start and end dates');
-                }
-            });
-        }
-
-        // Table population functions
-      async function populateOrdersTable(data = null) {
-  const tbody = document.querySelector('#orders-table tbody');
-  tbody.innerHTML = '';
-
-  let orders = data;
-  if (!orders) {
-    try {
-      const res = await fetch('/api/orders');
-      if (!res.ok) throw new Error("Failed to fetch");
-      orders = await res.json();
-    } catch (err) {
-      console.warn('Falling back to mockData.orders due to error:', err.message);
-      orders = mockData.orders;
-    }
-  }
-
-  orders.forEach(order => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${order.id}</td>
-      <td>${order.email}</td>
-      <td>${order.product}</td>
-      <td>$${order.price.toFixed(2)}</td>
-      <td>${order.date}</td>
-      <td>${order.status}</td>
-    `;
-    tbody.appendChild(row);
-  });
-}
-
-     async function populateActivityTable(data = null) {
-  const tbody = document.querySelector('#activity-table tbody');
-  tbody.innerHTML = '';
-
-  let userActivity = data;
-  if (!userActivity) {
-    try {
-      const res = await fetch('/api/user-activity');
-      if (!res.ok) throw new Error("Failed to fetch");
-      userActivity = await res.json();
-    } catch (err) {
-      console.warn('Falling back to mockData.userActivity due to error:', err.message);
-      userActivity = mockData.userActivity;
-    }
-  }
-
-  userActivity.forEach(activity => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${activity.userId}</td>
-      <td>${activity.email}</td>
-      <td>${activity.action}</td>
-      <td>${activity.page}</td>
-      <td>${activity.timestamp}</td>
-    `;
-    tbody.appendChild(row);
-  });
-}
-
-        // Make tables sortable
-        function makeTablesSortable() {
-            const tables = document.querySelectorAll('table');
-            
-            tables.forEach(table => {
-                const headers = table.querySelectorAll('th[data-sort]');
-                
-                headers.forEach(header => {
-                    header.addEventListener('click', function() {
-                        const sortKey = this.getAttribute('data-sort');
-                        const tbody = table.querySelector('tbody');
-                        const rows = Array.from(tbody.querySelectorAll('tr'));
-                        
-                        // Toggle sort direction
-                        const currentDirection = this.classList.contains('sorted-asc') ? 'desc' : 'asc';
-                        
-                        // Remove sorted classes from all headers
-                        headers.forEach(h => {
-                            h.classList.remove('sorted-asc', 'sorted-desc');
-                        });
-                        
-                        // Add appropriate class to clicked header
-                        this.classList.add(currentDirection === 'asc' ? 'sorted-asc' : 'sorted-desc');
-                        
-                        // Sort the rows
-                        rows.sort((rowA, rowB) => {
-                            const cellA = rowA.querySelector(`td:nth-child(${Array.from(headers).indexOf(header) + 1})`).textContent.trim();
-                            const cellB = rowB.querySelector(`td:nth-child(${Array.from(headers).indexOf(header) + 1})`).textContent.trim();
-                            
-                            // Check if we're sorting numbers
-                            if (!isNaN(cellA) && !isNaN(cellB)) {
-                                return currentDirection === 'asc' ? 
-                                    parseFloat(cellA) - parseFloat(cellB) : 
-                                    parseFloat(cellB) - parseFloat(cellA);
-                            }
-                            // Handle price with $ symbol
-                            else if (cellA.startsWith('$') && cellB.startsWith('$')) {
-                                const numA = parseFloat(cellA.substring(1));
-                                const numB = parseFloat(cellB.substring(1));
-                                return currentDirection === 'asc' ? numA - numB : numB - numA;
-                            }
-                            // Default to string comparison
-                            else {
-                                return currentDirection === 'asc' ? 
-                                    cellA.localeCompare(cellB) : 
-                                    cellB.localeCompare(cellA);
-                            }
-                        });
-                        
-                        // Reorder the rows in the DOM
-                        rows.forEach(row => tbody.appendChild(row));
+                    // Add active class to clicked tab
+                    tab.classList.add('active');
+                    
+                    // Hide all sections
+                    document.querySelectorAll('.dashboard-section').forEach(section => {
+                        section.classList.remove('active');
                     });
+                    
+                    // Show selected section
+                    const tabName = tab.getAttribute('data-tab');
+                    const targetSection = document.querySelector(`[data-tab-content="${tabName}"]`);
+                    if (targetSection) {
+                        targetSection.classList.add('active');
+                    }
+                    
+                    // Resize charts if needed when tab becomes visible
+                    if (charts[tabName]) {
+                        Object.values(charts[tabName]).forEach(chart => {
+                            if (chart) chart.resize();
+                        });
+                    }
                 });
             });
         }
-
-        // Add search functionality to tables
-        function addSearchToTables() {
-            // Orders table search
-            const ordersSearch = document.getElementById('orders-search');
-            ordersSearch.addEventListener('keyup', function() {
-                filterTable('orders-table', this.value);
+        
+        // Initialize sales charts
+        function initSalesCharts() {
+            // Sales over time chart
+            const salesChartCtx = document.getElementById('sales-chart').getContext('2d');
+            charts.sales = charts.sales || {};
+            charts.sales.salesChart = new Chart(salesChartCtx, {
+                type: 'line',
+                data: {
+                    labels: mockData.sales.labels.daily,
+                    datasets: [{
+                        label: 'Sales',
+                        data: mockData.sales.daily,
+                        backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                        borderColor: 'rgba(76, 175, 80, 1)',
+                        borderWidth: 2,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    }
+                }
             });
             
-            // Activity table search
-            const activitySearch = document.getElementById('activity-search');
-            activitySearch.addEventListener('keyup', function() {
-                filterTable('activity-table', this.value);
+            // Revenue breakdown chart
+            const revenueChartCtx = document.getElementById('revenue-chart').getContext('2d');
+            charts.sales.revenueChart = new Chart(revenueChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: mockData.revenue.product.labels,
+                    datasets: [{
+                        label: 'Revenue',
+                        data: mockData.revenue.product.data,
+                        backgroundColor: [
+                            'rgba(76, 175, 80, 0.6)',
+                            'rgba(63, 81, 181, 0.6)',
+                            'rgba(255, 193, 7, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(76, 175, 80, 1)',
+                            'rgba(63, 81, 181, 1)',
+                            'rgba(255, 193, 7, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    }
+                }
             });
             
-            // Traffic table search
-            const trafficSearch = document.getElementById('traffic-search');
-            trafficSearch.addEventListener('keyup', function() {
-                filterTable('traffic-table', this.value);
+            // Sessions chart
+            const sessionsChartCtx = document.getElementById('sessions-chart').getContext('2d');
+            charts.sales.sessionsChart = new Chart(sessionsChartCtx, {
+                type: 'line',
+                data: {
+                    labels: mockData.sales.labels.daily,
+                    datasets: [{
+                        label: 'Sessions',
+                        data: mockData.sessions.daily,
+                        backgroundColor: 'rgba(63, 81, 181, 0.2)',
+                        borderColor: 'rgba(63, 81, 181, 1)',
+                        borderWidth: 2,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    }
+                }
             });
-        }
-
-        // Filter table based on search input
-        function filterTable(tableId, searchTerm) {
-            const table = document.getElementById(tableId);
-            const rows = table.querySelectorAll('tbody tr');
             
-            searchTerm = searchTerm.toUpperCase();
-            
-            rows.forEach(row => {
-                let txtValue = row.textContent || row.innerText;
-                if (txtValue.toUpperCase().indexOf(searchTerm) > -1) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
+            // Conversion rate chart
+            const conversionChartCtx = document.getElementById('conversion-chart').getContext('2d');
+            charts.sales.conversionChart = new Chart(conversionChartCtx, {
+                type: 'line',
+                data: {
+                    labels: mockData.sales.labels.daily,
+                    datasets: [{
+                        label: 'Conversion Rate (%)',
+                        data: mockData.conversion.daily,
+                        backgroundColor: 'rgba(255, 193, 7, 0.2)',
+                        borderColor: 'rgba(255, 193, 7, 1)',
+                        borderWidth: 2,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    }
                 }
             });
         }
-
-        // CSV Export function
-       	    function exportTableToCSV(tableId, filename) {
-            const table = document.getElementById(tableId);
-            const rows = table.querySelectorAll('tr');
-            const csvContent = [];
+        
+        // Initialize user behavior charts
+        function initUserBehaviorCharts() {
+            charts.behavior = charts.behavior || {};
             
-            // Get headers
-            const headers = [];
-            const headerCells = rows[0].querySelectorAll('th');
-            headerCells.forEach(cell => {
-                headers.push(cell.textContent.trim());
-            });
-            csvContent.push(headers.join(','));
-            
-            // Get visible data rows (to respect filtering)
-            for (let i = 1; i < rows.length; i++) {
-                if (rows[i].style.display !== 'none') {
-                    const rowData = [];
-                    const cells = rows[i].querySelectorAll('td');
-                    cells.forEach(cell => {
-                        // Wrap in quotes to handle commas in content
-                        rowData.push(`"${cell.textContent.trim()}"`);
-                    });
-                    csvContent.push(rowData.join(','));
+            // New vs Returning Users chart
+            const usersChartCtx = document.getElementById('users-chart').getContext('2d');
+            charts.behavior.usersChart = new Chart(usersChartCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['New Users', 'Returning Users'],
+                    datasets: [{
+                        data: [mockData.users.new, mockData.users.returning],
+                        backgroundColor: [
+                            'rgba(76, 175, 80, 0.6)',
+                            'rgba(63, 81, 181, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(76, 175, 80, 1)',
+                            'rgba(63, 81, 181, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    }
                 }
-            }
+            });
             
-
-        // Chart update functions
-        function updateSalesChart(timeView) {
-            salesChart.data.labels = mockData.sales.labels[timeView];
-            salesChart.data.datasets[0].data = mockData.sales[timeView];
-            salesChart.update();
+            // User Engagement chart
+            const engagementChartCtx = document.getElementById('engagement-chart').getContext('2d');
+            charts.behavior.engagementChart = new Chart(engagementChartCtx, {
+                type: 'line',
+                data: {
+                    labels: mockData.sales.labels.daily,
+                    datasets: [{
+                        label: 'Minutes per Session',
+                        data: mockData.engagement.daily,
+                        backgroundColor: 'rgba(255, 193, 7, 0.2)',
+                        borderColor: 'rgba(255, 193, 7, 1)',
+                        borderWidth: 2,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    }
+                }
+            });
         }
-
-        function updateRevenueChart(view = 'product') {
- 		 const data = view === 'product' ? revenueData.product : revenueData.category;
-  		  revenueChart.data.labels = data.labels;
-  		  revenueChart.data.datasets[0].data = data.data;
-  		   revenueChart.update();
-}
-
-
-        function updateSessionChart(timeView) {
-            sessionChart.data.labels = mockData.sales.labels[timeView];
-            sessionChart.data.datasets[0].data = mockData.sessions[timeView];
-            sessionChart.update();
+        
+        // Initialize traffic charts
+        function initTrafficCharts() {
+            charts.traffic = charts.traffic || {};
+            
+            // Traffic Sources chart
+            const trafficSourcesCtx = document.getElementById('traffic-sources-chart').getContext('2d');
+            charts.traffic.sourcesChart = new Chart(trafficSourcesCtx, {
+                type: 'pie',
+                data: {
+                    labels: mockData.traffic.sources.all.labels,
+                    datasets: [{
+                        data: mockData.traffic.sources.all.data,
+                        backgroundColor: [
+                            'rgba(76, 175, 80, 0.6)',
+                            'rgba(63, 81, 181, 0.6)',
+                            'rgba(255, 193, 7, 0.6)',
+                            'rgba(233, 30, 99, 0.6)',
+                            'rgba(0, 188, 212, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(76, 175, 80, 1)',
+                            'rgba(63, 81, 181, 1)',
+                            'rgba(255, 193, 7, 1)',
+                            'rgba(233, 30, 99, 1)',
+                            'rgba(0, 188, 212, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Traffic Over Time chart
+            const trafficTimeCtx = document.getElementById('traffic-time-chart').getContext('2d');
+            charts.traffic.timeChart = new Chart(trafficTimeCtx, {
+                type: 'line',
+                data: {
+                    labels: mockData.sales.labels.daily,
+                    datasets: [{
+                        label: 'Visitors',
+                        data: mockData.traffic.overtime.daily,
+                        backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                        borderColor: 'rgba(76, 175, 80, 1)',
+                        borderWidth: 2,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    }
+                }
+            });
         }
-
-        function updateTrafficSourcesChart(filter) {
-            trafficSourcesChart.data.labels = mockData.traffic.sources[filter].labels;
-            trafficSourcesChart.data.datasets[0].data = mockData.traffic.sources[filter].data;
-            trafficSourcesChart.update();
+        
+        // Setup event listeners for chart controls
+        function setupChartControls() {
+            // Sales chart controls
+            document.getElementById('sales-chart-type').addEventListener('change', function() {
+                updateChartType(charts.sales.salesChart, this.value);
+            });
+            
+            document.getElementById('sales-time-view').addEventListener('change', function() {
+                updateTimeView(charts.sales.salesChart, 'sales', this.value);
+            });
+            
+            // Revenue chart controls
+            document.getElementById('revenue-chart-type').addEventListener('change', function() {
+                updateChartType(charts.sales.revenueChart, this.value);
+            });
+            
+            document.getElementById('revenue-view').addEventListener('change', function() {
+                updateRevenueView(this.value);
+            });
+            
+            // Sessions chart controls
+            document.getElementById('sessions-time-view').addEventListener('change', function() {
+                updateTimeView(charts.sales.sessionsChart, 'sessions', this.value);
+            });
+            
+            // Conversion chart controls
+            document.getElementById('conversion-time-view').addEventListener('change', function() {
+                updateTimeView(charts.sales.conversionChart, 'conversion', this.value);
+            });
+            
+            // User chart controls
+            document.getElementById('users-chart-type').addEventListener('change', function() {
+                updateChartType(charts.behavior.usersChart, this.value);
+            });
+            
+            // Engagement chart controls
+            document.getElementById('engagement-time-view').addEventListener('change', function() {
+                updateTimeView(charts.behavior.engagementChart, 'engagement', this.value);
+            });
+            
+            // Traffic source controls
+            document.getElementById('traffic-chart-type').addEventListener('change', function() {
+                updateChartType(charts.traffic.sourcesChart, this.value);
+            });
+            
+            document.getElementById('traffic-filter').addEventListener('change', function() {
+                updateTrafficFilter(this.value);
+            });
+            
+            // Traffic time controls
+            document.getElementById('traffic-time-view').addEventListener('change', function() {
+                updateTimeView(charts.traffic.timeChart, 'traffic.overtime', this.value);
+            });
         }
-
-        function updateTrafficTimeChart(timeView) {
-            trafficTimeChart.data.labels = mockData.sales.labels[timeView];
-            trafficTimeChart.data.datasets[0].data = mockData.traffic.overtime[timeView];
-            trafficTimeChart.update();
-        }
-
-        function updateChartType(chartId, type) {
-            const chart = window[chartId];
+        
+        // Update chart type (line, bar, pie)
+        function updateChartType(chart, type) {
             chart.config.type = type;
-            
-            // Special handling for pie charts
-            if (type === 'pie' || type === 'doughnut') {
-                chart.options.scales.x.display = false;
-                chart.options.scales.y.display = false;
-                chart.options.plugins.legend.display = true;
-                chart.options.plugins.legend.position = 'right';
+            chart.update();
+        }
+        
+        // Update time view (daily, weekly, monthly)
+        function updateTimeView(chart, dataPrefix, timeView) {
+            // Navigate to the correct data path
+            let dataPath = dataPrefix;
+            if (dataPath.includes('.')) {
+                const parts = dataPath.split('.');
+                const data = mockData[parts[0]][parts[1]][timeView];
+                chart.data.labels = mockData.sales.labels[timeView];
+                chart.data.datasets[0].data = data;
             } else {
-                chart.options.scales.x.display = true;
-                chart.options.scales.y.display = true;
-                chart.options.plugins.legend.display = type === 'line' ? true : false;
+                chart.data.labels = mockData.sales.labels[timeView];
+                chart.data.datasets[0].data = mockData[dataPath][timeView];
             }
             
             chart.update();
         }
-
-        function updateTrafficChartType(type) {
-            updateChartType('trafficSourcesChart', type);
+        
+        // Update revenue view (product, category)
+        function updateRevenueView(view) {
+            const chart = charts.sales.revenueChart;
+            chart.data.labels = mockData.revenue[view].labels;
+            chart.data.datasets[0].data = mockData.revenue[view].data;
+            chart.update();
         }
-
-
-        function updateAllCharts() {
-            // Update all charts with new data
-            salesChart.update();
-            revenueChart.update();
-            sessionChart.update();
-            conversionChart.update();
-            usersChart.update();
-            engagementChart.update();
-            trafficSourcesChart.update();
-            trafficTimeChart.update();
+        
+        // Update traffic sources filter
+        function updateTrafficFilter(filter) {
+            const chart = charts.traffic.sourcesChart;
+            chart.data.labels = mockData.traffic.sources[filter].labels;
+            chart.data.datasets[0].data = mockData.traffic.sources[filter].data;
+            chart.update();
+        }
+        
+        // Populate orders table
+        function populateOrdersTable(orders) {
+            const tbody = document.querySelector('#orders-table tbody');
+            tbody.innerHTML = '';
             
-            showNotification('Charts Updated', 'All charts have been refreshed with latest data');
-        }
-
-        // Initialize real-time updates
-        function initRealTimeUpdates() {
-            // Check if WebSocket is supported
-            if ("WebSocket" in window) {
-                // Setup connection status display
-                const connectionStatus = document.getElementById('connection-status');
+            orders.forEach(order => {
+                const tr = document.createElement('tr');
                 
-                // Setup toggle listener
-                document.getElementById('real-time-toggle').addEventListener('change', function() {
-                    if (this.checked) {
-                        startRealTimeUpdates();
-                    } else {
-                        stopRealTimeUpdates();
-                    }
+                tr.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${order.email}</td>
+                    <td>${order.product}</td>
+                    <td>$${order.price.toFixed(2)}</td>
+                    <td>${order.date}</td>
+                    <td>${order.status}</td>
+                `;
+                
+                tbody.appendChild(tr);
+            });
+        }
+        
+        // Populate activity table
+        function populateActivityTable(activities) {
+            const tbody = document.querySelector('#activity-table tbody');
+            tbody.innerHTML = '';
+            
+            activities.forEach(activity => {
+                const tr = document.createElement('tr');
+                
+                tr.innerHTML = `
+                    <td>${activity.userId}</td>
+                    <td>${activity.email}</td>
+                    <td>${activity.action}</td>
+                    <td>${activity.page}</td>
+                    <td>${activity.timestamp}</td>
+                `;
+                
+                tbody.appendChild(tr);
+            });
+        }
+        
+        // Populate traffic table
+        function populateTrafficTable(trafficData) {
+            const tbody = document.querySelector('#traffic-table tbody');
+            tbody.innerHTML = '';
+            
+            trafficData.forEach(item => {
+                const tr = document.createElement('tr');
+                
+                tr.innerHTML = `
+                    <td>${item.source}</td>
+                    <td>${item.visitors}</td>
+                    <td>${item.pageViews}</td>
+                    <td>${item.bounceRate}</td>
+                    <td>${item.avgTime}</td>
+                `;
+                
+                tbody.appendChild(tr);
+            });
+        }
+        
+        // Setup search functionality for tables
+        function setupSearchFunctionality() {
+            // Orders search
+            document.getElementById('orders-search').addEventListener('input', function() {
+                filterTable('orders-table', this.value);
+            });
+            
+            // Activity search
+            document.getElementById('activity-search').addEventListener('input', function() {
+                filterTable('activity-table', this.value);
+            });
+            
+            // Traffic search
+            document.getElementById('traffic-search').addEventListener('input', function() {
+                filterTable('traffic-table', this.value);
+            });
+            
+            // Make tables sortable
+            makeTableSortable('orders-table');
+            makeTableSortable('activity-table');
+            makeTableSortable('traffic-table');
+        }
+        
+        // Filter table by search term
+        function filterTable(tableId, searchTerm) {
+            const table = document.getElementById(tableId);
+            const rows = table.querySelectorAll('tbody tr');
+            
+            searchTerm = searchTerm.toLowerCase();
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        }
+        
+        // Make table sortable
+        function makeTableSortable(tableId) {
+            const table = document.getElementById(tableId);
+            const headers = table.querySelectorAll('th');
+            
+            headers.forEach(header => {
+                header.addEventListener('click', function() {
+                    const column = this.getAttribute('data-sort');
+                    const tbody = table.querySelector('tbody');
+                    const rows = Array.from(tbody.querySelectorAll('tr'));
+                    
+                    // Get current sort direction
+                    const isAscending = !this.classList.contains('sorted-asc');
+                    
+                    // Remove sorting classes from all headers
+                    headers.forEach(h => {
+                        h.classList.remove('sorted-asc', 'sorted-desc');
+                    });
+                    
+                    // Add appropriate class to clicked header
+                    this.classList.add(isAscending ? 'sorted-asc' : 'sorted-desc');
+                    
+                    // Get column index
+                    const columnIndex = Array.from(this.parentNode.children).indexOf(this);
+                    
+                    // Sort rows
+                    rows.sort((a, b) => {
+                        const aValue = a.children[columnIndex].textContent;
+                        const bValue = b.children[columnIndex].textContent;
+                        
+                        // Check if values are numeric
+                        if (!isNaN(parseFloat(aValue)) && !isNaN(parseFloat(bValue))) {
+                            return isAscending ? 
+                                parseFloat(aValue) - parseFloat(bValue) : 
+                                parseFloat(bValue) - parseFloat(aValue);
+                        } else {
+                            return isAscending ? 
+                                aValue.localeCompare(bValue) : 
+                                bValue.localeCompare(aValue);
+                        }
+                    });
+                    
+                    // Append sorted rows
+                    rows.forEach(row => tbody.appendChild(row));
                 });
-            } else {
-                // WebSocket not supported, hide the toggle
-                document.querySelector('.real-time-toggle').style.display = 'none';
-                showNotification('Not Supported', 'Real-time updates are not supported in your browser');
-            }
+            });
         }
-
-        // Start real-time updates
-        function startRealTimeUpdates() {
-            const connectionStatus = document.getElementById('connection-status');
-            connectionStatus.innerHTML = '<span style="color: var(--accent-green);">Connected</span>';
-            connectionStatus.querySelector('.pulse').style.display = 'inline-block';
+        
+        // Toggle realtime updates
+        function toggleRealtime(event) {
+            const isOn = event.target.checked;
+            const statusEl = document.getElementById('connection-status');
+            const pulseEl = statusEl.querySelector('.pulse');
             
-            try {
-                // In a real implementation, this would connect to your WebSocket server
-                // For this demo, we'll simulate updates with a setInterval
-                pollingInterval = setInterval(function() {
-                    simulateDataUpdate();
-                }, 5000); // Update every 5 seconds
+            if (isOn) {
+                statusEl.classList.add('live');
+                statusEl.querySelector('span').textContent = 'Live';
+                pulseEl.style.display = 'inline-block';
                 
-                showNotification('Real-time Updates', 'Real-time data updates are now enabled');
-            } catch (e) {
-                connectionStatus.innerHTML = '<span style="color: red;">Error</span>';
-                stopRealTimeUpdates();
-                showNotification('Connection Error', 'Failed to establish real-time connection');
+                // In a real implementation, you would connect to a WebSocket here
+                // For demo purposes, we'll just simulate updates
+                window.realtimeInterval = setInterval(() => {
+                    updateRandomData();
+                }, 3000);
+            } else {
+                statusEl.classList.remove('live');
+                statusEl.querySelector('span').textContent = 'Offline';
+                pulseEl.style.display = 'none';
+                
+                clearInterval(window.realtimeInterval);
             }
         }
-
-        // Stop real-time updates
-        function stopRealTimeUpdates() {
-            const connectionStatus = document.getElementById('connection-status');
-            connectionStatus.innerHTML = '<span>Offline</span>';
-            document.querySelector('.pulse').style.display = 'none';
+        
+        // Simulate real-time data updates
+        function updateRandomData() {
+            // Update a random value in the sales data
+            const randomIndex = Math.floor(Math.random() * mockData.sales.daily.length);
+            const randomChange = Math.random() * 4 - 2; // Random value between -2 and 2
             
-            if (pollingInterval) {
-                clearInterval(pollingInterval);
-            }
-        }
-
-        // Simulate data updates for real-time demonstration
-        function simulateDataUpdate() {
-            // Random chance of different update types
-            const updateType = Math.floor(Math.random() * 4);
-            
-            switch (updateType) {
-                case 0: // New order
-                    simulateNewOrder();
-                    break;
-                case 1: // Traffic spike
-                    simulateTrafficUpdate();
-                    break;
-                case 2: // User activity
-                    simulateUserActivity();
-                    break;
-                case 3: // Revenue update
-                    simulateRevenueUpdate();
-                    break;
-            }
-        }
-
-        // Simulate a new order
-        function simulateNewOrder() {
-            // Create a new order object
-            const products = ['Basic Plan', 'Premium Plan', 'Bundle'];
-            const prices = [19.99, 49.99, 79.99];
-            const randomProduct = Math.floor(Math.random() * products.length);
-            
-            const newOrder = {
-                id: Math.floor(10000 + Math.random() * 90000).toString(),
-                email: `customer${Math.floor(Math.random() * 1000)}@example.com`,
-                product: products[randomProduct],
-                price: prices[randomProduct],
-                date: new Date().toISOString().split('T')[0],
-                status: 'New'
-            };
-            
-            // Add to mock data
-            mockData.orders.unshift(newOrder);
-            if (mockData.orders.length > 20) mockData.orders.pop(); // Keep length manageable
-            
-            // Update orders table
-            populateOrdersTable();
-            
-            // Update charts
-            const today = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
-            const dayIndex = today === 0 ? 6 : today - 1; // Adjust to our 0 = Monday index
-            
-            // Update sales chart
-            salesChart.data.datasets[0].data[dayIndex]++;
-            salesChart.update();
-            
-            // Update revenue chart - add the price to the appropriate product's revenue
-            const productIndex = mockData.revenue.product.labels.indexOf(products[randomProduct]);
-            if (productIndex !== -1) {
-                mockData.revenue.product.data[productIndex] += prices[randomProduct];
-                revenueChart.update();
-            }
-            
-            // Show notification for the new order
-            showNotification(
-                'New Order!', 
-                `Order #${newOrder.id} received for ${newOrder.product} from ${newOrder.email}`
-            );
-            
-            // Simulate Telegram notification
-            sendTelegramNotification(`New order #${newOrder.id}: ${newOrder.product} ($${newOrder.price}) from ${newOrder.email}`);
-        }
-
-        // Simulate traffic update
-        function simulateTrafficUpdate() {
-            // Update traffic data
-            const today = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
-            const dayIndex = today === 0 ? 6 : today - 1; // Adjust to our 0 = Monday index
-            
-            // Add some random traffic
-            const additionalTraffic = Math.floor(Math.random() * 20) + 5;
-            mockData.traffic.overtime.daily[dayIndex] += additionalTraffic;
+            mockData.sales.daily[randomIndex] = Math.max(0, mockData.sales.daily[randomIndex] + randomChange);
             
             // Update chart
-            trafficTimeChart.data.datasets[0].data = mockData.traffic.overtime.daily;
-            trafficTimeChart.update();
+            charts.sales.salesChart.data.datasets[0].data = mockData.sales.daily;
+            charts.sales.salesChart.update();
             
-            // Update one of the sources
-            const sourceIndex = Math.floor(Math.random() * mockData.traffic.sources.all.labels.length);
-            mockData.traffic.sources.all.data[sourceIndex] += additionalTraffic;
-	}
-	          
-document.querySelector('.logout-btn')?.addEventListener('click', () => {
-  fetch('/logout', { method: 'POST' })
-    .then(() => window.location.href = '/login.html')  // Adjust if login path is different
-    .catch(err => console.error('Logout failed:', err));
+            // Show a notification occasionally
+            if (Math.random() > 0.7) {
+                showRandomNotification();
+            }
+        }
+        
+        // Apply date filter
+        function applyDateFilter() {
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            
+            // In a real implementation, you would fetch data for the selected date range
+            // For demo purposes, we'll just show a notification
+            showNotification('Date filter applied', `Showing data from ${startDate} to ${endDate}`);
+        }
+        
+        // Save notification settings
+        function saveNotificationSettings() {
+            const telegramEnabled = document.getElementById('telegram-enabled').value === 'true';
+            const events = Array.from(document.getElementById('notification-events').selectedOptions)
+                .map(option => option.value);
+            
+            // In a real implementation, you would save these settings to a backend
+            // For demo purposes, just show a notification
+            showNotification('Settings Saved', `Telegram notifications: ${telegramEnabled ? 'Enabled' : 'Disabled'}`);
+        }
+        
+        // Test API connection
+        function testApiConnection() {
+            // In a real implementation, you would test the API connection
+            // For demo purposes, simulate a successful connection
+            document.getElementById('api-status').value = 'Connected (200 OK)';
+            showNotification('API Test', 'Connection successful');
+        }
+        
+        // Show notification
+        function showNotification(title = 'New Order!', message = 'New order received from customer@example.com') {
+            const toast = document.getElementById('notification-toast');
+            const header = toast.querySelector('.notification-header strong');
+            const content = document.getElementById('notification-content');
+            
+            header.textContent = title;
+            content.textContent = message;
+            
+            toast.style.display = 'block';
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Close notification
+        function closeNotification() {
+            document.getElementById('notification-toast').style.display = 'none';
+        }
+        
+                // Complete the showRandomNotification function
+function showRandomNotification() {
+    const notifications = [
+        { title: 'New Order!', message: 'New order received from customer@example.com' },
+        { title: 'High Traffic Alert', message: 'Traffic spike detected (150% above average)' },
+        { title: 'Low Stock Warning', message: 'Product "Premium Plan" is running low on stock' },
+        { title: 'New User Registration', message: 'A new user has just registered on your site' },
+        { title: 'Goal Reached', message: 'Daily sales target has been reached!' }
+    ];
+    
+    const randomNotification = notifications[Math.floor(Math.random() * notifications.length)];
+    showNotification(randomNotification.title, randomNotification.message);
+}
+
+// Export table to CSV
+function exportTableToCSV(tableId, filename) {
+    const table = document.getElementById(tableId);
+    const rows = table.querySelectorAll('tr');
+    
+    let csv = [];
+    
+    for (let i = 0; i < rows.length; i++) {
+        const row = [], cols = rows[i].querySelectorAll('td, th');
+        
+        for (let j = 0; j < cols.length; j++) {
+            // Replace any commas in the cell content to avoid CSV parsing issues
+            let data = cols[j].innerText.replace(/,/g, ';');
+            // Add double quotes to handle special characters
+            row.push('"' + data + '"');
+        }
+        
+        csv.push(row.join(','));        
+    }
+    
+    // Create and download CSV file
+    const csvString = csv.join('\n');
+    const downloadLink = document.createElement('a');
+    downloadLink.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvString);
+    downloadLink.download = filename;
+    
+    // Trigger download
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+    
+    showNotification('Export Complete', `${filename} has been downloaded`);
+}
+
+// Fix for missing data: Adding conversion rate mock data
+mockData.conversion = {
+    daily: [2.4, 3.1, 2.8, 3.4, 2.9, 3.2, 2.7],
+    weekly: [2.8, 3.0, 3.3, 2.9],
+    monthly: [2.5, 2.7, 2.6, 2.9, 3.1, 3.0, 3.3, 3.4, 3.2, 3.3, 3.5, 3.4]
+};
+
+// Fix for missing data: Adding users mock data
+mockData.users = {
+    new: 65,
+    returning: 35
+};
+
+// Fix for missing data: Adding engagement mock data
+mockData.engagement = {
+    daily: [5.2, 6.1, 5.8, 6.4, 5.9, 6.2, 5.7],
+    weekly: [5.8, 6.0, 6.3, 5.9],
+    monthly: [5.5, 5.7, 5.6, 5.9, 6.1, 6.0, 6.3, 6.4, 6.2, 6.3, 6.5, 6.4]
+};
+
+// Add hover effect to table rows
+function addTableHoverEffects() {
+    const tables = document.querySelectorAll('table');
+    
+    tables.forEach(table => {
+        const rows = table.querySelectorAll('tbody tr');
+        
+        rows.forEach(row => {
+            row.addEventListener('mouseenter', function() {
+                this.classList.add('hover-highlight');
+            });
+            
+            row.addEventListener('mouseleave', function() {
+                this.classList.remove('hover-highlight');
+            });
+        });
+    });
+}
+
+// Update the traffic chart type
+function updateTrafficChartType(type) {
+    const chart = charts.traffic.sourcesChart;
+    chart.config.type = type;
+    
+    // For pie/doughnut charts, position the legend at the bottom
+    // For bar/line charts, position the legend at the top
+    if (type === 'pie' || type === 'doughnut') {
+        chart.options.plugins.legend.position = 'bottom';
+    } else {
+        chart.options.plugins.legend.position = 'top';
+    }
+    
+    chart.update();
+}
+
+// Initialize table hover effects on load
+document.addEventListener('DOMContentLoaded', function() {
+    addTableHoverEffects();
+
+    // Initialize all charts
+    try {
+        initSalesCharts();
+        initUserBehaviorCharts();
+        initTrafficCharts();
+        
+        // Set default dates if not already set
+        if (!document.getElementById('start-date').value) {
+            const today = new Date();
+            const oneMonthAgo = new Date();
+            oneMonthAgo.setMonth(today.getMonth() - 1);
+            
+            document.getElementById('start-date').valueAsDate = oneMonthAgo;
+            document.getElementById('end-date').valueAsDate = today;
+        }
+    } catch (error) {
+        console.error("Error initializing charts:", error);
+        showNotification("Error", "Failed to initialize charts. Check console for details.");
+    }
 });
 
-  </script>
-</body>
-         
-       
-</html>
+// Add logout button functionality
+document.querySelector('.logout-btn').addEventListener('click', function() {
+    if (confirm('Are you sure you want to logout?')) {
+        showNotification('Logout', 'You have been logged out successfully');
+        // In a real application, this would redirect to a logout endpoint
+        setTimeout(() => {
+            alert('In a real application, you would be redirected to the login page');
+        }, 1500);
+    }
+});
+
+// Mobile responsive enhancements
+function checkMobileView() {
+    if (window.innerWidth < 768) {
+        // Adjust chart heights for better mobile viewing
+        document.querySelectorAll('.chart-container').forEach(container => {
+            container.style.height = '250px';
+        });
+        
+        // Make the tabs scroll horizontally on mobile
+        document.querySelector('.nav-tabs').style.overflowX = 'auto';
+        document.querySelector('.nav-tabs').style.whiteSpace = 'nowrap';
+        document.querySelector('.nav-tabs').style.paddingBottom = '10px';
+        
+        // Adjust table font size
+        document.querySelectorAll('table').forEach(table => {
+            table.style.fontSize = '0.9rem';
+        });
+    } else {
+        // Reset styles for desktop
+        document.querySelectorAll('.chart-container').forEach(container => {
+            container.style.height = '300px';
+        });
+        
+        document.querySelector('.nav-tabs').style.overflowX = '';
+        document.querySelector('.nav-tabs').style.whiteSpace = '';
+        document.querySelector('.nav-tabs').style.paddingBottom = '';
+        
+        document.querySelectorAll('table').forEach(table => {
+            table.style.fontSize = '';
+        });
+    }
+}
+
+// Call on load and on resize
+window.addEventListener('load', checkMobileView);
+window.addEventListener('resize', checkMobileView);
+
+// Fix the tab functionality
+function initTabs() {
+    const tabs = document.querySelectorAll('.tab');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Remove active class from all tabs
+            tabs.forEach(t => t.classList.remove('active'));
+            
+            // Add active class to clicked tab
+            tab.classList.add('active');
+            
+            // Hide all sections
+            document.querySelectorAll('.dashboard-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show selected section
+            const tabName = tab.getAttribute('data-tab');
+            const targetSection = document.querySelector(`[data-tab-content="${tabName}"]`);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+            
+            // Resize charts if needed when tab becomes visible
+            if (charts[tabName]) {
+                Object.values(charts[tabName]).forEach(chart => {
+                    if (chart) chart.resize();
+                });
+            }
+        });
+    });
+}
