@@ -168,6 +168,62 @@ app.get("/api/traffic-stats", async (req, res) => {
   }
 });
 
+const path = require('path');
+
+app.get('/dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+});
+
+// --- Dummy Orders ---
+app.get('/api/orders', (req, res) => {
+  res.json([
+    {
+      id: 'ORD-001',
+      email: 'user1@example.com',
+      product: 'CPAP Machine',
+      price: '$250.00',
+      date: '2025-04-17',
+      status: 'Shipped'
+    },
+    {
+      id: 'ORD-002',
+      email: 'user2@example.com',
+      product: 'Mask Headgear',
+      price: '$45.99',
+      date: '2025-04-18',
+      status: 'Processing'
+    }
+  ]);
+});
+
+// --- Dummy User Activity ---
+app.get('/api/user-activity', (req, res) => {
+  res.json({
+    avgScrollDepth: 62,
+    avgTimeOnPage: 95,
+    clicksPerSession: 22
+  });
+});
+
+// --- Dummy Traffic Insights ---
+app.get('/api/traffic', (req, res) => {
+  res.json({
+    geo: { US: 200, CA: 50, UK: 30 },
+    device: { Mobile: 180, Desktop: 100, Tablet: 20 },
+    referrals: { Google: 120, Facebook: 60, Direct: 30 },
+    campaigns: { SpringLaunch: 70, Retargeting: 25 },
+    keywords: { 'cpap mask': 80, 'sleep aid': 45 }
+  });
+});
+
+// --- Dummy Sales Data for Charts ---
+app.get('/api/sales-data', (req, res) => {
+  res.json({
+    labels: ['2025-04-15', '2025-04-16', '2025-04-17', '2025-04-18'],
+    data: [10, 22, 17, 25]
+  });
+});
+
 // 🚀 Launch
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
