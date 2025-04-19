@@ -792,31 +792,25 @@ async function fetchTrafficData() {
 
     <script>
     
-    async function fetchRevenueData() {
-  try {
-    const res = await fetch('/api/revenue-data');
-    if (!res.ok) throw new Error("Failed to fetch");
-    return await res.json();
-  } catch (err) {
-    console.warn('Falling back to mockData.revenue due to error:', err.message);
-    return mockData.revenue;
-  }
+    async function fetchData(endpoint, fallback) {
+    try {
+        const response = await fetch(endpoint);
+        if (!response.ok) throw new Error("API error");
+        return await response.json();
+    } catch (error) {
+        console.warn(`Failed to load ${endpoint}, using mock data.`);
+        return fallback;
+    }
 }
+
+fetchData('/api/sales-data', mockData.sales).then(renderSalesCharts);
+fetchData('/api/traffic-sources', mockData.traffic.sources.all).then(renderTrafficSources);
+fetchData('/api/traffic-details', mockData.traffic.details).then(renderTrafficDetails);
+fetchData('/api/orders', mockData.orders).then(renderOrdersTable);
+fetchData('/api/user-activity', mockData.userActivity).then(renderUserActivityTable);
 
     
-    async function fetchSalesData() {
-  try {
-    const res = await fetch('/api/sales-data');
-    if (!res.ok) throw new Error("Failed to fetch");
-    return await res.json();
-  } catch (err) {
-    console.warn('Falling back to mockData.sales due to error:', err.message);
-    return mockData.sales;
-  }
-}
-
-
-        // Mock Data Object - in a real implementation, this would come from your API
+    // Mock Data Object - in a real implementation, this would come from your API
         const mockData = {
             sales: {
                 labels: {
@@ -900,7 +894,29 @@ async function fetchTrafficData() {
                 { userId: '007', email: 'customer7@example.com', action: 'Cancel Subscription', page: '/account', timestamp: '2025-04-17 16:19:38' }
             ]
         };
-        
+    
+    async function fetchRevenueData() {
+  try {
+    const res = await fetch('/api/revenue-data');
+    if (!res.ok) throw new Error("Failed to fetch");
+    return await res.json();
+  } catch (err) {
+    console.warn('Falling back to mockData.revenue due to error:', err.message);
+    return mockData.revenue;
+  }
+}
+    
+    async function fetchSalesData() {
+  try {
+    const res = await fetch('/api/sales-data');
+    if (!res.ok) throw new Error("Failed to fetch");
+    return await res.json();
+  } catch (err) {
+    console.warn('Falling back to mockData.sales due to error:', err.message);
+    return mockData.sales;
+  }
+}
+
         // Chart variables
         let salesChart, revenueChart, sessionsChart, usersChart, engagementChart, 
             trafficSourcesChart, trafficTimeChart, conversionChart;
@@ -1538,7 +1554,7 @@ async function fetchTrafficData() {
         }
 
         // CSV Export function
-        function exportTableToCSV(tableId, filename) {
+       	    function exportTableToCSV(tableId, filename) {
             const table = document.getElementById(tableId);
             const rows = table.querySelectorAll('tr');
             const csvContent = [];
@@ -1789,5 +1805,6 @@ async function fetchTrafficData() {
             const sourceIndex = Math.floor(Math.random() * mockData.traffic.sources.all.labels.length);
             mockData.traffic.sources.all.data[sourceIndex] += additionalTraffic;
             traffic
+            
 
 </script>

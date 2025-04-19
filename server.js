@@ -168,7 +168,6 @@ app.get("/api/traffic-stats", async (req, res) => {
   }
 });
 
-const path = require('path');
 
 app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
