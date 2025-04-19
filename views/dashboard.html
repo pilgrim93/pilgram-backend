@@ -21,7 +21,7 @@
   </div>
 
   <!-- SALES TAB -->
-  <div class="tab-content" id="sales-tab">
+  <div class="tab-content" id="sales">
     <div class="chart-container">
       <h2 class="section-title">Sales Overview</h2>
       <div class="chart-toggle">
@@ -59,7 +59,7 @@
   </div>
 
   <!-- USER BEHAVIOR TAB -->
-  <div class="tab-content" id="behavior-tab" style="display:none;">
+  <div class="tab-content" id="behavior" style="display:none;">
     <div class="chart-container">
       <h2 class="section-title">Scroll Depth</h2>
       <canvas id="scrollDepthChart"></canvas>
@@ -73,7 +73,7 @@
   </div>
 
   <!-- TRAFFIC TAB -->
-<div class="tab-content" id="traffic-tab" style="display:none;">
+<div class="tab-content" id="traffic" style="display:none;">
 
   <!-- 📅 Date Range Picker -->
   <div class="chart-container">
@@ -118,23 +118,6 @@
 
 </div>
 
-
-  <div class="chart-container">
-    <h2 class="section-title">Visitor Geography</h2>
-    <canvas id="geoChart"></canvas>
-
-    <h2 class="section-title">Device Type</h2>
-    <canvas id="deviceChart"></canvas>
-
-    <h2 class="section-title">Referral Source</h2>
-    <canvas id="referralChart"></canvas>
-
-    <h2 class="section-title">Search Keywords</h2>
-    <canvas id="keywordChart"></canvas> <!-- Reserved for future use -->
-  </div>
-</div>
-
-
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="/main.js"></script>
   
@@ -148,7 +131,7 @@ function switchTab(tab) {
   document.querySelectorAll(".tab-content").forEach(c => c.style.display = "none");
 
   document.querySelector(`.dashboard-tab[onclick="switchTab('${tab}')"]`).classList.add("active");
-  document.getElementById(`${tab}-tab`).style.display = "block";
+  document.getElementById(tab).style.display = "block";
   activeTab = tab;
 }
 
