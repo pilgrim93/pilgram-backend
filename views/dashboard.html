@@ -377,18 +377,10 @@ window.onload = () => {
   renderSalesChart();
   renderRevenueChart();
   renderBehaviorCharts();
+  loadOrdersTable(); // ✅ This triggers the fallback
   loadOrdersTable();
   renderTrafficCharts(); // 🔥 Add this
   switchTab("sales");
-};
-
-window.onload = () => {
-  switchTab('sales'); // 👈 sets default tab to "Sales"
-
-  // Optional: render charts immediately on load
-  renderCharts?.();
-  renderBehaviorCharts?.();
-  renderTrafficCharts?.();
 };
 
 let allTrafficData = null;
@@ -501,7 +493,41 @@ function setDefaultDateRange() {
   document.getElementById("endDate").value = format(today);
 }
 
-  
+async function loadOrdersTable() {
+  let orders = [];
+
+  try {
+    const res = await fetch("/api/orders");
+    const data = await res.json();
+    orders = Array.isArray(data) && data.length ? data : [];
+  } catch (err) {
+    console.warn("API failed, using dummy orders.");
+  }
+
+  // ✅ If still empty, fallback to dummy
+  if (!orders.length) {
+    orders = [
+      { date: "2025-04-19", product: "iPhone Quiz", plan: "Basic", method: "Crypto", revenue: "$15" },
+      { date: "2025-04-20", product: "Shein Box", plan: "Premium", method: "PayPal", revenue: "$29" }
+    ];
+  }
+
+  const tbody = document.getElementById("orders-table-body");
+  tbody.innerHTML = "";
+
+  orders.forEach(o => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${o.date}</td>
+      <td>${o.product}</td>
+      <td>${o.plan}</td>
+      <td>${o.method}</td>
+      <td>${o.revenue}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
   </script>
 </body>
 </html>
