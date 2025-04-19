@@ -175,3 +175,36 @@ canvas {
   }
 }
 
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  flex-wrap: wrap;
+}
+
+.logout-btn {
+  margin-left: auto;
+  padding: 8px 12px;
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .logout-btn {
+    margin-top: 10px;
+    width: 100%;
+    text-align: right;
+  }
+}
+
+.total-sales {
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #fff;
+}
+

@@ -20,6 +20,10 @@
   
 <div class="tab-content" id="sales">
   <div class="chart-row">
+  <div class="total-sales">
+  <h2>Total Sales (Past 7 Days): <span id="totalSalesAmount">$0</span></h2>
+</div>
+
     <!-- 📈 Sales Chart -->
     <div class="chart-half">
       <h2 class="section-title">Sales Overview</h2>
@@ -251,6 +255,39 @@ function setSalesChartType(type) {
 function setRevenueChartType(type) {
   revenueChartType = type;
   renderRevenueChart();
+}
+
+function renderSalesChart() {
+  if (window.salesChart) window.salesChart.destroy();
+
+  const ctx = document.getElementById("salesChart").getContext("2d");
+  const labels = salesView === "daily" ? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] : ["Week 1", "Week 2", "Week 3"];
+  const data = salesView === "daily" ? [5, 9, 4, 8, 12, 10, 6] : [45, 50, 65];
+
+  window.salesChart = new Chart(ctx, {
+    type: salesChartType || "bar",
+    data: {
+      labels,
+      datasets: [{
+        label: "Sales",
+        data,
+        backgroundColor: "#00ffd0"
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  calculateTotalSales(); // 👈 Add this line
+}
+
+
+function calculateTotalSales() {
+  const sales = salesView === "daily"
+    ? [5, 9, 4, 8, 12, 10, 6]
+    : [45, 50, 65];
+
+  const total = sales.reduce((acc, val) => acc + val, 0);
+  document.getElementById("totalSalesAmount").textContent = `$${total * 5}`; // Adjust multiplier to match average sale price
 }
 
 </script>
