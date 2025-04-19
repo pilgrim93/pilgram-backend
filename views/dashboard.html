@@ -10,6 +10,8 @@
 </head>
 <body>
   <header>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/main.js"></script>
     <img src="/logo1.png" alt="Pilgram Logo" class="logo" />
     <button class="logout-btn" onclick="logout()">Logout</button>
   </header>
@@ -117,9 +119,6 @@
   </div>
 
 </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="/main.js"></script>
   
   <script>
   let activeTab = "sales";
@@ -221,6 +220,10 @@ window.onload = () => {
   renderSalesChart();
   renderRevenueChart();
   switchTab("sales");
+  renderSalesChart();
+  renderRevenueChart();
+  renderBehaviorCharts(); // 👈 Add this here
+  switchTab("sales");
 };
 
 function renderBehaviorCharts() {
@@ -283,13 +286,6 @@ function renderBehaviorCharts() {
   });
 }
 
-window.onload = () => {
-  renderSalesChart();
-  renderRevenueChart();
-  renderBehaviorCharts(); // 👈 Add this here
-  switchTab("sales");
-};
-
 async function loadOrdersTable() {
   let orders = [];
 
@@ -324,13 +320,6 @@ async function loadOrdersTable() {
   });
 }
 
-window.onload = () => {
-  renderSalesChart();
-  renderRevenueChart();
-  renderBehaviorCharts();
-  loadOrdersTable(); // 👈 This fetches and renders the orders
-  switchTab("sales");
-};
 
 async function renderTrafficCharts() {
   let start = document.getElementById("startDate").value || "7daysAgo";
