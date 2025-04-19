@@ -401,21 +401,22 @@
         <button class="logout-btn">Logout</button>
     </div>
     
-    <!-- Navigation Tabs -->
-    <div class="nav-tabs">
-        <button class="tab active" data-section="sales-section">
-            <span class="tab-icon">💰</span> Sales
-        </button>
-        <button class="tab" data-section="user-section">
-            <span class="tab-icon">👥</span> User Behavior
-        </button>
-        <button class="tab" data-section="traffic-section">
-            <span class="tab-icon">🌐</span> Traffic
-        </button>
-        <button class="tab" data-section="settings-section">
-            <span class="tab-icon">⚙️</span> Settings
-        </button>
-    </div>
+  <!-- Navigation Tabs -->
+<div class="nav-tabs">
+    <button data-tab="sales" class="tab active">
+        <span class="tab-icon">💰</span> Sales
+    </button>
+    <button data-tab="behavior" class="tab">
+        <span class="tab-icon">👥</span> User Behavior
+    </button>
+    <button data-tab="traffic" class="tab">
+        <span class="tab-icon">🌐</span> Traffic
+    </button>
+    <button data-tab="settings" class="tab">
+        <span class="tab-icon">⚙️</span> Settings
+    </button>
+</div>
+
     
     <!-- Real-time Toggle -->
     <div class="real-time-toggle">
@@ -719,6 +720,8 @@
             New order received from customer@example.com
         </div>
     </div>
+</body>
+</html>
 
     <script>
         // Mock Data Object - in a real implementation, this would come from your API
@@ -1583,3 +1586,29 @@
             const sourceIndex = Math.floor(Math.random() * mockData.traffic.sources.all.labels.length);
             mockData.traffic.sources.all.data[sourceIndex] += additionalTraffic;
             traffic
+            
+        
+  // Tab switching
+  const tabs = document.querySelectorAll('[data-tab]');
+  const tabContents = document.querySelectorAll('[data-tab-content]');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.getAttribute('data-tab');
+
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      tabContents.forEach(c => {
+        if (c.getAttribute('data-tab-content') === target) {
+          c.style.display = 'block';
+        } else {
+          c.style.display = 'none';
+        }
+      });
+    });
+  });
+
+  // Default: show sales tab
+  document.querySelector('[data-tab="sales"]').click();
+</script>
