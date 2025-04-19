@@ -9,6 +9,16 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.get("/login", (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "login.html"));
+});
+
+app.post("/logout", (req, res) => {
+  res.set('WWW-Authenticate', 'Basic realm="Login"');
+  return res.status(401).send('Logged out');
+});
+
+
 app.use("/public", express.static(path.join(__dirname, "public")));
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/styles", express.static(path.join(__dirname, "styles")));
