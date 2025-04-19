@@ -48,7 +48,7 @@ app.use(bodyParser.json());
 app.use('/styles', express.static(path.join(__dirname, 'styles')));
 
   res.redirect('/login');
-});
+);
 
 
 app.get("/login", (req, res) => {
