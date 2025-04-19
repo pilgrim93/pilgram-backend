@@ -546,7 +546,7 @@
     </div>
     
     <!-- User Behavior Section -->
-    <div id="user-section" data-tab-content="behavior" class="dashboard-section" style="display: none;">
+    <div id="user-section" data-tab-content="behavior" class="dashboard-section">
         <h2 class="section-title">User Behavior</h2>
         
         <div class="charts-container">
@@ -605,7 +605,7 @@
     </div>
     
     <!-- Traffic Section -->
-    <div id="traffic-section" data-tab-content="traffic" class="dashboard-section" style="display: none;">
+    <div id="traffic-section" data-tab-content="traffic" class="dashboard-section">
         <h2 class="section-title">Traffic Analysis</h2>
         
         <div class="charts-container">
@@ -669,7 +669,7 @@
     </div>
     
     <!-- Settings Section -->
-    <div id="settings-section" data-tab-content="settings" class="dashboard-section" style="display: none;">
+    <div id="settings-section" data-tab-content="settings" class="dashboard-section">
         <h2 class="section-title">Settings</h2>
         
         <div class="settings-panel">
@@ -724,8 +724,8 @@
      <script>
     let salesData, revenueData, trafficData;
 
-       document.addEventListener('DOMContentLoaded', function () {
-  initCharts();
+       document.addEventListener('DOMContentLoaded', async function () {
+  await initCharts();
   populateOrdersTable();
   populateActivityTable();
   populateTrafficTable();
@@ -733,6 +733,7 @@
   addSearchToTables();
   initRealTimeUpdates();
   setupEventListeners();
+  
   document.querySelector('[data-tab="sales"]').click();
   updateSalesChart('daily');
 updateRevenueChart('product');
@@ -906,11 +907,6 @@ async function fetchTrafficData() {
   }
 }
 
-
-
-  // Default: show sales tab
-  document.querySelector('[data-tab="sales"]').click();
-  
       async function fetchData(endpoint, fallback) {
     try {
         const response = await fetch(endpoint);
@@ -1390,25 +1386,25 @@ trafficSourcesChart = new Chart(trafficSourcesCtx, {
 
         function updateRevenueChart(view = 'product') {
  		 const data = view === 'product' ? revenueData.product : revenueData.category;
-  		 revenueChart.data.labels = revenueData.product.labels;
-		revenueChart.data.datasets[0].data = revenueData.product.data;
+  		 revenueChart.data.labels = data.labels;
+		revenueChart.data.datasets[0].data = data.data;;
 		revenueChart.update();
 }
 
         function updateSessionChart(view) {
-            sessionChart.data.labels = salesData.labels[timeView];
-            sessionChart.data.datasets[0].data = mockData.sessions[timeView];
+            sessionChart.data.labels = salesData.labels[view];
+            sessionChart.data.datasets[0].data = mockData.sessions[view];
             sessionChart.update();
         }
 
-        function updateTrafficSourcesChart(filter) {
+        function updateTrafficSourcesChart(view) {
            trafficSourcesChart.data.labels = trafficData.sources[view].labels;
 			trafficSourcesChart.data.datasets[0].data = trafficData.sources[view].data;
 			trafficSourcesChart.update();
 
         }
 
-        function updateTrafficTimeChart(timeView) {
+        function updateTrafficTimeChart(view) {
             trafficTimeChart.data.labels = salesData.labels[view];
 			trafficTimeChart.data.datasets[0].data = trafficData.overtime[view];
 			trafficTimeChart.update();
