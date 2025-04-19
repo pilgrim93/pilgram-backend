@@ -751,6 +751,31 @@
 </html>
 
     <script>
+    
+    async function fetchRevenueData() {
+  try {
+    const res = await fetch('/api/revenue-data');
+    if (!res.ok) throw new Error("Failed to fetch");
+    return await res.json();
+  } catch (err) {
+    console.warn('Falling back to mockData.revenue due to error:', err.message);
+    return mockData.revenue;
+  }
+}
+
+    
+    async function fetchSalesData() {
+  try {
+    const res = await fetch('/api/sales-data');
+    if (!res.ok) throw new Error("Failed to fetch");
+    return await res.json();
+  } catch (err) {
+    console.warn('Falling back to mockData.sales due to error:', err.message);
+    return mockData.sales;
+  }
+}
+
+
         // Mock Data Object - in a real implementation, this would come from your API
         const mockData = {
             sales: {
@@ -878,7 +903,7 @@
         // Initialize all charts
         function initCharts() {
             // Chart configuration options - common settings
-            const commonOptions = {
+			const revenueData.product.data, = await fetchRevenueData();
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
@@ -902,7 +927,7 @@
                 },
                 plugins: {
                     legend: {
-                        labels: {
+                        revenueData.product.labels, {
                             color: 'white'
                         }
                     }
@@ -910,14 +935,15 @@
             };
             
             // Create Sales Chart
-            const salesCtx = document.getElementById('sales-chart').getContext('2d');
-            salesChart = new Chart(salesCtx, {
-                type: 'line',
-                data: {
-                    labels: mockData.sales.labels.daily,
-                    datasets: [{
-                        label: 'Sales',
-                        data: mockData.sales.daily,
+           const salesData = await fetchSalesData();
+		const salesCtx = document.getElementById('sales-chart').getContext('2d');
+			salesChart = new Chart(salesCtx, {
+    			type: 'line',
+    				data: {
+        		labels: salesData.labels.daily,
+        		datasets: [{
+           		 label: 'Sales',
+            d		ata: salesData.daily,
                         backgroundColor: 'rgba(76, 175, 80, 0.2)',
                         borderColor: 'rgba(76, 175, 80, 1)',
                         borderWidth: 2,
@@ -962,7 +988,7 @@
                     labels: mockData.sales.labels.daily,
                     datasets: [{
                         label: 'Sessions',
-                        data: mockData.sessions.daily,
+                        data: salesData.sessions.daily,
                         backgroundColor: 'rgba(63, 81, 181, 0.2)',
                         borderColor: 'rgba(63, 81, 181, 1)',
                         borderWidth: 2,
@@ -976,15 +1002,15 @@
             
             // Create Conversion Rate Chart
             const conversionCtx = document.getElementById('conversion-chart').getContext('2d');
-            const conversionData = mockData.sales.daily.map((sale, index) => {
-                const sessions = mockData.sessions.daily[index];
-                return (sale / sessions * 100).toFixed(2);
+            const conversionData = salesData.daily.map((sale, index) => {
+                const sessions = salesData.sessions.daily[index];
+                return sessions ? (sale / sessions * 100).toFixed(2) : 0;
             });
             
             conversionChart = new Chart(conversionCtx, {
                 type: 'line',
                 data: {
-                    labels: mockData.sales.labels.daily,
+                    labels: salesData.labels.daily,
                     datasets: [{
                         label: 'Conversion Rate (%)',
                         data: conversionData,
@@ -1055,65 +1081,170 @@
                 options: commonOptions
             });
             
-            // Create Traffic Sources Chart
-            const trafficSourcesCtx = document.getElementById('traffic-sources-chart').getContext('2d');
-            trafficSourcesChart = new Chart(trafficSourcesCtx, {
-                type: 'pie',
-                data: {
-                    labels: mockData.traffic.sources.all.labels,
-                    datasets: [{
-                        data: mockData.traffic.sources.all.data,
-                        backgroundColor: [
-                            'rgba(76, 175, 80, 0.7)',
-                            'rgba(63, 81, 181, 0.7)',
-                            'rgba(255, 193, 7, 0.7)',
-                            'rgba(233, 30, 99, 0.7)',
-                            'rgba(156, 39, 176, 0.7)'
-                        ],
-                        borderColor: [
-                            'rgba(76, 175, 80, 1)',
-                            'rgba(63, 81, 181, 1)',
-                            'rgba(255, 193, 7, 1)',
-                            'rgba(233, 30, 99, 1)',
-                            'rgba(156, 39, 176, 1)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                            labels: {
-                                color: 'white'
-                            }
-                        }
-                    }
-                }
-            });
-            
-            // Create Traffic Over Time Chart
-            const trafficTimeCtx = document.getElementById('traffic-time-chart').getContext('2d');
-            trafficTimeChart = new Chart(trafficTimeCtx, {
-                type: 'line',
-                data: {
-                    labels: mockData.sales.labels.daily,
-                    datasets: [{
-                        label: 'Visitors',
-                        data: mockData.traffic.overtime.daily,
-                        backgroundColor: 'rgba(255, 193, 7, 0.2)',
-                        borderColor: 'rgba(255, 193, 7, 1)',
-                        borderWidth: 2,
-                        tension: 0.4,
-                        pointRadius: 5,
-                        pointBackgroundColor: 'rgba(255, 193, 7, 1)'
-                    }]
-                },
-                options: commonOptions
-            });
+            async function initCharts() {
+  // 📦 Fetch all necessary data (with fallback)
+  const salesData = await fetchSalesData();
+  const revenueData = await fetchRevenueData();
+  const trafficData = await fetchTrafficData();
+
+  // 🎨 Shared chart options
+  const commonOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)'
+        },
+        ticks: {
+          color: 'white'
         }
+      },
+      x: {
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)'
+        },
+        ticks: {
+          color: 'white'
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        labels: {
+          color: 'white'
+        }
+      }
+    }
+  };
+
+  // 💰 Sales Chart
+  const salesCtx = document.getElementById('sales-chart').getContext('2d');
+  salesChart = new Chart(salesCtx, {
+    type: 'line',
+    data: {
+      labels: salesData.labels.daily,
+      datasets: [{
+        label: 'Sales',
+        data: salesData.daily,
+        backgroundColor: 'rgba(0, 123, 255, 0.2)',
+        borderColor: 'rgba(0, 123, 255, 1)',
+        borderWidth: 2,
+        tension: 0.4,
+        pointRadius: 5,
+        pointBackgroundColor: 'rgba(0, 123, 255, 1)'
+      }]
+    },
+    options: commonOptions
+  });
+
+  // 📊 Revenue Chart
+  const revenueCtx = document.getElementById('revenue-chart').getContext('2d');
+  revenueChart = new Chart(revenueCtx, {
+    type: 'bar',
+    data: {
+      labels: revenueData.product.labels,
+      datasets: [{
+        label: 'Revenue',
+        data: revenueData.product.data,
+        backgroundColor: 'rgba(40, 167, 69, 0.2)',
+        borderColor: 'rgba(40, 167, 69, 1)',
+        borderWidth: 1
+      }]
+    },
+    options: commonOptions
+  });
+
+  // 👥 Sessions Chart
+  const sessionCtx = document.getElementById('sessions-chart').getContext('2d');
+  sessionChart = new Chart(sessionCtx, {
+    type: 'line',
+    data: {
+      labels: salesData.labels.daily,
+      datasets: [{
+        label: 'User Sessions',
+        data: salesData.sessions.daily,
+        backgroundColor: 'rgba(23, 162, 184, 0.2)',
+        borderColor: 'rgba(23, 162, 184, 1)',
+        borderWidth: 2,
+        tension: 0.4
+      }]
+    },
+    options: commonOptions
+  });
+
+  // 🔁 Conversion Rate Chart
+  const conversionCtx = document.getElementById('conversion-chart').getContext('2d');
+  const conversionData = salesData.daily.map((sale, index) => {
+    const sessions = salesData.sessions.daily[index];
+    return sessions ? (sale / sessions * 100).toFixed(2) : 0;
+  });
+  conversionChart = new Chart(conversionCtx, {
+    type: 'line',
+    data: {
+      labels: salesData.labels.daily,
+      datasets: [{
+        label: 'Conversion Rate (%)',
+        data: conversionData,
+        backgroundColor: 'rgba(255, 193, 7, 0.2)',
+        borderColor: 'rgba(255, 193, 7, 1)',
+        borderWidth: 2,
+        tension: 0.4,
+        pointRadius: 5,
+        pointBackgroundColor: 'rgba(255, 193, 7, 1)'
+      }]
+    },
+    options: commonOptions
+  });
+
+  // 🌐 Traffic Over Time Chart
+  const trafficTimeCtx = document.getElementById('traffic-time-chart').getContext('2d');
+  trafficTimeChart = new Chart(trafficTimeCtx, {
+    type: 'line',
+    data: {
+      labels: trafficData.overtime.labels,
+      datasets: [{
+        label: 'Visitors',
+        data: trafficData.overtime.daily,
+        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+        borderColor: 'rgba(255, 99, 132, 1)',
+        borderWidth: 2,
+        tension: 0.4
+      }]
+    },
+    options: commonOptions
+  });
+
+  // 🌍 Traffic Sources Pie Chart
+  const trafficSourcesCtx = document.getElementById('traffic-sources-chart').getContext('2d');
+  trafficSourcesChart = new Chart(trafficSourcesCtx, {
+    type: 'pie',
+    data: {
+      labels: trafficData.sources.all.labels,
+      datasets: [{
+        label: 'Traffic Sources',
+        data: trafficData.sources.all.data,
+        backgroundColor: [
+          'rgba(0, 123, 255, 0.7)',
+          'rgba(40, 167, 69, 0.7)',
+          'rgba(255, 193, 7, 0.7)',
+          'rgba(220, 53, 69, 0.7)'
+        ]
+      }]
+    },
+    options: {
+      plugins: {
+        legend: {
+          labels: {
+            color: 'white'
+          }
+        }
+      }
+    }
+  });
+}
+
 
         // Setup event listeners for chart controls
         function setupEventListeners() {
@@ -1192,57 +1323,91 @@
         }
 
         // Table population functions
-        function populateOrdersTable() {
-            const tbody = document.querySelector('#orders-table tbody');
-            tbody.innerHTML = '';
-            
-            mockData.orders.forEach(order => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${order.id}</td>
-                    <td>${order.email}</td>
-                    <td>${order.product}</td>
-                    <td>$${order.price.toFixed(2)}</td>
-                    <td>${order.date}</td>
-                    <td>${order.status}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
+        async function populateOrdersTable() {
+  const tbody = document.querySelector('#orders-table tbody');
+  tbody.innerHTML = '';
 
-        function populateActivityTable() {
-            const tbody = document.querySelector('#activity-table tbody');
-            tbody.innerHTML = '';
-            
-            mockData.userActivity.forEach(activity => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${activity.userId}</td>
-                    <td>${activity.email}</td>
-                    <td>${activity.action}</td>
-                    <td>${activity.page}</td>
-                    <td>${activity.timestamp}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
+  let orders = [];
+  try {
+    const res = await fetch('/api/orders');
+    if (!res.ok) throw new Error("Failed to fetch");
+    orders = await res.json();
+  } catch (err) {
+    console.warn('Falling back to mockData.orders due to error:', err.message);
+    orders = mockData.orders;
+  }
 
-        function populateTrafficTable() {
-            const tbody = document.querySelector('#traffic-table tbody');
-            tbody.innerHTML = '';
-            
-            mockData.traffic.details.forEach(detail => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${detail.source}</td>
-                    <td>${detail.visitors}</td>
-                    <td>${detail.pageViews}</td>
-                    <td>${detail.bounceRate}</td>
-                    <td>${detail.avgTime}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
+  orders.forEach(order => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${order.id}</td>
+      <td>${order.email}</td>
+      <td>${order.product}</td>
+      <td>$${order.price.toFixed(2)}</td>
+      <td>${order.date}</td>
+      <td>${order.status}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+
+        async function populateActivityTable() {
+  const tbody = document.querySelector('#activity-table tbody');
+  tbody.innerHTML = '';
+
+  let userActivity = [];
+  try {
+    const res = await fetch('/api/user-activity');
+    if (!res.ok) throw new Error("Failed to fetch");
+    userActivity = await res.json();
+  } catch (err) {
+    console.warn('Falling back to mockData.userActivity due to error:', err.message);
+    userActivity = mockData.userActivity;
+  }
+
+  userActivity.forEach(activity => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${activity.userId}</td>
+      <td>${activity.email}</td>
+      <td>${activity.action}</td>
+      <td>${activity.page}</td>
+      <td>${activity.timestamp}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+        //Populate traffic Table
+        async function populateTrafficTable() {
+  const tbody = document.querySelector('#traffic-table tbody');
+  tbody.innerHTML = '';
+
+  let trafficDetails = [];
+  try {
+    const res = await fetch('/api/traffic-stats');
+    if (!res.ok) throw new Error("Failed to fetch");
+    const data = await res.json();
+    trafficDetails = data.details || [];
+  } catch (err) {
+    console.warn('Falling back to mockData.traffic.details due to error:', err.message);
+    trafficDetails = mockData.traffic.details;
+  }
+
+  trafficDetails.forEach(detail => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${detail.source}</td>
+      <td>${detail.visitors}</td>
+      <td>${detail.pageViews}</td>
+      <td>${detail.bounceRate}</td>
+      <td>${detail.avgTime}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
 
         // Make tables sortable
         function makeTablesSortable() {
