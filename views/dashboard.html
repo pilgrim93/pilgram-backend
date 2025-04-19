@@ -26,6 +26,12 @@
       <div class="chart-toggle">
         <button class="active" onclick="toggleSalesView('daily')">Daily</button>
         <button onclick="toggleSalesView('weekly')">Weekly</button>
+        <!-- Chart Type Toggle -->
+<div class="chart-toggle chart-type-toggle">
+  <button onclick="setSalesChartType('bar')">Bar</button>
+  <button onclick="setSalesChartType('line')">Line</button>
+</div>
+
       </div>
       <canvas id="salesChart"></canvas>
     </div>
@@ -36,6 +42,12 @@
       <div class="chart-toggle">
         <button class="active" onclick="toggleRevenueView('product')">By Product</button>
         <button onclick="toggleRevenueView('daily')">By Day</button>
+        <!-- Chart Type Toggle -->
+<div class="chart-toggle chart-type-toggle">
+  <button onclick="setSalesChartType('bar')">Bar</button>
+  <button onclick="setSalesChartType('line')">Line</button>
+</div>
+
       </div>
       <canvas id="revenueChart"></canvas>
     </div>
@@ -227,6 +239,20 @@ window.onload = () => {
   renderBehaviorCharts();
   renderTrafficCharts();
 };
+
+let salesChartType = "bar"; // default
+let revenueChartType = "line"; // default
+
+function setSalesChartType(type) {
+  salesChartType = type;
+  renderSalesChart();
+}
+
+function setRevenueChartType(type) {
+  revenueChartType = type;
+  renderRevenueChart();
+}
+
 </script>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
