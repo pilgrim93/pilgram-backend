@@ -183,24 +183,6 @@
     </div>
   </div>
 
-  
-<script>
-const tabs = document.querySelectorAll(".tab");
-const contents = document.querySelectorAll(".tab-content");
-
-tabs.forEach(tab => {
-  tab.addEventListener("click", () => {
-    tabs.forEach(t => t.classList.remove("active"));
-    contents.forEach(c => c.classList.remove("active"));
-    tab.classList.add("active");
-    document.getElementById(tab.dataset.tab).classList.add("active");
-
-    if (tab.dataset.tab === "sales") renderCharts();
-    if (tab.dataset.tab === "traffic") renderTrafficCharts();
-  });
-});
-</script>
-
 </body>
 </html>
 
@@ -314,18 +296,26 @@ function getWeekYear(date) {
   });
 }
 
-function getWeekYear(d) {
-  const date = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  const dayNum = date.getUTCDay() || 7;
-  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-  const week = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-  return `${date.getUTCFullYear()}-W${week}`;
-}
-
 async function renderTrafficCharts() {
   // Placeholder for future GA4 chart logic
   console.log("Traffic charts would render here.");
 }
 renderCharts();
+</script>
+
+<script>
+const tabs = document.querySelectorAll(".tab");
+const contents = document.querySelectorAll(".tab-content");
+
+tabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    tabs.forEach(t => t.classList.remove("active"));
+    contents.forEach(c => c.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById(tab.dataset.tab).classList.add("active");
+
+    if (tab.dataset.tab === "sales") renderCharts();
+    if (tab.dataset.tab === "traffic") renderTrafficCharts();
+  });
+});
 </script>

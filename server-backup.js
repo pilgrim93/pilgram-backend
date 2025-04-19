@@ -1,51 +1,37 @@
-
 const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
 const axios = require("axios");
 const basicAuth = require("express-basic-auth");
+const fs = require("fs");
 require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use("/public", express.static(path.join(__dirname, "public")));
+
+// Serve static files
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/styles", express.static(path.join(__dirname, "styles")));
 app.use("/views", express.static(path.join(__dirname, "views")));
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+// ✅ Basic auth middleware
 app.use("/dashboard", basicAuth({
   users: { "admin": "playyb0yy01" },
   challenge: true,
   unauthorizedResponse: "Access denied"
 }));
 
+// ✅ Serve the dashboard
 app.get("/dashboard", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "dashboard.html"));
 });
 
-// Telegram notification function
-async function sendTelegramNotification(order) {
-  const message = `🛒 *New Order Received!*
-
-📦 *Product:* ${order.product_title}
-💵 *Amount:* $${order.amount}
-📧 *Email:* ${order.email}`;
-  try {
-    await axios.post(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-      chat_id: process.env.TELEGRAM_CHAT_ID,
-      text: message,
-      parse_mode: "Markdown"
-    });
-    console.log("✅ Telegram message sent.");
-  } catch (err) {
-    console.error("❌ Failed to send Telegram message:", err.message);
-  }
-}
-
-// === Shoppy Polling ===
+// ✅ Shoppy polling
 let shoppyOrders = [];
 
 async function fetchShoppyOrders() {
@@ -55,26 +41,17 @@ async function fetchShoppyOrders() {
         Authorization: process.env.SHOPPY_API_KEY
       }
     });
-
-    const newOrders = response.data.filter(o => !shoppyOrders.find(p => p.id === o.id));
-    if (newOrders.length) {
-      console.log(`🆕 ${newOrders.length} new Shoppy orders detected.`);
-    }
-
-    for (const order of newOrders) {
-      await sendTelegramNotification(order);
-    }
-
     shoppyOrders = response.data;
   } catch (err) {
     console.error("Error fetching Shoppy orders:", err.message);
   }
 }
 
-// Poll every 2 minutes
+// ✅ Poll every 2 minutes
 setInterval(fetchShoppyOrders, 2 * 60 * 1000);
-fetchShoppyOrders();
+fetchShoppyOrders(); // Fetch once at startup
 
+// ✅ API endpoint to access orders
 app.get("/api/orders", (req, res) => {
   res.json(shoppyOrders);
 });
@@ -84,24 +61,39 @@ app.get("/", (req, res) => {
   res.redirect("/dashboard");
 });
 
-// === Shoppy Webhook ===
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+});
+
 app.post("/webhook/shoppy", async (req, res) => {
   const order = req.body;
+
+  // Optional: validate token if sent
   if (req.headers["x-verification-key"] !== process.env.SHOPPY_WEBHOOK_SECRET) {
     return res.status(403).send("Invalid key");
   }
 
-  await sendTelegramNotification(order);
+  // Send to Telegram
+  const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  const message = `🛒 New Order\nProduct: ${order.product_title}\nAmount: $${order.amount}\nEmail: ${order.email}`;
+
+  await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, text: message })
+  });
+
   res.sendStatus(200);
 });
 
-// === GA4 Analytics Endpoint ===
+// === Google Analytics 4 Traffic Stats Endpoint ===
 const { BetaAnalyticsDataClient } = require('@google-analytics/data');
 const analyticsDataClient = new BetaAnalyticsDataClient();
 
 app.get("/api/traffic-stats", async (req, res) => {
   try {
-    const propertyId = "486157365";
+    const propertyId = "486157365"; // Your GA4 property ID
 
     const [countryRes] = await analyticsDataClient.runReport({
       property: `properties/${propertyId}`,
@@ -142,6 +134,10 @@ app.get("/api/traffic-stats", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-});
+function logout() {
+  fetch('/logout', { method: 'POST' }).then(() => {
+    window.location.href = '/login';
+  });
+}
+
+
