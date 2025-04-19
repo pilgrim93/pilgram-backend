@@ -99,25 +99,23 @@
 </div>
 
   
-  <script>
-  let activeTab = "sales";
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let activeTab = "sales";
 let salesView = "daily";
 let revenueView = "product";
+let allTrafficData = null;
 
+// TAB SWITCHING
 function switchTab(tabId) {
-  document.querySelectorAll('.tab-content').forEach(el => {
-    el.style.display = 'none';
-  });
-
-  document.querySelectorAll('.dashboard-tab').forEach(btn => {
-    btn.classList.remove('active');
-  });
+  document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.dashboard-tab').forEach(btn => btn.classList.remove('active'));
 
   document.getElementById(tabId).style.display = 'block';
   document.querySelector(`.dashboard-tab[onclick="switchTab('${tabId}')"]`).classList.add('active');
 }
 
-
+// SALES CHARTS
 function toggleSalesView(view) {
   salesView = view;
   document.querySelectorAll(".chart-toggle button").forEach(btn => btn.classList.remove("active"));
@@ -132,267 +130,90 @@ function toggleRevenueView(view) {
 
 function renderSalesChart() {
   if (window.salesChart) window.salesChart.destroy();
-
   const ctx = document.getElementById("salesChart").getContext("2d");
   const labels = salesView === "daily" ? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] : ["Week 1", "Week 2", "Week 3"];
   const data = salesView === "daily" ? [5, 9, 4, 8, 12, 10, 6] : [45, 50, 65];
-
   window.salesChart = new Chart(ctx, {
     type: "bar",
-    data: {
-      labels,
-      datasets: [{
-        label: "Sales",
-        data,
-        backgroundColor: "#00ffd0"
-      }]
-    },
+    data: { labels, datasets: [{ label: "Sales", data, backgroundColor: "#00ffd0" }] },
     options: { responsive: true, maintainAspectRatio: false }
   });
 }
 
 function renderRevenueChart() {
   if (window.revenueChart) window.revenueChart.destroy();
-
   const ctx = document.getElementById("revenueChart").getContext("2d");
-  const labels = revenueView === "product"
-    ? ["iPhone Quiz", "Shein Mystery Box", "Temu Box"]
-    : ["Mon", "Tue", "Wed", "Thu", "Fri"];
-  const data = revenueView === "product"
-    ? [300, 250, 400]
-    : [90, 120, 150, 180, 200];
-
+  const labels = revenueView === "product" ? ["iPhone Quiz", "Shein Box", "Temu Box"] : ["Mon", "Tue", "Wed", "Thu", "Fri"];
+  const data = revenueView === "product" ? [300, 250, 400] : [90, 120, 150, 180, 200];
   window.revenueChart = new Chart(ctx, {
     type: "line",
-    data: {
-      labels,
-      datasets: [{
-        label: "Revenue",
-        data,
-        backgroundColor: "#47f96c",
-        borderColor: "#47f96c",
-        fill: false
-      }]
-    },
+    data: { labels, datasets: [{ label: "Revenue", data, backgroundColor: "#47f96c", borderColor: "#47f96c", fill: false }] },
     options: { responsive: true, maintainAspectRatio: false }
   });
 }
 
-function exportOrders() {
-  const rows = [["Date", "Product", "Plan", "Payment Method", "Revenue"]];
-  document.querySelectorAll(".orders-table tbody tr").forEach(row => {
-    const cols = Array.from(row.children).map(td => td.innerText);
-    rows.push(cols);
-  });
-
-  const csv = rows.map(r => r.join(",")).join("\n");
-  const blob = new Blob([csv], { type: "text/csv" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "orders.csv";
-  a.click();
-}
-
-function logout() {
-  fetch("/logout", { method: "POST" })
-    .then(() => window.location.href = "/login")
-    .catch(() => alert("Logout failed."));
-}
-}
-
-
+// BEHAVIOR CHARTS
 function renderBehaviorCharts() {
   const scrollCtx = document.getElementById("scrollDepthChart").getContext("2d");
   const clickCtx = document.getElementById("clickChart").getContext("2d");
   const timeCtx = document.getElementById("timeOnPageChart").getContext("2d");
 
-  const scrollData = {
-    labels: ["25%", "50%", "75%", "100%"],
-    data: [30, 50, 20, 10]
-  };
-
-  const clickData = {
-    labels: ["Buy Now", "Learn More", "Other"],
-    data: [60, 30, 10]
-  };
-
-  const timeData = {
-    labels: ["0-10s", "10-30s", "30-60s", "60s+"],
-    data: [15, 35, 30, 20]
-  };
-
   new Chart(scrollCtx, {
     type: "bar",
-    data: {
-      labels: scrollData.labels,
-      datasets: [{
-        label: "Scroll % of Page",
-        data: scrollData.data,
-        backgroundColor: "#ff9f40"
-      }]
-    },
+    data: { labels: ["25%", "50%", "75%", "100%"], datasets: [{ label: "Scroll %", data: [30, 50, 20, 10], backgroundColor: "#ff9f40" }] },
     options: { responsive: true }
   });
 
   new Chart(clickCtx, {
     type: "bar",
-    data: {
-      labels: clickData.labels,
-      datasets: [{
-        label: "Clicks",
-        data: clickData.data,
-        backgroundColor: "#4bc0c0"
-      }]
-    },
+    data: { labels: ["Buy Now", "Learn More", "Other"], datasets: [{ label: "Clicks", data: [60, 30, 10], backgroundColor: "#4bc0c0" }] },
     options: { responsive: true }
   });
 
   new Chart(timeCtx, {
     type: "bar",
-    data: {
-      labels: timeData.labels,
-      datasets: [{
-        label: "Time on Page",
-        data: timeData.data,
-        backgroundColor: "#9966ff"
-      }]
-    },
+    data: { labels: ["0-10s", "10-30s", "30-60s", "60s+"], datasets: [{ label: "Time on Page", data: [15, 35, 30, 20], backgroundColor: "#9966ff" }] },
     options: { responsive: true }
   });
 }
 
-async function loadOrdersTable() {
-  let orders = [];
-
-  try {
-    const res = await fetch("/api/orders");
-    const data = await res.json();
-    orders = Array.isArray(data) && data.length ? data : [];
-  } catch (err) {
-    console.warn("API failed, using dummy orders.");
-  }
-
-  if (!orders.length) {
-    orders = [
-      { date: "2025-04-19", product: "iPhone Quiz", plan: "Basic", method: "Crypto", revenue: "$15" },
-      { date: "2025-04-20", product: "Shein Box", plan: "Premium", method: "PayPal", revenue: "$29" }
-    ];
-  }
-
-  const tbody = document.getElementById("orders-table-body");
-  tbody.innerHTML = "";
-
-  orders.forEach(o => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${o.date}</td>
-      <td>${o.product}</td>
-      <td>${o.plan}</td>
-      <td>${o.method}</td>
-      <td>${o.revenue}</td>
-    `;
-    tbody.appendChild(row);
-  });
-}
-
-
+// TRAFFIC CHARTS
 async function renderTrafficCharts() {
-  let start = document.getElementById("startDate").value || "7daysAgo";
-  let end = document.getElementById("endDate").value || "today";
-
-  if (start !== "7daysAgo" && end !== "today") {
-    // Ensure it's valid YYYY-MM-DD format
-    const isValid = /^\d{4}-\d{2}-\d{2}$/.test(start) && /^\d{4}-\d{2}-\d{2}$/.test(end);
-    if (!isValid) {
-      alert("Please enter valid start and end dates.");
-      return;
-    }
-  }
-
   try {
-    const res = await fetch(`/api/traffic-stats?start=${start}&end=${end}`);
+    const res = await fetch("/api/traffic-stats");
     const stats = await res.json();
     allTrafficData = stats;
     populateTrafficFilters(stats);
     drawTrafficCharts(stats);
-  } catch (e) {
-    console.warn("Failed to load GA4 data. Using fallback.");
-    // fallback logic here
+  } catch {
+    console.warn("Fallback traffic data");
+    allTrafficData = {
+      topCountries: [{ label: "USA", value: 120 }, { label: "Canada", value: 90 }],
+      topDevices: [{ label: "Mobile", value: 180 }, { label: "Desktop", value: 140 }],
+      topReferrers: [{ label: "Google", value: 200 }, { label: "Twitter", value: 80 }]
+    };
+    populateTrafficFilters(allTrafficData);
+    drawTrafficCharts(allTrafficData);
   }
 }
 
-
-  const data = stats?.topCountries ? stats : dummy;
-
-  const createChart = (ctxId, label, dataArr, color) => {
-    const ctx = document.getElementById(ctxId).getContext("2d");
-    return new Chart(ctx, {
+function drawTrafficCharts(data) {
+  const createChart = (id, label, values, color) => {
+    const ctx = document.getElementById(id).getContext("2d");
+    if (window[id]) window[id].destroy();
+    window[id] = new Chart(ctx, {
       type: "bar",
       data: {
-        labels: dataArr.map(e => e.label),
-        datasets: [{
-          label,
-          data: dataArr.map(e => e.value),
-          backgroundColor: color
-        }]
+        labels: values.map(e => e.label),
+        datasets: [{ label, data: values.map(e => e.value), backgroundColor: color }]
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
-      }
+      options: { responsive: true, maintainAspectRatio: false }
     });
   };
 
   createChart("geoChart", "Top Countries", data.topCountries, "#00d1b2");
   createChart("deviceChart", "Top Devices", data.topDevices, "#48c78e");
   createChart("referralChart", "Top Referrers", data.topReferrers, "#f39c12");
-}
-
-load = () => {
-  renderSalesChart();
-  renderRevenueChart();
-  renderBehaviorCharts();
-  loadOrdersTable(); // ✅ This triggers the fallback
-  loadOrdersTable();
-  renderTrafficCharts(); // 🔥 Add this
-  switchTab("sales");
-    renderSalesChart();
-
-};
-
-let allTrafficData = null;
-
-async function renderTrafficCharts() {
-  try {
-    const res = await fetch("/api/traffic-stats");
-    const stats = await res.json();
-    allTrafficData = stats;
-
-    populateTrafficFilters(stats);
-    drawTrafficCharts(stats);
-  } catch (e) {
-    console.warn("Using fallback traffic data");
-
-    allTrafficData = {
-      topCountries: [
-        { label: "USA", value: 120 },
-        { label: "Canada", value: 90 },
-        { label: "UK", value: 70 }
-      ],
-      topDevices: [
-        { label: "Mobile", value: 180 },
-        { label: "Desktop", value: 140 }
-      ],
-      topReferrers: [
-        { label: "Google", value: 200 },
-        { label: "Twitter", value: 80 },
-        { label: "Direct", value: 60 }
-      ]
-    };
-
-    populateTrafficFilters(allTrafficData);
-    drawTrafficCharts(allTrafficData);
-  }
 }
 
 function populateTrafficFilters(data) {
@@ -422,89 +243,29 @@ function applyTrafficFilters() {
   const device = document.getElementById("deviceFilter").value;
 
   const filtered = {
-    topCountries: country
-      ? allTrafficData.topCountries.filter(x => x.label === country)
-      : allTrafficData.topCountries,
-    topDevices: device
-      ? allTrafficData.topDevices.filter(x => x.label === device)
-      : allTrafficData.topDevices,
-    topReferrers: referrer
-      ? allTrafficData.topReferrers.filter(x => x.label === referrer)
-      : allTrafficData.topReferrers
+    topCountries: country ? allTrafficData.topCountries.filter(x => x.label === country) : allTrafficData.topCountries,
+    topDevices: device ? allTrafficData.topDevices.filter(x => x.label === device) : allTrafficData.topDevices,
+    topReferrers: referrer ? allTrafficData.topReferrers.filter(x => x.label === referrer) : allTrafficData.topReferrers
   };
 
   drawTrafficCharts(filtered);
 }
 
-function drawTrafficCharts(data) {
-  const createChart = (id, label, values, color) => {
-    const ctx = document.getElementById(id).getContext("2d");
-    if (window[id]) window[id].destroy();
-    window[id] = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: values.map(e => e.label),
-        datasets: [{
-          label,
-          data: values.map(e => e.value),
-          backgroundColor: color
-        }]
-      },
-      options: { responsive: true, maintainAspectRatio: false }
-    });
-  };
-
-  createChart("geoChart", "Top Countries", data.topCountries, "#00d1b2");
-  createChart("deviceChart", "Top Devices", data.topDevices, "#48c78e");
-  createChart("referralChart", "Top Referrers", data.topReferrers, "#f39c12");
+// LOGOUT
+function logout() {
+  fetch("/logout", { method: "POST" }).then(() => window.location.href = "/login");
 }
 
-function setDefaultDateRange() {
-  const today = new Date();
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(today.getDate() - 6);
+// LOAD
+window.onload = () => {
+  switchTab("sales");
+  renderSalesChart();
+  renderRevenueChart();
+  renderBehaviorCharts();
+  renderTrafficCharts();
+};
+</script>
 
-  const format = (date) => date.toISOString().split("T")[0];
-
-  document.getElementById("startDate").value = format(sevenDaysAgo);
-  document.getElementById("endDate").value = format(today);
-}
-
-async function loadOrdersTable() {
-  let orders = [];
-
-  try {
-    const res = await fetch("/api/orders");
-    const data = await res.json();
-    orders = Array.isArray(data) && data.length ? data : [];
-  } catch (err) {
-    console.warn("API failed, using dummy orders.");
-  }
-
-  // ✅ If still empty, fallback to dummy
-  if (!orders.length) {
-    orders = [
-      { date: "2025-04-19", product: "iPhone Quiz", plan: "Basic", method: "Crypto", revenue: "$15" },
-      { date: "2025-04-20", product: "Shein Box", plan: "Premium", method: "PayPal", revenue: "$29" }
-    ];
-  }
-
-  const tbody = document.getElementById("orders-table-body");
-  tbody.innerHTML = "";
-
-  orders.forEach(o => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${o.date}</td>
-      <td>${o.product}</td>
-      <td>${o.plan}</td>
-      <td>${o.method}</td>
-      <td>${o.revenue}</td>
-    `;
-    tbody.appendChild(row);
-  });
-}
-  </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </body>

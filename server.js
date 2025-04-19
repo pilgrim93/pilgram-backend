@@ -19,15 +19,19 @@ function requireAuth(req, res, next) {
   res.redirect("/login");
 }
 
-app.post("/login", (req, res) => {
-  const { username, password } = req.body;
-  if (username === "admin" && password === "dre") {
-    req.session.authenticated = true;
-    app.get("/dashboard", requireAuth, (req, res) => {
+app.get("/dashboard", requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "views", "dashboard.html"));
 });
 
 
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
+  if (username === 'admin' && password === 'dre') {
+    req.session.authenticated = true;
+    return res.redirect('/dashboard');
+  }
+  res.redirect('/login');
+});
 
 const app = express();
 const PORT = process.env.PORT || 3000;
