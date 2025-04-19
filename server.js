@@ -30,9 +30,7 @@ app.post("/login", (req, res) => {
     req.session.authenticated = true;
     return res.redirect('/dashboard');
   }
-  res.redirect('/login');
-});
-
+  
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -50,10 +48,6 @@ app.use("/views", express.static(path.join(__dirname, "views")));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use('/styles', express.static(path.join(__dirname, 'styles')));
-
-  res.redirect('/login');
-);
-
 
 app.get("/login", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "login.html"));
