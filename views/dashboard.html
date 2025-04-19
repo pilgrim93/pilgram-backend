@@ -447,7 +447,7 @@
     </div>
     
     <!-- Sales Section -->
-    <div id="sales-section" class="dashboard-section active">
+    <div id="sales-section" data-tab-content="sales" class="dashboard-section active">
         <h2 class="section-title">Sales Charts</h2>
         
         <div class="charts-container">
@@ -546,7 +546,7 @@
     </div>
     
     <!-- User Behavior Section -->
-    <div id="user-section" class="dashboard-section">
+    <div id="user-section" data-tab-content="behavior" class="dashboard-section" style="display: none;">
         <h2 class="section-title">User Behavior</h2>
         
         <div class="charts-container">
@@ -605,7 +605,7 @@
     </div>
     
     <!-- Traffic Section -->
-    <div id="traffic-section" class="dashboard-section">
+    <div id="traffic-section" data-tab-content="traffic" class="dashboard-section" style="display: none;">
         <h2 class="section-title">Traffic Analysis</h2>
         
         <div class="charts-container">
@@ -669,7 +669,7 @@
     </div>
     
     <!-- Settings Section -->
-    <div id="settings-section" class="dashboard-section">
+    <div id="settings-section" data-tab-content="settings" class="dashboard-section" style="display: none;">
         <h2 class="section-title">Settings</h2>
         
         <div class="settings-panel">
@@ -864,9 +864,6 @@
                     const sections = document.querySelectorAll('.dashboard-section');
                     sections.forEach(section => section.classList.remove('active'));
                     
-                    // Show the selected section
-                    const sectionId = this.getAttribute('data-section');
-                    document.getElementById(sectionId).classList.add('active');
                 });
             });
         }
