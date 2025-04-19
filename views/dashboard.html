@@ -18,86 +18,49 @@
     <div class="dashboard-tab" onclick="switchTab('traffic')">🌐 Traffic</div>
   </div>
   
-<div class="tab-content" id="sales">
+<<div class="tab-content" id="sales">
   <div class="chart-row">
-  <!-- 📈 Sales Chart -->
-  <div class="chart-half">
-    <h2 class="section-title">Sales Overview</h2>
-    <div class="chart-toggle">
-      <button class="active" onclick="toggleSalesView('daily')">Daily</button>
-      <button onclick="toggleSalesView('weekly')">Weekly</button>
+    <!-- 📈 Sales Chart -->
+    <div class="chart-half">
+      <h2 class="section-title">Sales Overview</h2>
+      <div class="chart-toggle">
+        <button class="active" onclick="toggleSalesView('daily')">Daily</button>
+        <button onclick="toggleSalesView('weekly')">Weekly</button>
+      </div>
+      <canvas id="salesChart"></canvas>
     </div>
-    <canvas id="salesChart"></canvas>
+
+    <!-- 💰 Revenue Chart -->
+    <div class="chart-half">
+      <h2 class="section-title">Revenue Breakdown</h2>
+      <div class="chart-toggle">
+        <button class="active" onclick="toggleRevenueView('product')">By Product</button>
+        <button onclick="toggleRevenueView('daily')">By Day</button>
+      </div>
+      <canvas id="revenueChart"></canvas>
+    </div>
   </div>
 
-  <!-- 💰 Revenue Chart -->
-  <div class="chart-half">
-    <h2 class="section-title">Revenue Breakdown</h2>
-    <div class="chart-toggle">
-      <button class="active" onclick="toggleRevenueView('product')">By Product</button>
-      <button onclick="toggleRevenueView('daily')">By Day</button>
-    </div>
-    <canvas id="revenueChart"></canvas>
+  <!-- 📋 Recent Orders Table -->
+  <div class="orders-table-section">
+    <h2>Recent Orders</h2>
+    <table class="orders-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Product</th>
+          <th>Plan</th>
+          <th>Email</th>
+          <th>Revenue</th>
+        </tr>
+      </thead>
+      <tbody id="orders-table-body">
+        <!-- Filled via JS -->
+      </tbody>
+    </table>
+    <button class="export-btn" onclick="exportOrders()">Export CSV</button>
   </div>
 </div>
-
-<!-- USER BEHAVIOR TAB -->
-<div class="tab-content" id="behavior" style="display: none;">
-  <div class="chart-container">
-    <h2 class="section-title">Scroll Depth</h2>
-    <canvas id="scrollDepthChart"></canvas>
-
-    <h2 class="section-title">Click Tracking</h2>
-    <canvas id="clickChart"></canvas>
-
-    <h2 class="section-title">Time on Page</h2>
-    <canvas id="timeOnPageChart"></canvas>
-  </div>
-</div>
-
-<!-- TRAFFIC TAB -->
-<div class="tab-content" id="traffic" style="display: none;">
-  <!-- 📅 Date Range Picker -->
-  <div class="chart-container">
-    <h2 class="section-title">Date Range</h2>
-    <div class="chart-toggle">
-      <input type="date" id="startDate" />
-      <input type="date" id="endDate" />
-      <button onclick="renderTrafficCharts()">Apply</button>
-    </div>
-  </div>
-
-  <!-- 🔍 Filters -->
-  <div class="chart-container">
-    <h2 class="section-title">Filters</h2>
-    <div class="chart-toggle">
-      <select id="countryFilter" onchange="applyTrafficFilters()">
-        <option value="">All Countries</option>
-      </select>
-      <select id="deviceFilter" onchange="applyTrafficFilters()">
-        <option value="">All Devices</option>
-      </select>
-      <select id="referrerFilter" onchange="applyTrafficFilters()">
-        <option value="">All Referrers</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- 📊 Traffic Charts -->
-  <div class="chart-container">
-    <h2 class="section-title">Visitor Geography</h2>
-    <canvas id="geoChart"></canvas>
-  </div>
-  <div class="chart-container">
-    <h2 class="section-title">Device Type</h2>
-    <canvas id="deviceChart"></canvas>
-  </div>
-  <div class="chart-container">
-    <h2 class="section-title">Referral Source</h2>
-    <canvas id="referralChart"></canvas>
-  </div>
-</div>
-
   
  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
