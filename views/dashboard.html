@@ -803,6 +803,35 @@ async function fetchTrafficData() {
     }
 }
 
+async function fetchSalesData() {
+  try {
+    const res = await fetch('/api/sales-data');
+    if (!res.ok) throw new Error("Failed to fetch");
+    return await res.json();
+  } catch (err) {
+    console.warn('Falling back to mockData.sales due to error:', err.message);
+    return {
+      labels: mockData.sales.labels,
+      daily: mockData.sales.daily,
+      weekly: mockData.sales.weekly,
+      monthly: mockData.sales.monthly,
+      sessions: mockData.sessions
+    };
+  }
+}
+
+async function fetchRevenueData() {
+  try {
+    const res = await fetch('/api/revenue-data');
+    if (!res.ok) throw new Error("Failed to fetch");
+    return await res.json();
+  } catch (err) {
+    console.warn('Falling back to mockData.revenue due to error:', err.message);
+    return mockData.revenue;
+  }
+}
+
+
 fetchData('/api/sales-data', mockData.sales).then(renderSalesCharts);
 fetchData('/api/traffic-sources', mockData.traffic.sources.all).then(renderTrafficSources);
 fetchData('/api/traffic-details', mockData.traffic.details).then(renderTrafficDetails);
@@ -1142,6 +1171,7 @@ fetchData('/api/user-activity', mockData.userActivity).then(renderUserActivityTa
   const salesData = await fetchSalesData();
   const revenueData = await fetchRevenueData();
   const trafficData = await fetchTrafficData();
+  const salesData = await fetchSalesData();
 
   // 🎨 Shared chart options
   const commonOptions = {
@@ -1197,20 +1227,26 @@ fetchData('/api/user-activity', mockData.userActivity).then(renderUserActivityTa
 
   // 📊 Revenue Chart
   const revenueCtx = document.getElementById('revenue-chart').getContext('2d');
-  revenueChart = new Chart(revenueCtx, {
-    type: 'bar',
-    data: {
-      labels: revenueData.product.labels,
-      datasets: [{
-        label: 'Revenue',
-        data: revenueData.product.data,
-        backgroundColor: 'rgba(40, 167, 69, 0.2)',
-        borderColor: 'rgba(40, 167, 69, 1)',
-        borderWidth: 1
-      }]
-    },
-    options: commonOptions
-  });
+revenueChart = new Chart(revenueCtx, {
+  type: 'bar',
+  data: {
+    labels: revenueData.product.labels,
+    datasets: [{
+      label: 'Revenue',
+      data: revenueData.product.data,
+      backgroundColor: 'rgba(40, 167, 69, 0.2)',
+      borderColor: 'rgba(40, 167, 69, 1)',
+      borderWidth: 1
+    }]
+  },
+  options: commonOptions
+});
+
+document.getElementById('revenue-view')?.addEventListener('change', (e) => {
+  updateRevenueChart(e.target.value);
+});
+
+
 
   // 👥 Sessions Chart
   const sessionCtx = document.getElementById('sessions-chart').getContext('2d');
@@ -1582,11 +1618,13 @@ fetchData('/api/user-activity', mockData.userActivity).then(renderUserActivityTa
             salesChart.update();
         }
 
-        function updateRevenueChart(view) {
-            revenueChart.data.labels = mockData.revenue[view].labels;
-            revenueChart.data.datasets[0].data = mockData.revenue[view].data;
-            revenueChart.update();
-        }
+        function updateRevenueChart(view = 'product') {
+ 		 const data = view === 'product' ? revenueData.product : revenueData.category;
+  		  revenueChart.data.labels = data.labels;
+  		  revenueChart.data.datasets[0].data = data.data;
+  		   revenueChart.update();
+}
+
 
         function updateSessionsChart(timeView) {
             sessionsChart.data.labels = mockData.sales.labels[timeView];
