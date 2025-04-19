@@ -26,11 +26,15 @@ app.use("/views", express.static(path.join(__dirname, "views")));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.use("/dashboard", basicAuth({
-  users: { "admin": "playyb0yy01" },
-  challenge: true,
-  unauthorizedResponse: "Access denied"
-}));
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+  if (username === 'admin' && password === 'playyb0yy01') {
+    req.session.authenticated = true;
+    return res.redirect('/dashboard');
+  }
+  res.redirect('/login');
+});
+
 
 app.get("/dashboard", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "dashboard.html"));
