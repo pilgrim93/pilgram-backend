@@ -724,6 +724,46 @@
 
             
         <script>
+        
+        async function fetchSalesData() {
+  try {
+    const res = await fetch('/api/sales-data');
+    if (!res.ok) throw new Error("Failed to fetch");
+    return await res.json();
+  } catch (err) {
+    console.warn('Falling back to mockData.sales due to error:', err.message);
+    return {
+      labels: mockData.sales.labels,
+      daily: mockData.sales.daily,
+      weekly: mockData.sales.weekly,
+      monthly: mockData.sales.monthly,
+      sessions: mockData.sessions // Sessions used in conversions
+    };
+  }
+}
+
+async function fetchRevenueData() {
+  try {
+    const res = await fetch('/api/revenue-data');
+    if (!res.ok) throw new Error("Failed to fetch");
+    return await res.json();
+  } catch (err) {
+    console.warn('Falling back to mockData.revenue due to error:', err.message);
+    return mockData.revenue;
+  }
+}
+
+async function fetchTrafficData() {
+  try {
+    const res = await fetch('/api/traffic-stats');
+    if (!res.ok) throw new Error("Failed to fetch");
+    return await res.json();
+  } catch (err) {
+    console.warn('Falling back to mockData.traffic due to error:', err.message);
+    return mockData.traffic;
+  }
+}
+
   // Tab switching
   const tabs = document.querySelectorAll('[data-tab]');
   const tabContents = document.querySelectorAll('[data-tab-content]');
@@ -901,7 +941,7 @@
         });
 
         // Initialize all charts
-        function initCharts() {
+        function   s() {
             // Chart configuration options - common settings
 			const revenueData.product.data, = await fetchRevenueData();
                 responsive: true,
@@ -936,7 +976,7 @@
             
             // Create Sales Chart
            const salesData = await fetchSalesData();
-		const salesCtx = document.getElementById('sales-chart').getContext('2d');
+		   const salesCtx = document.getElementById('sales-chart').getContext('2d');
 			salesChart = new Chart(salesCtx, {
     			type: 'line',
     				data: {
@@ -1329,15 +1369,8 @@
 
   let orders = [];
   try {
-    const res = await fetch('/api/orders');
-    if (!res.ok) throw new Error("Failed to fetch");
-    orders = await res.json();
-  } catch (err) {
-    console.warn('Falling back to mockData.orders due to error:', err.message);
-    orders = mockData.orders;
-  }
-
-  orders.forEach(order => {
+   const res = await fetch('/api/orders');
+    orders.forEach(order => {
     const row = document.createElement('tr');
     row.innerHTML = `
       <td>${order.id}</td>
@@ -1352,7 +1385,7 @@
 }
 
 
-        async function populateActivityTable() {
+       async function populateActivityTable() {
   const tbody = document.querySelector('#activity-table tbody');
   tbody.innerHTML = '';
 
@@ -1379,8 +1412,8 @@
   });
 }
 
-        //Populate traffic Table
-        async function populateTrafficTable() {
+
+      async function populateTrafficTable() {
   const tbody = document.querySelector('#traffic-table tbody');
   tbody.innerHTML = '';
 
@@ -1407,6 +1440,7 @@
     tbody.appendChild(row);
   });
 }
+
 
 
         // Make tables sortable
