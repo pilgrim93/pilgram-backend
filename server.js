@@ -1,4 +1,3 @@
-
 const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
@@ -6,12 +5,25 @@ const axios = require("axios");
 require("dotenv").config();
 const session = require("express-session");
 
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// 🔐 Session middleware
 app.use(session({
   secret: process.env.SESSION_SECRET || "pilgram_secret",
   resave: false,
   saveUninitialized: true
 }));
 
+// 📦 Middleware
+app.use("/public", express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public")));
+app.use("/styles", express.static(path.join(__dirname, "styles")));
+app.use("/views", express.static(path.join(__dirname, "views")));
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+// 🛡️ Auth middleware
 function requireAuth(req, res, next) {
   if (req.session && req.session.authenticated) {
     return next();
@@ -19,40 +31,18 @@ function requireAuth(req, res, next) {
   res.redirect("/login");
 }
 
-app.get("/dashboard", requireAuth, (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "dashboard.html"));
+// 🧠 Routes
+app.get("/login", (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "login.html"));
 });
-
 
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
   if (username === 'admin' && password === 'dre') {
     req.session.authenticated = true;
-    return res.redirect('/dashboard');
+    return res.redirect("/dashboard");
   }
-  
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-
-app.post("/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.redirect("/login");
-  });
-});
-
-
-
-app.use("/public", express.static(path.join(__dirname, "public")));
-app.use(express.static(path.join(__dirname, "public")));
-app.use("/styles", express.static(path.join(__dirname, "styles")));
-app.use("/views", express.static(path.join(__dirname, "views")));
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
-app.use('/styles', express.static(path.join(__dirname, 'styles')));
-
-app.get("/login", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "login.html"));
+  res.redirect("/login");
 });
 
 app.post("/logout", (req, res) => {
@@ -61,7 +51,15 @@ app.post("/logout", (req, res) => {
   });
 });
 
-// Telegram notification function
+app.get("/dashboard", requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "dashboard.html"));
+});
+
+app.get("/", (req, res) => {
+  res.redirect("/dashboard");
+});
+
+// 📬 Telegram alert
 async function sendTelegramNotification(order) {
   const message = `🛒 *New Order Received!*
 
@@ -80,24 +78,19 @@ async function sendTelegramNotification(order) {
   }
 }
 
-// === Shoppy Polling ===
+// 🛒 Shoppy polling
 let shoppyOrders = [];
 
 async function fetchShoppyOrders() {
   try {
     const response = await axios.get("https://shoppy.gg/api/v1/orders", {
-      headers: {
-        Authorization: process.env.SHOPPY_API_KEY
-      }
+      headers: { Authorization: process.env.SHOPPY_API_KEY }
     });
 
     const newOrders = response.data.filter(o => !shoppyOrders.find(p => p.id === o.id));
     if (newOrders.length) {
       console.log(`🆕 ${newOrders.length} new Shoppy orders detected.`);
-    }
-
-    for (const order of newOrders) {
-      await sendTelegramNotification(order);
+      for (const order of newOrders) await sendTelegramNotification(order);
     }
 
     shoppyOrders = response.data;
@@ -106,7 +99,6 @@ async function fetchShoppyOrders() {
   }
 }
 
-// Poll every 2 minutes
 setInterval(fetchShoppyOrders, 2 * 60 * 1000);
 fetchShoppyOrders();
 
@@ -114,31 +106,22 @@ app.get("/api/orders", (req, res) => {
   res.json(shoppyOrders);
 });
 
-// Redirect root to dashboard
-app.get("/", (req, res) => {
-  res.redirect("/dashboard");
-});
-
-// === Shoppy Webhook ===
 app.post("/webhook/shoppy", async (req, res) => {
   const order = req.body;
   if (req.headers["x-verification-key"] !== process.env.SHOPPY_WEBHOOK_SECRET) {
     return res.status(403).send("Invalid key");
   }
-
   await sendTelegramNotification(order);
   res.sendStatus(200);
 });
 
-// === GA4 Analytics Endpoint ===
+// 📊 Google Analytics
 const { BetaAnalyticsDataClient } = require('@google-analytics/data');
 const analyticsDataClient = new BetaAnalyticsDataClient();
 
 app.get("/api/traffic-stats", async (req, res) => {
   try {
     const propertyId = "486157365";
-
-    // 🆕 Get query params or fallback
     const startDate = req.query.start || "7daysAgo";
     const endDate = req.query.end || "today";
 
@@ -150,7 +133,6 @@ app.get("/api/traffic-stats", async (req, res) => {
         dateRanges: [{ startDate, endDate }],
         limit: 5
       });
-
       return (response.rows || []).map(row => ({
         label: row.dimensionValues[0].value,
         value: parseInt(row.metricValues[0].value)
@@ -170,7 +152,7 @@ app.get("/api/traffic-stats", async (req, res) => {
   }
 });
 
-
+// 🚀 Launch
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
