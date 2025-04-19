@@ -2,59 +2,92 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pilgram Analytics Dashboard</title>
- <link rel="stylesheet" href="/styles/style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="/styles/style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 </head>
 <body>
-  <header>
-    <img src="/logo1.png" alt="Pilgram Logo" class="logo" />
-    <button class="logout-btn" onclick="logout()">Logout</button>
+  <header class="navbar">
+    <img src="/public/logo1.png" class="logo" alt="Logo">
+    <div class="logout-btn" onclick="logout()">Logout</div>
   </header>
 
-  <div class="dashboard-tabs">
-    <div class="dashboard-tab active" onclick="switchTab('sales')">💰 Sales</div>
-    <div class="dashboard-tab" onclick="switchTab('behavior')">👥 User Behavior</div>
-    <div class="dashboard-tab" onclick="switchTab('traffic')">🌐 Traffic</div>
-  </div>
+  <nav class="tabs">
+    <div class="tab active" onclick="switchTab('sales')">💰 Sales</div>
+    <div class="tab" onclick="switchTab('traffic')">🌐 Traffic</div>
+    <div class="tab" onclick="switchTab('behavior')">👥 User Behavior</div>
+  </nav>
 
   <!-- SALES TAB -->
   <div class="tab-content" id="sales">
     <div class="chart-container">
       <h2 class="section-title">Sales Overview</h2>
       <div class="chart-toggle">
-        <button class="active" onclick="toggleSalesView('daily')">Daily</button>
-        <button onclick="toggleSalesView('weekly')">Weekly</button>
+        <button onclick="toggleChartType('salesChart')">Toggle Line/Bar</button>
+        <button onclick="toggleTimeframe()">Daily/Weekly</button>
       </div>
       <canvas id="salesChart"></canvas>
+    </div>
 
+    <div class="chart-container">
       <h2 class="section-title">Revenue Breakdown</h2>
       <div class="chart-toggle">
-        <button class="active" onclick="toggleRevenueView('product')">By Product</button>
-        <button onclick="toggleRevenueView('daily')">By Day</button>
+        <button onclick="toggleChartType('revenueChart')">Toggle Line/Bar</button>
+        <button onclick="toggleRevenueMode()">By Product/Day</button>
       </div>
       <canvas id="revenueChart"></canvas>
     </div>
 
-    <div class="orders-table-section">
-      <h2>Recent Orders</h2>
-      <table class="orders-table">
+    <div class="orders-container">
+      <button class="export-btn" onclick="exportCSV()">Export Orders</button>
+      <table id="ordersTable">
         <thead>
-          <tr>
-            <th>Date</th>
-            <th>Product</th>
-            <th>Plan</th>
-            <th>Payment Method</th>
-            <th>Revenue</th>
-          </tr>
+          <tr><th>Order ID</th><th>Price</th><th>Email</th><th>Date</th></tr>
         </thead>
-        <tbody id="orders-table-body">
-          <!-- Data dynamically populated -->
-        </tbody>
+        <tbody></tbody>
       </table>
-      <button class="export-btn" onclick="exportOrders()">Export CSV</button>
+    </div>
+  </div>
+
+  <!-- TRAFFIC TAB -->
+  <div class="tab-content" id="traffic" style="display:none;">
+    <div class="chart-container">
+      <h2 class="section-title">Date Range</h2>
+      <div class="chart-toggle">
+        <input type="date" id="startDate" />
+        <input type="date" id="endDate" />
+        <button onclick="renderTrafficCharts()">Apply</button>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <h2 class="section-title">Filters</h2>
+      <div class="chart-toggle">
+        <select id="countryFilter" onchange="applyTrafficFilters()">
+          <option value="">All Countries</option>
+        </select>
+        <select id="deviceFilter" onchange="applyTrafficFilters()">
+          <option value="">All Devices</option>
+        </select>
+        <select id="referrerFilter" onchange="applyTrafficFilters()">
+          <option value="">All Referrers</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <h2 class="section-title">Visitor Geography</h2>
+      <canvas id="geoChart"></canvas>
+
+      <h2 class="section-title">Device Type</h2>
+      <canvas id="deviceChart"></canvas>
+
+      <h2 class="section-title">Referral Source</h2>
+      <canvas id="referralChart"></canvas>
+
+      <h2 class="section-title">Search Keywords</h2>
+      <canvas id="keywordChart"></canvas>
     </div>
   </div>
 
@@ -63,447 +96,46 @@
     <div class="chart-container">
       <h2 class="section-title">Scroll Depth</h2>
       <canvas id="scrollDepthChart"></canvas>
+    </div>
 
-      <h2 class="section-title">Click Tracking</h2>
+    <div class="chart-container">
+      <h2 class="section-title">Click Heatmap</h2>
       <canvas id="clickChart"></canvas>
+    </div>
 
+    <div class="chart-container">
       <h2 class="section-title">Time on Page</h2>
-      <canvas id="timeOnPageChart"></canvas>
+      <canvas id="timeChart"></canvas>
     </div>
   </div>
 
-  <!-- TRAFFIC TAB -->
-<div class="tab-content" id="traffic" style="display:none;">
-
-  <!-- 📅 Date Range Picker -->
-  <div class="chart-container">
-    <h2 class="section-title">Date Range</h2>
-    <div class="chart-toggle">
-      <input type="date" id="startDate" />
-      <input type="date" id="endDate" />
-      <button onclick="renderTrafficCharts()">Apply</button>
-    </div>
-  </div>
-
-  <!-- 🔍 Filters -->
-  <div class="chart-container">
-    <h2 class="section-title">Filters</h2>
-    <div class="chart-toggle">
-      <select id="countryFilter" onchange="applyTrafficFilters()">
-        <option value="">All Countries</option>
-      </select>
-      <select id="deviceFilter" onchange="applyTrafficFilters()">
-        <option value="">All Devices</option>
-      </select>
-      <select id="referrerFilter" onchange="applyTrafficFilters()">
-        <option value="">All Referrers</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- 📊 Traffic Charts -->
-  <div class="chart-container">
-    <h2 class="section-title">Visitor Geography</h2>
-    <canvas id="geoChart"></canvas>
-
-    <h2 class="section-title">Device Type</h2>
-    <canvas id="deviceChart"></canvas>
-
-    <h2 class="section-title">Referral Source</h2>
-    <canvas id="referralChart"></canvas>
-
-    <h2 class="section-title">Search Keywords</h2>
-    <canvas id="keywordChart"></canvas> <!-- Reserved for future expansion -->
-  </div>
-
-</div>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="/main.js"></script>
-  
   <script>
-  let activeTab = "sales";
-let salesView = "daily";
-let revenueView = "product";
+    function switchTab(tab) {
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".tab-content").forEach(c => c.style.display = "none");
 
-function switchTab(tab) {
-  document.querySelectorAll(".dashboard-tab").forEach(t => t.classList.remove("active"));
-  document.querySelectorAll(".tab-content").forEach(c => c.style.display = "none");
+      document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add("active");
+      document.getElementById(tab).style.display = "block";
 
-  document.querySelector(`.dashboard-tab[onclick="switchTab('${tab}')"]`).classList.add("active");
-  document.getElementById(tab).style.display = "block";
-  activeTab = tab;
-}
-
-function toggleSalesView(view) {
-  salesView = view;
-  document.querySelectorAll(".chart-toggle button").forEach(btn => btn.classList.remove("active"));
-  renderSalesChart();
-}
-
-function toggleRevenueView(view) {
-  revenueView = view;
-  document.querySelectorAll(".chart-toggle button").forEach(btn => btn.classList.remove("active"));
-  renderRevenueChart();
-}
-
-function renderSalesChart() {
-  if (window.salesChart) window.salesChart.destroy();
-
-  const ctx = document.getElementById("salesChart").getContext("2d");
-  const labels = salesView === "daily" ? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] : ["Week 1", "Week 2", "Week 3"];
-  const data = salesView === "daily" ? [5, 9, 4, 8, 12, 10, 6] : [45, 50, 65];
-
-  window.salesChart = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [{
-        label: "Sales",
-        data,
-        backgroundColor: "#00ffd0"
-      }]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
-  });
-}
-
-function renderRevenueChart() {
-  if (window.revenueChart) window.revenueChart.destroy();
-
-  const ctx = document.getElementById("revenueChart").getContext("2d");
-  const labels = revenueView === "product"
-    ? ["iPhone Quiz", "Shein Mystery Box", "Temu Box"]
-    : ["Mon", "Tue", "Wed", "Thu", "Fri"];
-  const data = revenueView === "product"
-    ? [300, 250, 400]
-    : [90, 120, 150, 180, 200];
-
-  window.revenueChart = new Chart(ctx, {
-    type: "line",
-    data: {
-      labels,
-      datasets: [{
-        label: "Revenue",
-        data,
-        backgroundColor: "#47f96c",
-        borderColor: "#47f96c",
-        fill: false
-      }]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
-  });
-}
-
-function exportOrders() {
-  const rows = [["Date", "Product", "Plan", "Payment Method", "Revenue"]];
-  document.querySelectorAll(".orders-table tbody tr").forEach(row => {
-    const cols = Array.from(row.children).map(td => td.innerText);
-    rows.push(cols);
-  });
-
-  const csv = rows.map(r => r.join(",")).join("\n");
-  const blob = new Blob([csv], { type: "text/csv" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "orders.csv";
-  a.click();
-}
-
-function logout() {
-  fetch("/logout", { method: "POST" }).then(() => {
-    window.location.href = "/login";
-  });
-}
-
-// Initial render
-window.onload = () => {
-  renderSalesChart();
-  renderRevenueChart();
-  switchTab("sales");
-};
-
-function renderBehaviorCharts() {
-  const scrollCtx = document.getElementById("scrollDepthChart").getContext("2d");
-  const clickCtx = document.getElementById("clickChart").getContext("2d");
-  const timeCtx = document.getElementById("timeOnPageChart").getContext("2d");
-
-  const scrollData = {
-    labels: ["25%", "50%", "75%", "100%"],
-    data: [30, 50, 20, 10]
-  };
-
-  const clickData = {
-    labels: ["Buy Now", "Learn More", "Other"],
-    data: [60, 30, 10]
-  };
-
-  const timeData = {
-    labels: ["0-10s", "10-30s", "30-60s", "60s+"],
-    data: [15, 35, 30, 20]
-  };
-
-  new Chart(scrollCtx, {
-    type: "bar",
-    data: {
-      labels: scrollData.labels,
-      datasets: [{
-        label: "Scroll % of Page",
-        data: scrollData.data,
-        backgroundColor: "#ff9f40"
-      }]
-    },
-    options: { responsive: true }
-  });
-
-  new Chart(clickCtx, {
-    type: "bar",
-    data: {
-      labels: clickData.labels,
-      datasets: [{
-        label: "Clicks",
-        data: clickData.data,
-        backgroundColor: "#4bc0c0"
-      }]
-    },
-    options: { responsive: true }
-  });
-
-  new Chart(timeCtx, {
-    type: "bar",
-    data: {
-      labels: timeData.labels,
-      datasets: [{
-        label: "Time on Page",
-        data: timeData.data,
-        backgroundColor: "#9966ff"
-      }]
-    },
-    options: { responsive: true }
-  });
-}
-
-window.onload = () => {
-  renderSalesChart();
-  renderRevenueChart();
-  renderBehaviorCharts(); // 👈 Add this here
-  switchTab("sales");
-};
-
-async function loadOrdersTable() {
-  let orders = [];
-
-  try {
-    const res = await fetch("/api/orders");
-    const data = await res.json();
-    orders = Array.isArray(data) && data.length ? data : [];
-  } catch (err) {
-    console.warn("API failed, using dummy orders.");
-  }
-
-  if (!orders.length) {
-    orders = [
-      { date: "2025-04-19", product: "iPhone Quiz", plan: "Basic", method: "Crypto", revenue: "$15" },
-      { date: "2025-04-20", product: "Shein Box", plan: "Premium", method: "PayPal", revenue: "$29" }
-    ];
-  }
-
-  const tbody = document.getElementById("orders-table-body");
-  tbody.innerHTML = "";
-
-  orders.forEach(o => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${o.date}</td>
-      <td>${o.product}</td>
-      <td>${o.plan}</td>
-      <td>${o.method}</td>
-      <td>${o.revenue}</td>
-    `;
-    tbody.appendChild(row);
-  });
-}
-
-window.onload = () => {
-  renderSalesChart();
-  renderRevenueChart();
-  renderBehaviorCharts();
-  loadOrdersTable(); // 👈 This fetches and renders the orders
-  switchTab("sales");
-};
-
-async function renderTrafficCharts() {
-  let start = document.getElementById("startDate").value || "7daysAgo";
-  let end = document.getElementById("endDate").value || "today";
-
-  if (start !== "7daysAgo" && end !== "today") {
-    // Ensure it's valid YYYY-MM-DD format
-    const isValid = /^\d{4}-\d{2}-\d{2}$/.test(start) && /^\d{4}-\d{2}-\d{2}$/.test(end);
-    if (!isValid) {
-      alert("Please enter valid start and end dates.");
-      return;
+      if (tab === "sales") renderCharts();
+      if (tab === "traffic") renderTrafficCharts();
+      if (tab === "behavior") renderBehaviorCharts();
     }
-  }
 
-  try {
-    const res = await fetch(`/api/traffic-stats?start=${start}&end=${end}`);
-    const stats = await res.json();
-    allTrafficData = stats;
-    populateTrafficFilters(stats);
-    drawTrafficCharts(stats);
-  } catch (e) {
-    console.warn("Failed to load GA4 data. Using fallback.");
-    // fallback logic here
-  }
-}
-
-
-  const data = stats?.topCountries ? stats : dummy;
-
-  const createChart = (ctxId, label, dataArr, color) => {
-    const ctx = document.getElementById(ctxId).getContext("2d");
-    return new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: dataArr.map(e => e.label),
-        datasets: [{
-          label,
-          data: dataArr.map(e => e.value),
-          backgroundColor: color
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
-      }
-    });
-  };
-
-  createChart("geoChart", "Top Countries", data.topCountries, "#00d1b2");
-  createChart("deviceChart", "Top Devices", data.topDevices, "#48c78e");
-  createChart("referralChart", "Top Referrers", data.topReferrers, "#f39c12");
-}
-
-window.onload = () => {
-  renderSalesChart();
-  renderRevenueChart();
-  renderBehaviorCharts();
-  loadOrdersTable();
-  renderTrafficCharts(); // 🔥 Add this
-  switchTab("sales");
-};
-
-let allTrafficData = null;
-
-async function renderTrafficCharts() {
-  try {
-    const res = await fetch("/api/traffic-stats");
-    const stats = await res.json();
-    allTrafficData = stats;
-
-    populateTrafficFilters(stats);
-    drawTrafficCharts(stats);
-  } catch (e) {
-    console.warn("Using fallback traffic data");
-
-    allTrafficData = {
-      topCountries: [
-        { label: "USA", value: 120 },
-        { label: "Canada", value: 90 },
-        { label: "UK", value: 70 }
-      ],
-      topDevices: [
-        { label: "Mobile", value: 180 },
-        { label: "Desktop", value: 140 }
-      ],
-      topReferrers: [
-        { label: "Google", value: 200 },
-        { label: "Twitter", value: 80 },
-        { label: "Direct", value: 60 }
-      ]
+    window.onload = () => {
+      switchTab("sales");
+      setDefaultDateRange?.();
+      renderCharts?.();
+      renderBehaviorCharts?.();
+      renderTrafficCharts?.();
     };
 
-    populateTrafficFilters(allTrafficData);
-    drawTrafficCharts(allTrafficData);
-  }
-}
-
-function populateTrafficFilters(data) {
-  const countrySet = new Set(data.topCountries.map(x => x.label));
-  const referrerSet = new Set(data.topReferrers.map(x => x.label));
-  const deviceSet = new Set(data.topDevices.map(x => x.label));
-
-  populateSelect("countryFilter", countrySet);
-  populateSelect("referrerFilter", referrerSet);
-  populateSelect("deviceFilter", deviceSet);
-}
-
-function populateSelect(id, values) {
-  const select = document.getElementById(id);
-  select.innerHTML = `<option value="">All</option>`;
-  values.forEach(value => {
-    const opt = document.createElement("option");
-    opt.value = value;
-    opt.textContent = value;
-    select.appendChild(opt);
-  });
-}
-
-function applyTrafficFilters() {
-  const country = document.getElementById("countryFilter").value;
-  const referrer = document.getElementById("referrerFilter").value;
-  const device = document.getElementById("deviceFilter").value;
-
-  const filtered = {
-    topCountries: country
-      ? allTrafficData.topCountries.filter(x => x.label === country)
-      : allTrafficData.topCountries,
-    topDevices: device
-      ? allTrafficData.topDevices.filter(x => x.label === device)
-      : allTrafficData.topDevices,
-    topReferrers: referrer
-      ? allTrafficData.topReferrers.filter(x => x.label === referrer)
-      : allTrafficData.topReferrers
-  };
-
-  drawTrafficCharts(filtered);
-}
-
-function drawTrafficCharts(data) {
-  const createChart = (id, label, values, color) => {
-    const ctx = document.getElementById(id).getContext("2d");
-    if (window[id]) window[id].destroy();
-    window[id] = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: values.map(e => e.label),
-        datasets: [{
-          label,
-          data: values.map(e => e.value),
-          backgroundColor: color
-        }]
-      },
-      options: { responsive: true, maintainAspectRatio: false }
-    });
-  };
-
-  createChart("geoChart", "Top Countries", data.topCountries, "#00d1b2");
-  createChart("deviceChart", "Top Devices", data.topDevices, "#48c78e");
-  createChart("referralChart", "Top Referrers", data.topReferrers, "#f39c12");
-}
-
-function setDefaultDateRange() {
-  const today = new Date();
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(today.getDate() - 6);
-
-  const format = (date) => date.toISOString().split("T")[0];
-
-  document.getElementById("startDate").value = format(sevenDaysAgo);
-  document.getElementById("endDate").value = format(today);
-}
-
-  
+    function logout() {
+      fetch('/logout', { method: 'POST' }).then(() => {
+        window.location.href = '/login';
+      });
+    }
   </script>
+  <script src="/scripts/chart-setup.js"></script>
 </body>
 </html>
