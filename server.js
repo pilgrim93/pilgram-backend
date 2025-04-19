@@ -3,21 +3,41 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
 const axios = require("axios");
-const basicAuth = require("express-basic-auth");
 require("dotenv").config();
+const session = require("express-session");
+
+app.use(session({
+  secret: process.env.SESSION_SECRET || "pilgram_secret",
+  resave: false,
+  saveUninitialized: true
+}));
+
+function requireAuth(req, res, next) {
+  if (req.session && req.session.authenticated) {
+    return next();
+  }
+  res.redirect("/login");
+}
+
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
+  if (username === "admin" && password === "dre") {
+    req.session.authenticated = true;
+    app.get("/dashboard", requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "dashboard.html"));
+});
+
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.get("/login", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "login.html"));
-});
 
 app.post("/logout", (req, res) => {
-  res.set('WWW-Authenticate', 'Basic realm="Login"');
-  return res.status(401).send('Logged out');
+  req.session.destroy(() => {
+    res.redirect("/login");
+  });
 });
-
 
 app.use("/public", express.static(path.join(__dirname, "public")));
 app.use(express.static(path.join(__dirname, "public")));
@@ -27,23 +47,18 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use('/styles', express.static(path.join(__dirname, 'styles')));
 
-
-app.post('/login', (req, res) => {
-  const { username, password } = req.body;
-  if (username === 'admin' && password === 'playyb0yy01') {
-    req.session.authenticated = true;
-    return res.redirect('/dashboard');
-  }
   res.redirect('/login');
 });
+
 
 app.get("/login", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "login.html"));
 });
 
-
-app.get("/dashboard", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "dashboard.html"));
+app.post("/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.redirect("/login");
+  });
 });
 
 // Telegram notification function

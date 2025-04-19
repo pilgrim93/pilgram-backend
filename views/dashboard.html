@@ -5,12 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Pilgram Analytics Dashboard</title>
  <link rel="stylesheet" href="/styles/style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 </head>
 <body>
   <header>
-   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <img src="/logo1.png" alt="Pilgram Logo" class="logo" />
     <button class="logout-btn" onclick="logout()">Logout</button>
   </header>
@@ -21,7 +18,8 @@
     <div class="dashboard-tab" onclick="switchTab('traffic')">🌐 Traffic</div>
   </div>
   
-<div class="chart-row">
+<div class="tab-content" id="sales">
+  <div class="chart-row">
   <!-- 📈 Sales Chart -->
   <div class="chart-half">
     <h2 class="section-title">Sales Overview</h2>
@@ -196,22 +194,12 @@ function exportOrders() {
 }
 
 function logout() {
-  fetch("/logout", { method: "POST" }).then(() => {
-    window.location.href = "/login";
-  });
+  fetch("/logout", { method: "POST" })
+    .then(() => window.location.href = "/login")
+    .catch(() => alert("Logout failed."));
+}
 }
 
-// Initial render
-window.onload = () => {
-  renderSalesChart();
-  renderRevenueChart();
-  switchTab("sales");
-  renderSalesChart();
-    setDefaultDateRange();
-  renderRevenueChart();
-  renderBehaviorCharts(); // 👈 Add this here
-  switchTab("sales");
-};
 
 function renderBehaviorCharts() {
   const scrollCtx = document.getElementById("scrollDepthChart").getContext("2d");
@@ -360,7 +348,7 @@ async function renderTrafficCharts() {
   createChart("referralChart", "Top Referrers", data.topReferrers, "#f39c12");
 }
 
-window.onload = () => {
+load = () => {
   renderSalesChart();
   renderRevenueChart();
   renderBehaviorCharts();
@@ -368,6 +356,8 @@ window.onload = () => {
   loadOrdersTable();
   renderTrafficCharts(); // 🔥 Add this
   switchTab("sales");
+    renderSalesChart();
+
 };
 
 let allTrafficData = null;
@@ -514,7 +504,8 @@ async function loadOrdersTable() {
     tbody.appendChild(row);
   });
 }
-
   </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </body>
 </html>
