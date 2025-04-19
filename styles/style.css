@@ -169,3 +169,9 @@ canvas {
   border-radius: 16px;
 }
 
+@media (max-width: 768px) {
+  .chart-row {
+    flex-direction: column;
+  }
+}
+
