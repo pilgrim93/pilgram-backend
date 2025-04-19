@@ -37,6 +37,10 @@ app.post('/login', (req, res) => {
   res.redirect('/login');
 });
 
+app.get("/login", (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "login.html"));
+});
+
 
 app.get("/dashboard", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "dashboard.html"));
