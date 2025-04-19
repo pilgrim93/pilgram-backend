@@ -721,6 +721,33 @@
         </div>
     </div>
 </body>
+
+            
+        <script>
+  // Tab switching
+  const tabs = document.querySelectorAll('[data-tab]');
+  const tabContents = document.querySelectorAll('[data-tab-content]');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.getAttribute('data-tab');
+
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      tabContents.forEach(c => {
+        if (c.getAttribute('data-tab-content') === target) {
+          c.style.display = 'block';
+        } else {
+          c.style.display = 'none';
+        }
+      });
+    });
+  });
+
+  // Default: show sales tab
+  document.querySelector('[data-tab="sales"]').click();
+  </script>
 </html>
 
     <script>
@@ -819,10 +846,7 @@
         let pollingInterval;
 
         // Initialize everything when DOM is loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize tabs
-            initTabs();
-            
+        document.addEventListener('DOMContentLoaded', function() {            
             // Initialize charts
             initCharts();
             
@@ -850,23 +874,6 @@
             
             document.getElementById('test-api').addEventListener('click', testApiConnection);
         });
-
-        // Initialize tabs
-        function initTabs() {
-            const tabs = document.querySelectorAll('.tab');
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    // Remove active class from all tabs
-                    tabs.forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    // Hide all sections
-                    const sections = document.querySelectorAll('.dashboard-section');
-                    sections.forEach(section => section.classList.remove('active'));
-                    
-                });
-            });
-        }
 
         // Initialize all charts
         function initCharts() {
@@ -1583,29 +1590,5 @@
             const sourceIndex = Math.floor(Math.random() * mockData.traffic.sources.all.labels.length);
             mockData.traffic.sources.all.data[sourceIndex] += additionalTraffic;
             traffic
-            
-        
-  // Tab switching
-  const tabs = document.querySelectorAll('[data-tab]');
-  const tabContents = document.querySelectorAll('[data-tab-content]');
 
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      const target = tab.getAttribute('data-tab');
-
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-
-      tabContents.forEach(c => {
-        if (c.getAttribute('data-tab-content') === target) {
-          c.style.display = 'block';
-        } else {
-          c.style.display = 'none';
-        }
-      });
-    });
-  });
-
-  // Default: show sales tab
-  document.querySelector('[data-tab="sales"]').click();
 </script>
