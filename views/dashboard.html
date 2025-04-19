@@ -1096,16 +1096,7 @@ trafficSourcesChart = new Chart(trafficSourcesCtx, {
   });
 
 }
-            
-           
-            
-
-// 🔢 Compute conversion rates
-  const sessions = salesData.sessions.daily[index];
-  return sessions ? (sale / sessions * 100).toFixed(2) : 0;
-});
-
-
+                
         // Setup event listeners for chart controls
         function setupEventListeners() {
             // Sales chart type change
