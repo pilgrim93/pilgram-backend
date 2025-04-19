@@ -172,3 +172,28 @@ app.get("/api/traffic-stats", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
+
+
+
+// 🧠 Behavior tracking endpoint
+let userActivityLog = [];
+
+app.post("/api/track-behavior", (req, res) => {
+  const { type, value, path } = req.body;
+  if (!type || !value || !path) return res.status(400).send("Missing data");
+
+  userActivityLog.push({
+    userId: Math.floor(Math.random() * 1000).toString().padStart(3, '0'),
+    email: `user${Math.floor(Math.random() * 100)}@example.com`,
+    action: type === "click" ? "Clicked" : type === "scroll" ? "Scrolled" : "Time on Page",
+    page: path,
+    timestamp: new Date().toISOString()
+  });
+
+  res.status(200).send("Tracked");
+});
+
+// 📊 Endpoint to get user activity log
+app.get("/api/user-activity", (req, res) => {
+  res.json(userActivityLog.slice(-50)); // Limit to last 50 entries
+});
