@@ -59,6 +59,22 @@ app.get("/", (req, res) => {
   res.redirect("/dashboard");
 });
 
+app.get("/reset-login", (req, res) => {
+  res.send(`
+    <html>
+      <head><title>Reset Login</title></head>
+      <body style="font-family:sans-serif; text-align:center; padding:50px;">
+        <h1>Reset Credentials</h1>
+        <p>Default username: <b>admin</b></p>
+        <p>Default password: <b>dre</b></p>
+        <p>You can change these in <code>server.js</code>.</p>
+        <a href="/login" style="color:#00bcd4;">Back to Login</a>
+      </body>
+    </html>
+  `);
+});
+
+
 // 📬 Telegram alert
 async function sendTelegramNotification(order) {
   const message = `🛒 *New Order Received!*
