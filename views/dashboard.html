@@ -944,7 +944,6 @@ async function fetchTrafficData() {
             document.getElementById('test-api').addEventListener('click', testApiConnection);
         });
 
-  
         // Initialize all charts
       async function initCharts() {
 	 	salesData = await fetchSalesData();
@@ -959,6 +958,9 @@ async function fetchTrafficData() {
  	 const sessions = salesData.sessions.daily[index];
   	 return sessions ? (sale / sessions * 100).toFixed(2) : 0;
 });
+
+updateConversionChart('daily');
+
 
 const usersCtx = document.getElementById('users-chart').getContext('2d');
 usersChart = new Chart(usersCtx, {
@@ -986,24 +988,6 @@ usersChart = new Chart(usersCtx, {
 });
 
 
-  
-  conversionChart = new Chart(conversionCtx, {
-  type: 'line',
-  data: {
-    labels: salesData.labels.daily,
-    datasets: [{
-      label: 'Conversion Rate (%)',
-      data: conversionData,
-      backgroundColor: 'rgba(255, 193, 7, 0.2)',
-      borderColor: 'rgba(255, 193, 7, 1)',
-      borderWidth: 2,
-      tension: 0.4,
-      pointRadius: 5,
-      pointBackgroundColor: 'rgba(255, 193, 7, 1)'
-    }]
-  },
-  options: commonOptions
-});
   
 const sessionCtx = document.getElementById('sessions-chart').getContext('2d');
 sessionChart = new Chart(sessionCtx, {
@@ -1125,7 +1109,23 @@ updateTrafficTimeChart('daily');
 updateTrafficSourcesChart('all');
       
 }
-           
+        
+        function updateConversionChart(view = 'daily') {
+  const labels = salesData.labels[view];
+  const sales = salesData[view];
+  const sessions = salesData.sessions[view];
+
+  const conversionData = sales.map((sale, i) => {
+    const session = sessions[i] || 1;
+    return ((sale / session) * 100).toFixed(2);
+  });
+
+  conversionChart.data.labels = labels;
+  conversionChart.data.datasets[0].data = conversionData;
+  conversionChart.update();
+}
+
+   
         // Setup event listeners for chart controls
         function setupEventListeners() {
             // Sales chart type change
@@ -1398,7 +1398,7 @@ updateTrafficSourcesChart('all');
             
 
         // Chart update functions
-       function updateSalesChart() {
+       function updateSalesChart(view = 'daily') {
  			 salesChart.data.labels = salesData.labels;
   			salesChart.data.datasets[0].data = salesData.data;
   			salesChart.update();
@@ -1412,19 +1412,19 @@ updateTrafficSourcesChart('all');
 		revenueChart.update();
 }
 
-        function updateSessionChart(view) {
+        function updateSessionChart(view = 'daily') {
             sessionChart.data.labels = salesData.labels[view];
             sessionChart.data.datasets[0].data = salesData.sessions[view];
             sessionChart.update();
         }
 
-        function updateTrafficSourcesChart(view) {
+        function updateTrafficSourcesChart(view = 'all') {
            trafficSourcesChart.data.labels = trafficData.sources[view].labels;
 			trafficSourcesChart.data.datasets[0].data = trafficData.sources[view].data;
 			trafficSourcesChart.update();
         }
 
-        function updateTrafficTimeChart(view) {
+        function updateTrafficTimeChart(view = 'daily') {
             trafficTimeChart.data.labels = salesData.labels[view];
 			trafficTimeChart.data.datasets[0].data = trafficData.overtime[view];
 			trafficTimeChart.update();
@@ -1453,6 +1453,21 @@ updateTrafficSourcesChart('all');
         function updateTrafficChartType(type) {
             updateChartType('trafficSourcesChart', type);
         }
+
+function updateConversionChart(view = 'daily') {
+  const labels = salesData.labels[view];
+  const sales = salesData[view];
+  const sessions = salesData.sessions[view];
+
+  const conversionData = sales.map((sale, i) => {
+    const session = sessions[i] || 1;
+    return ((sale / session) * 100).toFixed(2);
+  });
+
+  conversionChart.data.labels = labels;
+  conversionChart.data.datasets[0].data = conversionData;
+  conversionChart.update();
+}
 
 
         function updateAllCharts() {
@@ -1610,7 +1625,8 @@ updateTrafficSourcesChart('all');
             const sourceIndex = Math.floor(Math.random() * mockData.traffic.sources.all.labels.length);
             mockData.traffic.sources.all.data[sourceIndex] += additionalTraffic;
 	}
-	          
+	        console.log('salesData.labels.daily:', salesData.labels.daily);
+console.log('salesData.daily:', salesData.daily);  
   </script>
 </body>
          
