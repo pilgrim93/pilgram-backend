@@ -719,71 +719,7 @@
     </div>
     
      <script>
-    let salesData, revenueData, trafficData;
-
-       document.addEventListener('DOMContentLoaded', async function () {
-       document.querySelector('[data-tab="sales"]').click();
-  await initCharts();
-  populateOrdersTable();
-  populateActivityTable();
-  populateTrafficTable();
-  makeTablesSortable();
-  addSearchToTables();
-  initRealTimeUpdates();
-  setupEventListeners();
-  
-  document.getElementById('save-notification-settings').addEventListener('click', function() {
-    showNotification('Settings saved successfully!', 'Settings have been updated and will take effect immediately.');
-  });
-
-  document.getElementById('test-api').addEventListener('click', testApiConnection);
-});
-
-document.querySelector('.logout-btn')?.addEventListener('click', () => {
-    fetch('/logout', { method: 'POST' })
-      .then(() => window.location.href = '/login.html')
-      .catch(err => console.error('Logout failed:', err));
-  });
-
-
-const commonOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  scales: {
-    x: {
-      ticks: { color: 'white' },
-      grid: { color: 'rgba(255,255,255,0.1)' }
-    },
-    y: {
-      ticks: { color: 'white' },
-      grid: { color: 'rgba(255,255,255,0.1)' },
-      beginAtZero: true
-    }
-  },
-  plugins: {
-    legend: {
-      labels: { color: 'white' }
-    }
-  }
-};
-
-document.querySelectorAll('.nav-tabs .tab').forEach(tab => {
-  tab.addEventListener('click', function () {
-    // Deactivate all tabs
-    document.querySelectorAll('.nav-tabs .tab').forEach(t => t.classList.remove('active'));
-    this.classList.add('active');
-
-    // Hide all sections
-    document.querySelectorAll('.dashboard-section').forEach(section => section.classList.remove('active'));
-
-    // Show the selected section
-    const selectedTab = this.getAttribute('data-tab');
-    document.querySelector(`[data-tab-content="${selectedTab}"]`)?.classList.add('active');
-  });
-});
-
-    
-    // Mock Data Object - in a real implementation, this would come from your API
+     // Mock Data Object - in a real implementation, this would come from your API
         const mockData = {
             sales: {
                 labels: {
@@ -865,12 +801,75 @@ document.querySelectorAll('.nav-tabs .tab').forEach(tab => {
             ]
         };
     
+    let salesData, revenueData, trafficData;
+
+       document.addEventListener('DOMContentLoaded', async function () {
+       document.querySelector('[data-tab="sales"]').click();
+  await initCharts();
+  populateOrdersTable();
+  populateActivityTable();
+  populateTrafficTable();
+  makeTablesSortable();
+  addSearchToTables();
+  initRealTimeUpdates();
+  setupEventListeners();
+  
+  document.getElementById('save-notification-settings').addEventListener('click', function() {
+    showNotification('Settings saved successfully!', 'Settings have been updated and will take effect immediately.');
+  });
+
+  document.getElementById('test-api').addEventListener('click', testApiConnection);
+});
+
+document.querySelector('.logout-btn')?.addEventListener('click', () => {
+    fetch('/logout', { method: 'POST' })
+      .then(() => window.location.href = '/login.html')
+      .catch(err => console.error('Logout failed:', err));
+  });
+
+
+const commonOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    x: {
+      ticks: { color: 'white' },
+      grid: { color: 'rgba(255,255,255,0.1)' }
+    },
+    y: {
+      ticks: { color: 'white' },
+      grid: { color: 'rgba(255,255,255,0.1)' },
+      beginAtZero: true
+    }
+  },
+  plugins: {
+    legend: {
+      labels: { color: 'white' }
+    }
+  }
+};
+
+document.querySelectorAll('.nav-tabs .tab').forEach(tab => {
+  tab.addEventListener('click', function () {
+    // Deactivate all tabs
+    document.querySelectorAll('.nav-tabs .tab').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+
+    // Hide all sections
+    document.querySelectorAll('.dashboard-section').forEach(section => section.classList.remove('active'));
+
+    // Show the selected section
+    const selectedTab = this.getAttribute('data-tab');
+    document.querySelector(`[data-tab-content="${selectedTab}"]`)?.classList.add('active');
+  });
+});
+
         async function fetchSalesData() {
-  try {
-    const res = await fetch('/api/sales-data');
-   if (!res.ok) throw new Error("Failed to fetch");
-    return await res.json();
-  } catch (err) {
+  	try {
+    	const res = await fetch('/api/sales-data');
+  		 if (!res.ok) throw new Error("Failed to fetch");
+   	 return await res.json();
+  } 	catch (err) {
     console.warn('Falling back to mockData.sales due to error:', err.message);
     return {
       labels: mockData.sales.labels,
@@ -951,6 +950,10 @@ async function fetchTrafficData() {
 	 	salesData = await fetchSalesData();
 		revenueData = await fetchRevenueData();
 		trafficData = await fetchTrafficData();
+		console.log('✅ Using salesData:', salesData);
+		console.log('✅ Using revenueData:', revenueData);
+		console.log('✅ Using trafficData:', trafficData);
+
   	 const conversionCtx = document.getElementById('conversion-chart').getContext('2d');
 	 const conversionData = salesData.daily.map((sale, index) => {
  	 const sessions = salesData.sessions.daily[index];
@@ -1396,8 +1399,8 @@ updateTrafficSourcesChart('all');
 
         // Chart update functions
         function updateSalesChart(timeView) {
-            salesChart.data.labels = salesData.labels[timeView];
-            salesChart.data.datasets[0].data = salesData[timeView];
+            salesChart.data.labels = salesData.labels[view];
+            salesChart.data.datasets[0].data = salesData[view];
             salesChart.update();
         }
 
