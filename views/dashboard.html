@@ -803,6 +803,17 @@
                 { userId: '006', email: 'customer6@example.com', action: 'Login', page: '/dashboard', timestamp: '2025-04-17 17:42:11' },
                 { userId: '007', email: 'customer7@example.com', action: 'Cancel Subscription', page: '/account', timestamp: '2025-04-17 16:19:38' }
             ]
+            conversion: {
+  			labels: {
+    				default: ['Jan', 'Feb', 'Mar', 'Apr'],
+    				device: ['Mobile', 'Desktop']
+  				},
+  				data: {
+   					 default: [10, 20, 15, 25],
+   					 device: [18, 32]
+  					}
+}
+
         };
     
     let salesData, revenueData, trafficData;
@@ -817,6 +828,7 @@
   addSearchToTables();
   initRealTimeUpdates();
   setupEventListeners();
+  const conversionData = mockData.conversion;
  updateConversionChart('daily');
 
   
