@@ -722,6 +722,7 @@
     let salesData, revenueData, trafficData;
 
        document.addEventListener('DOMContentLoaded', async function () {
+       document.querySelector('[data-tab="sales"]').click();
   await initCharts();
   populateOrdersTable();
   populateActivityTable();
@@ -731,14 +732,18 @@
   initRealTimeUpdates();
   setupEventListeners();
   
-  document.querySelector('[data-tab="sales"]').click();
-
   document.getElementById('save-notification-settings').addEventListener('click', function() {
     showNotification('Settings saved successfully!', 'Settings have been updated and will take effect immediately.');
   });
 
   document.getElementById('test-api').addEventListener('click', testApiConnection);
 });
+
+document.querySelector('.logout-btn')?.addEventListener('click', () => {
+    fetch('/logout', { method: 'POST' })
+      .then(() => window.location.href = '/login.html')
+      .catch(err => console.error('Logout failed:', err));
+  });
 
 
 const commonOptions = {
@@ -935,7 +940,7 @@ async function fetchTrafficData() {
             // Set up Telegram notification test
             document.getElementById('save-notification-settings').addEventListener('click', function() {
                 showNotification('Settings saved successfully!', 'Settings have been updated and will take effect immediately.');
-            });
+            
             
             document.getElementById('test-api').addEventListener('click', testApiConnection);
         });
@@ -943,9 +948,9 @@ async function fetchTrafficData() {
   
         // Initialize all charts
       async function initCharts() {
-	 salesData = await fetchSalesData();
-	revenueData = await fetchRevenueData();
-	trafficData = await fetchTrafficData();
+	 	salesData = await fetchSalesData();
+		revenueData = await fetchRevenueData();
+		trafficData = await fetchTrafficData();
   	 const conversionCtx = document.getElementById('conversion-chart').getContext('2d');
 	 const conversionData = salesData.daily.map((sale, index) => {
  	 const sessions = salesData.sessions.daily[index];
@@ -1110,14 +1115,14 @@ trafficSourcesChart = new Chart(trafficSourcesCtx, {
     },
     options: commonOptions
   });
-    updateSalesChart('daily');
+   updateSalesChart('daily');
 updateRevenueChart('product');
 updateSessionChart('daily');
 updateTrafficTimeChart('daily');
 updateTrafficSourcesChart('all');
-
+      
 }
-                
+           
         // Setup event listeners for chart controls
         function setupEventListeners() {
             // Sales chart type change
@@ -1392,7 +1397,7 @@ updateTrafficSourcesChart('all');
         // Chart update functions
         function updateSalesChart(timeView) {
             salesChart.data.labels = salesData.labels[timeView];
-            salesChart.data.datasets[0].data = mockData.sales[timeView];
+            salesChart.data.datasets[0].data = salesData[timeView];
             salesChart.update();
         }
 
@@ -1405,7 +1410,7 @@ updateTrafficSourcesChart('all');
 
         function updateSessionChart(view) {
             sessionChart.data.labels = salesData.labels[view];
-            sessionChart.data.datasets[0].data = mockData.sessions[view];
+            sessionChart.data.datasets[0].data = salesData.sessions[view];
             sessionChart.update();
         }
 
@@ -1603,12 +1608,6 @@ updateTrafficSourcesChart('all');
             mockData.traffic.sources.all.data[sourceIndex] += additionalTraffic;
 	}
 	          
-document.querySelector('.logout-btn')?.addEventListener('click', () => {
-  fetch('/logout', { method: 'POST' })
-    .then(() => window.location.href = '/login.html')  // Adjust if login path is different
-    .catch(err => console.error('Logout failed:', err));
-});
-
   </script>
 </body>
          
