@@ -1135,9 +1135,13 @@ trafficSourcesChart = new Chart(trafficSourcesCtx, {
   conversionChart.data.datasets[0].data = conversionData;
 }
     
-
+    const view = document.getElementById('conversion-view').value || 'default';
  
 }
+
+document.getElementById('conversion-view').addEventListener('change', () => {
+  updateConversionChart();
+});
 
         // Setup event listeners for chart controls
         function setupEventListeners() {
