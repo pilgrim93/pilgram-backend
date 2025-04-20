@@ -1,13 +1,12 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Admin Dashboard</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
-<style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
+    <style>
         :root {
             --main-bg: #111111;
             --card-bg: #222222;
@@ -396,341 +395,330 @@
     </style>
 </head>
 <body>
-<!-- Header -->
-<div class="header">
-<img alt="Logo" class="logo" src="/logo1.png"/>
-<button class="logout-btn">Logout</button>
-</div>
-<!-- Navigation Tabs -->
+    <!-- Header -->
+    <div class="header">
+        <img src="/logo1.png" alt="Logo" class="logo">
+        <button class="logout-btn">Logout</button>
+    </div>
+    
+  <!-- Navigation Tabs -->
 <div class="nav-tabs">
-<button class="tab active" data-tab="sales">
-<span class="tab-icon">💰</span> Sales
+    <button data-tab="sales" class="tab active">
+        <span class="tab-icon">💰</span> Sales
     </button>
-<button class="tab" data-tab="behavior">
-<span class="tab-icon">👥</span> User Behavior
+    <button data-tab="behavior" class="tab">
+        <span class="tab-icon">👥</span> User Behavior
     </button>
-<button class="tab" data-tab="traffic">
-<span class="tab-icon">🌐</span> Traffic
+    <button data-tab="traffic" class="tab">
+        <span class="tab-icon">🌐</span> Traffic
     </button>
-<button class="tab" data-tab="settings">
-<span class="tab-icon">⚙️</span> Settings
+    <button data-tab="settings" class="tab">
+        <span class="tab-icon">⚙️</span> Settings
     </button>
 </div>
-<!-- Real-time Toggle -->
-<div class="real-time-toggle">
-<span>Real-time Updates</span>
-<label class="toggle-switch">
-<input id="real-time-toggle" type="checkbox"/>
-<span class="slider"></span>
-</label>
-<div class="data-status" id="connection-status">
-<span>Offline</span>
-<div class="pulse" style="display: none;"></div>
-</div>
-</div>
-<!-- Date Range Picker -->
-<div class="date-range-picker" style="display: flex; gap: 10px; margin-bottom: 20px;">
-<div class="date-input-container" style="flex: 1;">
-<label for="start-date" style="display: block; margin-bottom: 5px; color: white;">Start Date</label>
-<input id="start-date" style="width: 100%; padding: 8px; background-color: var(--button-bg); border: 1px solid var(--accent-border); border-radius: 5px; color: white;" type="date"/>
-</div>
-<div class="date-input-container" style="flex: 1;">
-<label for="end-date" style="display: block; margin-bottom: 5px; color: white;">End Date</label>
-<input id="end-date" style="width: 100%; padding: 8px; background-color: var(--button-bg); border: 1px solid var(--accent-border); border-radius: 5px; color: white;" type="date"/>
-</div>
-<div class="date-button-container" style="display: flex; align-items: flex-end;">
-<button id="apply-date-filter" style="padding: 8px 15px; background-color: var(--accent-green); color: white; border: none; border-radius: 5px; cursor: pointer;">Apply</button>
-</div>
-</div>
-<!-- Sales Section -->
-<div class="dashboard-section active" data-tab-content="sales" id="sales-section">
-<h2 class="section-title">Sales Charts</h2>
-<div class="charts-container">
-<!-- Sales Over Time Chart -->
-<div class="chart-container">
-<div class="chart-title">
-<span>Sales Over Time</span>
-<div class="chart-controls">
-<select class="chart-control" id="sales-chart-type">
-<option value="line">Line</option>
-<option value="bar">Bar</option>
-</select>
-<select class="chart-control" id="sales-time-view">
-<option value="daily">Daily</option>
-<option value="weekly">Weekly</option>
-<option value="monthly">Monthly</option>
-</select>
-</div>
-</div>
-<canvas id="sales-chart"></canvas>
-</div>
-<!-- Revenue by Product Chart -->
-<div class="chart-container">
-<div class="chart-title">
-<span>Revenue Breakdown</span>
-<div class="chart-controls">
-<select class="chart-control" id="revenue-chart-type">
-<option value="bar">Bar</option>
-<option value="pie">Pie</option>
-<option value="line">Line</option>
-</select>
-<select class="chart-control" id="revenue-view">
-<option value="product">By Product</option>
-<option value="category">By Category</option>
-</select>
-</div>
-</div>
-<canvas id="revenue-chart"></canvas>
-</div>
-<!-- Sessions Chart -->
-<div class="chart-container">
-<div class="chart-title">
-<span>User Sessions</span>
-<div class="chart-controls">
-<select class="chart-control" id="sessions-time-view">
-<option value="daily">Daily</option>
-<option value="weekly">Weekly</option>
-<option value="monthly">Monthly</option>
-</select>
-</div>
-</div>
-<canvas id="sessions-chart"></canvas>
-</div>
-<!-- Conversion Rate Chart -->
-<div class="chart-container">
-<div class="chart-title">
-<span>Conversion Rate</span>
-<div class="chart-controls">
-<select class="chart-control" id="conversion-time-view">
-<option value="daily">Daily</option>
-<option value="weekly">Weekly</option>
-<option value="monthly">Monthly</option>
-</select>
-</div>
-</div>
-<canvas id="conversion-chart"></canvas>
-</div>
-</div>
-<!-- Orders Table -->
-<div class="table-container">
-<div class="table-header">
-<h3 class="table-title">Recent Orders</h3>
-<button class="export-btn" onclick="exportTableToCSV('orders-table', 'orders-data.csv')">Export CSV</button>
-</div>
-<input class="search-input" id="orders-search" placeholder="Search orders..." type="text"/>
-<table id="orders-table">
-<thead>
-<tr>
-<th data-sort="id">Order ID</th>
-<th data-sort="email">Customer Email</th>
-<th data-sort="product">Product</th>
-<th data-sort="price">Price</th>
-<th data-sort="date">Date</th>
-<th data-sort="status">Status</th>
-</tr>
-</thead>
-<tbody>
-<!-- Will be populated by JavaScript -->
-</tbody>
-</table>
-</div>
-</div>
-<!-- User Behavior Section -->
-<div class="dashboard-section" data-tab-content="behavior" id="behavior-section">
-<h2 class="section-title">User Behavior</h2>
-<div class="charts-container">
-<!-- New vs Returning Users -->
-<div class="chart-container">
-<div class="chart-title">
-<span>New vs Returning Users</span>
-<div class="chart-controls">
-</div>
-</div>
-<canvas id="users-chart"></canvas>
-</div>
-<!-- User Engagement Chart -->
-<div class="chart-container">
-<div class="chart-title">
-<span>User Engagement</span>
-<div class="chart-controls">
-<select class="chart-control" id="engagement-time-view">
-<option value="daily">Daily</option>
-<option value="weekly">Weekly</option>
-<option value="monthly">Monthly</option>
-</select>
-</div>
-</div>
-<canvas id="engagement-chart"></canvas>
-</div>
-</div>
-<!-- User Activity Table -->
-<div class="table-container">
-<div class="table-header">
-<h3 class="table-title">User Activity Log</h3>
-<button class="export-btn" onclick="exportTableToCSV('activity-table', 'user-activity.csv')">Export CSV</button>
-</div>
-<input class="search-input" id="activity-search" placeholder="Search activities..." type="text"/>
-<table id="activity-table">
-<thead>
-<tr>
-<th data-sort="userId">User ID</th>
-<th data-sort="email">Email</th>
-<th data-sort="action">Action</th>
-<th data-sort="page">Page</th>
-<th data-sort="timestamp">Timestamp</th>
-</tr>
-</thead>
-<tbody>
-<!-- Will be populated by JavaScript -->
-</tbody>
-</table>
-</div>
-</div>
-<!-- Traffic Section -->
-<div class="dashboard-section" data-tab-content="traffic" id="traffic-section">
-<h2 class="section-title">Traffic Analysis</h2>
-<div class="charts-container">
-<!-- Traffic Sources Chart -->
-<div class="chart-container">
-<div class="chart-title">
-<span>Traffic Sources</span>
-<div class="chart-controls">
-<select class="chart-control" id="traffic-chart-type" onchange="updateTrafficChartType(this.value)">
-<option value="pie">Pie</option>
-<option value="bar">Bar</option>
-</select>
-<select class="chart-control" id="traffic-filter">
-<option value="all">All Time</option>
-<option value="month">This Month</option>
-<option value="week">This Week</option>
-</select>
-</div>
-</div>
-<canvas id="traffic-sources-chart"></canvas>
-</div>
-<!-- Traffic Over Time Chart -->
-<div class="chart-container">
-<div class="chart-title">
-<span>Traffic Over Time</span>
-<div class="chart-controls">
-<select class="chart-control" id="traffic-time-view">
-<option value="daily">Daily</option>
-<option value="weekly">Weekly</option>
-<option value="monthly">Monthly</option>
-</select>
-</div>
-</div>
-<canvas id="traffic-time-chart"></canvas>
-</div>
-</div>
-<!-- Traffic Details Table -->
-<div class="table-container">
-<div class="table-header">
-<h3 class="table-title">Traffic Details</h3>
-<button class="export-btn" onclick="exportTableToCSV('traffic-table', 'traffic-data.csv')">Export CSV</button>
-</div>
-<input class="search-input" id="traffic-search" placeholder="Search traffic data..." type="text"/>
-<table id="traffic-table">
-<thead>
-<tr>
-<th data-sort="source">Source</th>
-<th data-sort="visitors">Visitors</th>
-<th data-sort="pageViews">Page Views</th>
-<th data-sort="bounceRate">Bounce Rate</th>
-<th data-sort="avgTime">Avg. Time on Site</th>
-</tr>
-</thead>
-<tbody>
-<!-- Will be populated by JavaScript -->
-</tbody>
-</table>
-</div>
-</div>
-<!-- Settings Section -->
-<div class="dashboard-section" data-tab-content="settings" id="settings-section">
-<h2 class="section-title">Settings</h2>
-<div class="settings-panel">
-<h3 class="settings-title">Notification Settings</h3>
-<div class="settings-form">
-<div class="form-group">
-<label for="telegram-enabled">Enable Telegram Notifications</label>
-<select class="settings-input" id="telegram-enabled">
-<option value="true">Enabled</option>
-<option value="false">Disabled</option>
-</select>
-</div>
-<div class="form-group">
-<label for="notification-events">Events to Notify</label>
-<select class="settings-input" id="notification-events" multiple="">
-<option selected="" value="new_order">New Orders</option>
-<option value="refund">Refunds</option>
-<option value="high_traffic">High Traffic</option>
-<option value="low_stock">Low Stock</option>
-</select>
-</div>
-<button class="save-btn" id="save-notification-settings">Save Settings</button>
-</div>
-</div>
-<div class="settings-panel">
-<h3 class="settings-title">API Settings</h3>
-<div class="settings-form">
-<div class="form-group">
-<label for="api-test">Test API Connection</label>
-<button class="save-btn" id="test-api">Test Connection</button>
-</div>
-<div class="form-group">
-<label for="api-status">API Status</label>
-<input id="api-status" readonly="" type="text" value="Not Tested"/>
-</div>
-</div>
-</div>
-</div>
-<!-- Notification Toast -->
-<div class="notification" id="notification-toast">
-<div class="notification-header">
-<strong>New Order!</strong>
-<span class="notification-close" onclick="closeNotification()">×</span>
-</div>
-<div class="notification-content" id="notification-content">
+
+    
+    <!-- Real-time Toggle -->
+    <div class="real-time-toggle">
+        <span>Real-time Updates</span>
+        <label class="toggle-switch">
+            <input type="checkbox" id="real-time-toggle">
+            <span class="slider"></span>
+        </label>
+        <div id="connection-status" class="data-status">
+            <span>Offline</span>
+            <div class="pulse" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Date Range Picker -->
+    <div class="date-range-picker" style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <div class="date-input-container" style="flex: 1;">
+            <label for="start-date" style="display: block; margin-bottom: 5px; color: white;">Start Date</label>
+            <input type="date" id="start-date" style="width: 100%; padding: 8px; background-color: var(--button-bg); border: 1px solid var(--accent-border); border-radius: 5px; color: white;">
+        </div>
+        <div class="date-input-container" style="flex: 1;">
+            <label for="end-date" style="display: block; margin-bottom: 5px; color: white;">End Date</label>
+            <input type="date" id="end-date" style="width: 100%; padding: 8px; background-color: var(--button-bg); border: 1px solid var(--accent-border); border-radius: 5px; color: white;">
+        </div>
+        <div class="date-button-container" style="display: flex; align-items: flex-end;">
+            <button id="apply-date-filter" style="padding: 8px 15px; background-color: var(--accent-green); color: white; border: none; border-radius: 5px; cursor: pointer;">Apply</button>
+        </div>
+    </div>
+    
+    <!-- Sales Section -->
+    <div id="sales-section" data-tab-content="sales" class="dashboard-section active">
+        <h2 class="section-title">Sales Charts</h2>
+        
+        <div class="charts-container">
+            <!-- Sales Over Time Chart -->
+            <div class="chart-container">
+                <div class="chart-title">
+                    <span>Sales Over Time</span>
+                    <div class="chart-controls">
+                        <select id="sales-chart-type" class="chart-control">
+                            <option value="line">Line</option>
+                            <option value="bar">Bar</option>
+                        </select>
+                        <select id="sales-time-view" class="chart-control">
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+                </div>
+                <canvas id="sales-chart"></canvas>
+            </div>
+            
+            <!-- Revenue by Product Chart -->
+            <div class="chart-container">
+                <div class="chart-title">
+                    <span>Revenue Breakdown</span>
+                    <div class="chart-controls">
+                        <select id="revenue-chart-type" class="chart-control">
+                            <option value="bar">Bar</option>
+                            <option value="pie">Pie</option>
+                            <option value="line">Line</option>
+                        </select>
+                        <select id="revenue-view" class="chart-control">
+                            <option value="product">By Product</option>
+                            <option value="category">By Category</option>
+                        </select>
+                    </div>
+                </div>
+                <canvas id="revenue-chart"></canvas>
+            </div>
+            
+            <!-- Sessions Chart -->
+            <div class="chart-container">
+                <div class="chart-title">
+                    <span>User Sessions</span>
+                    <div class="chart-controls">
+                        <select id="sessions-time-view" class="chart-control">
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+                </div>
+                <canvas id="sessions-chart"></canvas>
+            </div>
+            
+            <!-- Conversion Rate Chart -->
+            <div class="chart-container">
+                <div class="chart-title">
+                    <span>Conversion Rate</span>
+                    <div class="chart-controls">
+                        <select id="conversion-time-view" class="chart-control">
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+                </div>
+                <canvas id="conversion-chart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Orders Table -->
+        <div class="table-container">
+            <div class="table-header">
+                <h3 class="table-title">Recent Orders</h3>
+                <button class="export-btn" onclick="exportTableToCSV('orders-table', 'orders-data.csv')">Export CSV</button>
+            </div>
+            <input type="text" id="orders-search" class="search-input" placeholder="Search orders...">
+            <table id="orders-table">
+                <thead>
+                    <tr>
+                        <th data-sort="id">Order ID</th>
+                        <th data-sort="email">Customer Email</th>
+                        <th data-sort="product">Product</th>
+                        <th data-sort="price">Price</th>
+                        <th data-sort="date">Date</th>
+                        <th data-sort="status">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- User Behavior Section -->
+    <div id="behavior-section" data-tab-content="behavior" class="dashboard-section">
+        <h2 class="section-title">User Behavior</h2>
+        
+        <div class="charts-container">
+            <!-- New vs Returning Users -->
+            <div class="chart-container">
+                <div class="chart-title">
+                    <span>New vs Returning Users</span>
+                    <div class="chart-controls">
+                        
+                    </div>
+                </div>
+                <canvas id="users-chart"></canvas>
+            </div>
+            
+            <!-- User Engagement Chart -->
+            <div class="chart-container">
+                <div class="chart-title">
+                    <span>User Engagement</span>
+                    <div class="chart-controls">
+                        <select id="engagement-time-view" class="chart-control">
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+                </div>
+                <canvas id="engagement-chart"></canvas>
+            </div>
+        </div>
+        
+        <!-- User Activity Table -->
+        <div class="table-container">
+            <div class="table-header">
+                <h3 class="table-title">User Activity Log</h3>
+                <button class="export-btn" onclick="exportTableToCSV('activity-table', 'user-activity.csv')">Export CSV</button>
+            </div>
+            <input type="text" id="activity-search" class="search-input" placeholder="Search activities...">
+            <table id="activity-table">
+                <thead>
+                    <tr>
+                        <th data-sort="userId">User ID</th>
+                        <th data-sort="email">Email</th>
+                        <th data-sort="action">Action</th>
+                        <th data-sort="page">Page</th>
+                        <th data-sort="timestamp">Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Traffic Section -->
+    <div id="traffic-section" data-tab-content="traffic" class="dashboard-section">
+        <h2 class="section-title">Traffic Analysis</h2>
+        
+        <div class="charts-container">
+            <!-- Traffic Sources Chart -->
+            <div class="chart-container">
+                <div class="chart-title">
+                    <span>Traffic Sources</span>
+                    <div class="chart-controls">
+                        <select id="traffic-chart-type" class="chart-control" onchange="updateTrafficChartType(this.value)">
+                            <option value="pie">Pie</option>
+                            <option value="bar">Bar</option>
+                        </select>
+                        <select id="traffic-filter" class="chart-control">
+                            <option value="all">All Time</option>
+                            <option value="month">This Month</option>
+                            <option value="week">This Week</option>
+                        </select>
+                    </div>
+                </div>
+                <canvas id="traffic-sources-chart"></canvas>
+            </div>
+            
+            <!-- Traffic Over Time Chart -->
+            <div class="chart-container">
+                <div class="chart-title">
+                    <span>Traffic Over Time</span>
+                    <div class="chart-controls">
+                        <select id="traffic-time-view" class="chart-control">
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+                </div>
+                <canvas id="traffic-time-chart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Traffic Details Table -->
+        <div class="table-container">
+            <div class="table-header">
+                <h3 class="table-title">Traffic Details</h3>
+                <button class="export-btn" onclick="exportTableToCSV('traffic-table', 'traffic-data.csv')">Export CSV</button>
+            </div>
+            <input type="text" id="traffic-search" class="search-input" placeholder="Search traffic data...">
+            <table id="traffic-table">
+                <thead>
+                    <tr>
+                        <th data-sort="source">Source</th>
+                        <th data-sort="visitors">Visitors</th>
+                        <th data-sort="pageViews">Page Views</th>
+                        <th data-sort="bounceRate">Bounce Rate</th>
+                        <th data-sort="avgTime">Avg. Time on Site</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Settings Section -->
+    <div id="settings-section" data-tab-content="settings" class="dashboard-section">
+        <h2 class="section-title">Settings</h2>
+        
+        <div class="settings-panel">
+            <h3 class="settings-title">Notification Settings</h3>
+            <div class="settings-form">
+                <div class="form-group">
+                    <label for="telegram-enabled">Enable Telegram Notifications</label>
+                    <select id="telegram-enabled" class="settings-input">
+                        <option value="true">Enabled</option>
+                        <option value="false">Disabled</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="notification-events">Events to Notify</label>
+                    <select id="notification-events" class="settings-input" multiple>
+                        <option value="new_order" selected>New Orders</option>
+                        <option value="refund">Refunds</option>
+                        <option value="high_traffic">High Traffic</option>
+                        <option value="low_stock">Low Stock</option>
+                    </select>
+                </div>
+                <button class="save-btn" id="save-notification-settings">Save Settings</button>
+            </div>
+        </div>
+        
+        <div class="settings-panel">
+            <h3 class="settings-title">API Settings</h3>
+            <div class="settings-form">
+                <div class="form-group">
+                    <label for="api-test">Test API Connection</label>
+                    <button class="save-btn" id="test-api">Test Connection</button>
+                </div>
+                <div class="form-group">
+                    <label for="api-status">API Status</label>
+                    <input type="text" id="api-status" value="Not Tested" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification Toast -->
+    <div class="notification" id="notification-toast">
+        <div class="notification-header">
+            <strong>New Order!</strong>
+            <span class="notification-close" onclick="closeNotification()">×</span>
+        </div>
+        <div class="notification-content" id="notification-content">
             New order received from customer@example.com
         </div>
-</div>
-<script>
-document.addEventListener('DOMContentLoaded', async function () {
-  // Activate the default tab
-  document.querySelectorAll('.nav-tabs .tab').forEach(t => t.classList.remove('active'));
-  document.querySelector('[data-tab="sales"]').classList.add('active');
-  document.querySelectorAll('.dashboard-section').forEach(s => s.classList.remove('active'));
-  document.querySelector('[data-tab-content="sales"]').classList.add('active');
-
-  // Load data
-  salesData = await fetchSalesData();
-  revenueData = await fetchRevenueData();
-  trafficData = await fetchTrafficData();
-
-  await crts(); // Create charts only after data loads
-
-  // Populate tables
-  populateOrdersTable();
-  populateActivityTable();
-  populateTrafficTable();
-
-  // Setup
-  makeTablesSortable();
-  addSearchToTables();
-  initRealTimeUpdates();
-  setupEventListeners();
-
-  // API test and save button
-  document.getElementById('save-notification-settings').addEventListener('click', function() {
-    showNotification('Settings saved successfully!', 'Settings have been updated and will take effect immediately.');
-  });
-  document.getElementById('test-api').addEventListener('click', testApiConnection);
-});
-
-
-});
-
+    </div>
+    
+     <script>
      // Mock Data Object - in a real implementation, this would come from your API
         const mockData = {
             sales: {
@@ -810,23 +798,25 @@ document.addEventListener('DOMContentLoaded', async function () {
                 { userId: '001', email: 'customer1@example.com', action: 'View Product', page: '/product/basic', timestamp: '2025-04-17 18:56:22' },
                 { userId: '006', email: 'customer6@example.com', action: 'Login', page: '/dashboard', timestamp: '2025-04-17 17:42:11' },
                 { userId: '007', email: 'customer7@example.com', action: 'Cancel Subscription', page: '/account', timestamp: '2025-04-17 16:19:38' }
-            ],
-            conversion: {
-  			labels: {
-    				default: ['Jan', 'Feb', 'Mar', 'Apr'],
-    				device: ['Mobile', 'Desktop']
-  				},
-  				data: {
-   					 default: [10, 20, 15, 25],
-   					 device: [18, 32]
-  					}
-}
-
+            ]
         };
     
     let salesData, revenueData, trafficData;
 
-       
+       document.addEventListener('DOMContentLoaded', async function () {
+       document.querySelector('[data-tab="sales"]').click();
+  await initCharts();
+  populateOrdersTable();
+  populateActivityTable();
+  populateTrafficTable();
+  makeTablesSortable();
+  addSearchToTables();
+  initRealTimeUpdates();
+  setupEventListeners();
+  
+  document.getElementById('save-notification-settings').addEventListener('click', function() {
+    showNotification('Settings saved successfully!', 'Settings have been updated and will take effect immediately.');
+  });
 
   document.getElementById('test-api').addEventListener('click', testApiConnection);
 });
@@ -836,8 +826,6 @@ document.querySelector('.logout-btn')?.addEventListener('click', () => {
       .then(() => window.location.href = '/login.html')
       .catch(err => console.error('Logout failed:', err));
   });
-
-
 
 
 const commonOptions = {
@@ -956,28 +944,9 @@ async function fetchTrafficData() {
             document.getElementById('test-api').addEventListener('click', testApiConnection);
         });
 
-updateConversionChart('daily'); // ✅ correct place to trigger update
-      	function updateConversionChart(view = 'daily') {
-  if (!salesData || !salesData[view] || !salesData.sessions?.[view]) {
-    console.warn("Missing data for view:", view);
-    return;
-  }
-
-  const sales = salesData[view];
-  const sessions = salesData.sessions[view];
-  const labels = salesData.labels[view];
-
-  const conversionValues = sales.map((sale, i) => {
-    const session = sessions[i] || 1;
-    return ((sale / session) * 100).toFixed(2);
-  });
-
-  conversionChart.data.labels = labels;
-  conversionChart.data.datasets[0].data = conversionValues;
-  conversionChart.update();
-}
+  
         // Initialize all charts
-      async function crts() {
+      async function initCharts() {
 	 	salesData = await fetchSalesData();
 		revenueData = await fetchRevenueData();
 		trafficData = await fetchTrafficData();
@@ -985,39 +954,11 @@ updateConversionChart('daily'); // ✅ correct place to trigger update
 		console.log('✅ Using revenueData:', revenueData);
 		console.log('✅ Using trafficData:', trafficData);
 
-
-const conversionCtx = document.getElementById('conversion-chart').getContext('2d');
-const view = 'daily';
-const sales = salesData[view];
-const sessions = salesData.sessions[view];
-const labels = salesData.labels[view];
-
-const conversionData = sales.map((sale, i) => {
-  const session = sessions[i] || 1;
-  return ((sale / session) * 100).toFixed(2);
+  	 const conversionCtx = document.getElementById('conversion-chart').getContext('2d');
+	 const conversionData = salesData.daily.map((sale, index) => {
+ 	 const sessions = salesData.sessions.daily[index];
+  	 return sessions ? (sale / sessions * 100).toFixed(2) : 0;
 });
-
-conversionChart = new Chart(conversionCtx, {
-  type: 'line',
-  data: {
-    labels,
-    datasets: [{
-      label: 'Conversion Rate (%)',
-      data: conversionData,
-      backgroundColor: 'rgba(255, 193, 7, 0.2)',
-      borderColor: 'rgba(255, 193, 7, 1)',
-      borderWidth: 2,
-      tension: 0.4,
-      pointRadius: 5,
-      pointBackgroundColor: 'rgba(255, 193, 7, 1)'
-    }]
-  },
-  options: commonOptions
-});
-
-  	 console.log("conversionData.labels:", conversionData.labels);
-console.log("conversionData.labels.daily:", conversionData.labels?.daily);
-
 
 const usersCtx = document.getElementById('users-chart').getContext('2d');
 usersChart = new Chart(usersCtx, {
@@ -1045,6 +986,24 @@ usersChart = new Chart(usersCtx, {
 });
 
 
+  
+  conversionChart = new Chart(conversionCtx, {
+  type: 'line',
+  data: {
+    labels: salesData.labels.daily,
+    datasets: [{
+      label: 'Conversion Rate (%)',
+      data: conversionData,
+      backgroundColor: 'rgba(255, 193, 7, 0.2)',
+      borderColor: 'rgba(255, 193, 7, 1)',
+      borderWidth: 2,
+      tension: 0.4,
+      pointRadius: 5,
+      pointBackgroundColor: 'rgba(255, 193, 7, 1)'
+    }]
+  },
+  options: commonOptions
+});
   
 const sessionCtx = document.getElementById('sessions-chart').getContext('2d');
 sessionChart = new Chart(sessionCtx, {
@@ -1159,18 +1118,14 @@ trafficSourcesChart = new Chart(trafficSourcesCtx, {
     },
     options: commonOptions
   });
- 		updateSalesChart('daily');
-		updateRevenueChart('product');
-		updateSessionChart('daily');
-		updateTrafficTimeChart('daily');
-		updateTrafficSourcesChart('all');
-		 updateConversionChart('daily');
-
+   updateSalesChart('daily');
+updateRevenueChart('product');
+updateSessionChart('daily');
+updateTrafficTimeChart('daily');
+updateTrafficSourcesChart('all');
+      
 }
-
-});
-
-
+           
         // Setup event listeners for chart controls
         function setupEventListeners() {
             // Sales chart type change
@@ -1272,7 +1227,6 @@ trafficSourcesChart = new Chart(trafficSourcesCtx, {
     `;
     tbody.appendChild(row);
   });
-  
 }
 
      async function populateActivityTable(data = null) {
@@ -1441,12 +1395,14 @@ trafficSourcesChart = new Chart(trafficSourcesCtx, {
   showNotification('Export Complete', `Table exported as ${filename}`);
 }
 
+            
+
         // Chart update functions
-       function updateSalesChart(view = 'daily') {
- 			 salesChart.data.labels = salesData.labels[view];
-  			salesChart.data.datasets[0].data = salesData[view];
-  			salesChart.update();
-		}	
+        function updateSalesChart(timeView) {
+            salesChart.data.labels = salesData.labels[view];
+            salesChart.data.datasets[0].data = salesData[view];
+            salesChart.update();
+        }
 
         function updateRevenueChart(view = 'product') {
  		 const data = view === 'product' ? revenueData.product : revenueData.category;
@@ -1455,19 +1411,20 @@ trafficSourcesChart = new Chart(trafficSourcesCtx, {
 		revenueChart.update();
 }
 
-        function updateSessionChart(view = 'daily') {
+        function updateSessionChart(view) {
             sessionChart.data.labels = salesData.labels[view];
-            sessionChart.data.datasets[0].data = salesData.sessions[view];
+            sessionChart.data.datasets[0].data = salesData[view];
             sessionChart.update();
         }
 
-        function updateTrafficSourcesChart(view = 'all') {
+        function updateTrafficSourcesChart(view) {
            trafficSourcesChart.data.labels = trafficData.sources[view].labels;
 			trafficSourcesChart.data.datasets[0].data = trafficData.sources[view].data;
 			trafficSourcesChart.update();
+
         }
 
-        function updateTrafficTimeChart(view = 'daily') {
+        function updateTrafficTimeChart(view) {
             trafficTimeChart.data.labels = salesData.labels[view];
 			trafficTimeChart.data.datasets[0].data = trafficData.overtime[view];
 			trafficTimeChart.update();
@@ -1497,6 +1454,7 @@ trafficSourcesChart = new Chart(trafficSourcesCtx, {
             updateChartType('trafficSourcesChart', type);
         }
 
+
         function updateAllCharts() {
             // Update all charts with new data
             salesChart.update();
@@ -1509,7 +1467,7 @@ trafficSourcesChart = new Chart(trafficSourcesCtx, {
             trafficTimeChart.update();
             
             showNotification('Charts Updated', 'All charts have been refreshed with latest data');
-        
+        }
 
         // Initialize real-time updates
         function initRealTimeUpdates() {
@@ -1652,209 +1610,9 @@ trafficSourcesChart = new Chart(trafficSourcesCtx, {
             const sourceIndex = Math.floor(Math.random() * mockData.traffic.sources.all.labels.length);
             mockData.traffic.sources.all.data[sourceIndex] += additionalTraffic;
 	}
-	        console.log('salesData.labels.daily:', salesData.labels.daily);
-console.log('salesData.daily:', salesData.daily);</script>
-<script>
-// Fix for populateTrafficTable function that was missing
-async function populateTrafficTable(data = null) {
-  const tbody = document.querySelector('#traffic-table tbody');
-  tbody.innerHTML = '';
-
-  let trafficDetails = data;
-  if (!trafficDetails) {
-    try {
-      const res = await fetch('/api/traffic-details');
-      if (!res.ok) throw new Error("Failed to fetch");
-      trafficDetails = await res.json();
-    } catch (err) {
-      console.warn('Falling back to mockData.traffic.details due to error:', err.message);
-      trafficDetails = mockData.traffic.details;
-    }
-  }
-
-  trafficDetails.forEach(source => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${source.source}</td>
-      <td>${source.visitors}</td>
-      <td>${source.pageViews}</td>
-      <td>${source.bounceRate}</td>
-      <td>${source.avgTime}</td>
-    `;
-    tbody.appendChild(row);
-  });
-}
-
-// Fix for updateConversionChart function
-function updateConversionChart(view = 'daily') {
-  if (!salesData || !salesData[view] || !salesData.sessions?.[view]) {
-    console.warn("Missing data for view:", view);
-    return;
-  }
-
-  const sales = salesData[view];
-  const sessions = salesData.sessions[view];
-  const labels = salesData.labels[view];
-
-  const conversionValues = sales.map((sale, i) => {
-    const session = sessions[i] || 1;
-    return ((sale / session) * 100).toFixed(2);
-  });
-
-  if (conversionChart) {
-    conversionChart.data.labels = labels;
-    conversionChart.data.datasets[0].data = conversionValues;
-    conversionChart.update();
-  }
-}
-
-// Fix for updateAllCharts function - add missing closing bracket
-function updateAllCharts() {
-  // Update all charts with new data
-  salesChart.update();
-  revenueChart.update();
-  sessionChart.update();
-  conversionChart.update();
-  usersChart.update();
-  engagementChart.update();
-  trafficSourcesChart.update();
-  trafficTimeChart.update();
-  
-  showNotification('Charts Updated', 'All charts have been refreshed with latest data');
-} // Added missing closing bracket
-
-// Add missing sendTelegramNotification function
-function sendTelegramNotification(message) {
-  console.log("Telegram notification:", message);
-  // In a real implementation, this would send a notification
-  // For the demo, we'll just log it
-}
-
-// Fix for simulateTrafficUpdate - add missing chart update
-function simulateTrafficUpdate() {
-  // Update traffic data
-  const today = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
-  const dayIndex = today === 0 ? 6 : today - 1; // Adjust to our 0 = Monday index
-  
-  // Add some random traffic
-  const additionalTraffic = Math.floor(Math.random() * 20) + 5;
-  mockData.traffic.overtime.daily[dayIndex] += additionalTraffic;
-  
-  // Update chart
-  trafficTimeChart.data.datasets[0].data = mockData.traffic.overtime.daily;
-  trafficTimeChart.update();
-  
-  // Update one of the sources
-  const sourceIndex = Math.floor(Math.random() * mockData.traffic.sources.all.labels.length);
-  mockData.traffic.sources.all.data[sourceIndex] += additionalTraffic;
-  
-  // Update the traffic sources chart
-  trafficSourcesChart.update();
-  
-  // Show notification for traffic update
-  showNotification(
-    'Traffic Update', 
-    `${additionalTraffic} new visitors from ${mockData.traffic.sources.all.labels[sourceIndex]}`
-  );
-}
-
-// Add missing simulation functions
-function simulateUserActivity() {
-  const actions = ['Login', 'View Product', 'Add to Cart', 'Purchase', 'Logout'];
-  const pages = ['/dashboard', '/product/basic', '/product/premium', '/product/bundle', '/checkout', '/account'];
-  
-  const randomAction = actions[Math.floor(Math.random() * actions.length)];
-  const randomPage = pages[Math.floor(Math.random() * pages.length)];
-  const randomUser = Math.floor(Math.random() * 10) + 1;
-  
-  const newActivity = {
-    userId: `00${randomUser}`,
-    email: `customer${randomUser}@example.com`,
-    action: randomAction,
-    page: randomPage,
-    timestamp: new Date().toISOString().replace('T', ' ').substr(0, 19)
-  };
-  
-  // Add to mock data
-  mockData.userActivity.unshift(newActivity);
-  if (mockData.userActivity.length > 20) mockData.userActivity.pop();
-  
-  // Update activity table
-  populateActivityTable();
-  
-  // Show notification for certain actions
-  if (randomAction === 'Purchase') {
-    showNotification(
-      'New Purchase', 
-      `User ${newActivity.email} completed a purchase on ${randomPage}`
-    );
-  }
-}
-
-function simulateRevenueUpdate() {
-  // Update revenue data
-  const productIndex = Math.floor(Math.random() * mockData.revenue.product.labels.length);
-  const additionalRevenue = Math.floor(Math.random() * 50) + 10;
-  
-  // Update product revenue
-  mockData.revenue.product.data[productIndex] += additionalRevenue;
-  
-  // Update category revenue (assign to appropriate category)
-  const categoryIndex = Math.floor(Math.random() * mockData.revenue.category.labels.length);
-  mockData.revenue.category.data[categoryIndex] += additionalRevenue;
-  
-  // Update charts
-  revenueChart.update();
-  
-  // Show notification
-  showNotification(
-    'Revenue Update', 
-    `$${additionalRevenue} additional revenue from ${mockData.revenue.product.labels[productIndex]}`
-  );
-}
-
-// Add missing showNotification function
-function showNotification(title, message) {
-  const notification = document.getElementById('notification-toast');
-  const content = document.getElementById('notification-content');
-  
-  // Set notification content
-  notification.querySelector('.notification-header strong').textContent = title;
-  content.textContent = message;
-  
-  // Show notification
-  notification.style.display = 'block';
-  
-  // Auto-hide after 5 seconds
-  setTimeout(() => {
-    closeNotification();
-  }, 5000);
-}
-
-// Add missing closeNotification function
-function closeNotification() {
-  document.getElementById('notification-toast').style.display = 'none';
-}
-
-// Add missing testApiConnection function
-function testApiConnection() {
-  const apiStatus = document.getElementById('api-status');
-  apiStatus.value = "Testing connection...";
-  
-  // Simulate API test
-  setTimeout(() => {
-    const success = Math.random() > 0.3; // 70% chance of success
-    if (success) {
-      apiStatus.value = "Connected";
-      apiStatus.style.color = "var(--accent-green)";
-      showNotification('API Test', 'Connection successful!');
-    } else {
-      apiStatus.value = "Connection Failed";
-      apiStatus.style.color = "red";
-      showNotification('API Test', 'Connection failed. Please check your settings.');
-    }
-  }, 1500);
-}
-</script>
+	          
+  </script>
 </body>
+         
+       
 </html>
