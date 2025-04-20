@@ -1413,7 +1413,7 @@ updateTrafficSourcesChart('all');
 
         function updateSessionChart(view) {
             sessionChart.data.labels = salesData.labels[view];
-            sessionChart.data.datasets[0].data = salesData.sessions[view];
+            sessionChart.data.datasets[0].data = salesData[view];
             sessionChart.update();
         }
 
