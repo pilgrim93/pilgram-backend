@@ -1408,7 +1408,7 @@ updateTrafficSourcesChart('all');
         // Chart update functions
        function updateSalesChart(view = 'daily') {
  			 salesChart.data.labels = salesData.labels[view];
-  			salesChart.data.datasets[0].data = salesData.data[view];
+  			salesChart.data.datasets[0].data = salesData[view];
   			salesChart.update();
 		}	
 
