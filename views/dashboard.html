@@ -1399,8 +1399,8 @@ updateTrafficSourcesChart('all');
 
         // Chart update functions
         function updateSalesChart(timeView) {
-            salesChart.data.labels = salesData.labels[view];
-            salesChart.data.datasets[0].data = salesData[view];
+            salesChart.data.labels = salesData.labels[timeView];
+            salesChart.data.datasets[0].data = salesData[timeView];
             salesChart.update();
         }
 
@@ -1413,7 +1413,7 @@ updateTrafficSourcesChart('all');
 
         function updateSessionChart(view) {
             sessionChart.data.labels = salesData.labels[view];
-            sessionChart.data.datasets[0].data = salesData[view];
+            sessionChart.data.datasets[0].data = salesData.sessions[view];
             sessionChart.update();
         }
 
