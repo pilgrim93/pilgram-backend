@@ -1127,7 +1127,7 @@ trafficSourcesChart = new Chart(trafficSourcesCtx, {
   		const sales = salesData[view];
   		const sessions = salesData.sessions[view];
 
-  const conversionData = sales.map((sale, i) => {
+  const conversionData = (conversionData.data?.[view] || []).map((sale, i) => {
     const session = sessions[i] || 1;
     return ((sale / session) * 100).toFixed(2);
   });
