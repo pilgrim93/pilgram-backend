@@ -719,6 +719,10 @@
     </div>
     
      <script>
+     document.getElementById('conversion-time-view').addEventListener('change', function() {
+  updateConversionChart(this.value);
+});
+
      // Mock Data Object - in a real implementation, this would come from your API
         const mockData = {
             sales: {
@@ -813,6 +817,8 @@
   addSearchToTables();
   initRealTimeUpdates();
   setupEventListeners();
+ updateConversionChart('daily');
+
   
   document.getElementById('save-notification-settings').addEventListener('click', function() {
     showNotification('Settings saved successfully!', 'Settings have been updated and will take effect immediately.');
@@ -826,6 +832,8 @@ document.querySelector('.logout-btn')?.addEventListener('click', () => {
       .then(() => window.location.href = '/login.html')
       .catch(err => console.error('Logout failed:', err));
   });
+
+
 
 
 const commonOptions = {
@@ -1399,8 +1407,8 @@ updateTrafficSourcesChart('all');
 
         // Chart update functions
        function updateSalesChart(view = 'daily') {
- 			 salesChart.data.labels = salesData.labels;
-  			salesChart.data.datasets[0].data = salesData.data;
+ 			 salesChart.data.labels = salesData.labels[view];
+  			salesChart.data.datasets[0].data = salesData.data[view];
   			salesChart.update();
 		}	
 
