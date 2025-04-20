@@ -964,8 +964,28 @@ async function fetchTrafficData() {
             document.getElementById('test-api').addEventListener('click', testApiConnection);
         });
 
+updateConversionChart('daily'); // ✅ correct place to trigger update
+      	function updateConversionChart(view = 'daily') {
+  if (!salesData || !salesData[view] || !salesData.sessions?.[view]) {
+    console.warn("Missing data for view:", view);
+    return;
+  }
+
+  const sales = salesData[view];
+  const sessions = salesData.sessions[view];
+  const labels = salesData.labels[view];
+
+  const conversionValues = sales.map((sale, i) => {
+    const session = sessions[i] || 1;
+    return ((sale / session) * 100).toFixed(2);
+  });
+
+  conversionChart.data.labels = labels;
+  conversionChart.data.datasets[0].data = conversionValues;
+  conversionChart.update();
+}
         // Initialize all charts
-      async function initCharts() {
+      async function crts() {
 	 	salesData = await fetchSalesData();
 		revenueData = await fetchRevenueData();
 		trafficData = await fetchTrafficData();
@@ -1152,34 +1172,11 @@ trafficSourcesChart = new Chart(trafficSourcesCtx, {
 		updateSessionChart('daily');
 		updateTrafficTimeChart('daily');
 		updateTrafficSourcesChart('all');
-		updateConversionChart('daily'); // ✅ correct place to trigger update
-      	function updateConversionChart(view = 'daily') {
-  if (!salesData || !salesData[view] || !salesData.sessions?.[view]) {
-    console.warn("Missing data for view:", view);
-    return;
-  }
-
-  const sales = salesData[view];
-  const sessions = salesData.sessions[view];
-  const labels = salesData.labels[view];
-
-  const conversionValues = sales.map((sale, i) => {
-    const session = sessions[i] || 1;
-    return ((sale / session) * 100).toFixed(2);
-  });
-
-  conversionChart.data.labels = labels;
-  conversionChart.data.datasets[0].data = conversionValues;
-  conversionChart.update();
+		 
 }
 
-
-const view = document.getElementById('conversion-time-view').value || 'daily';
- 
-}
-
-document.getElementById('conversion-view').addEventListener('change', () => {
-  updateConversionChart();
+document.getElementById('conversion-time-view').addEventListener('change', function() => {
+  updateConversionChart(this.value);
 });
 
         // Setup event listeners for chart controls
