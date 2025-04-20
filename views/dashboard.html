@@ -1,12 +1,13 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
-    <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
+<style>
         :root {
             --main-bg: #111111;
             --card-bg: #222222;
@@ -395,330 +396,306 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <div class="header">
-        <img src="/logo1.png" alt="Logo" class="logo">
-        <button class="logout-btn">Logout</button>
-    </div>
-    
-  <!-- Navigation Tabs -->
+<!-- Header -->
+<div class="header">
+<img alt="Logo" class="logo" src="/logo1.png"/>
+<button class="logout-btn">Logout</button>
+</div>
+<!-- Navigation Tabs -->
 <div class="nav-tabs">
-    <button data-tab="sales" class="tab active">
-        <span class="tab-icon">💰</span> Sales
+<button class="tab active" data-tab="sales">
+<span class="tab-icon">💰</span> Sales
     </button>
-    <button data-tab="behavior" class="tab">
-        <span class="tab-icon">👥</span> User Behavior
+<button class="tab" data-tab="behavior">
+<span class="tab-icon">👥</span> User Behavior
     </button>
-    <button data-tab="traffic" class="tab">
-        <span class="tab-icon">🌐</span> Traffic
+<button class="tab" data-tab="traffic">
+<span class="tab-icon">🌐</span> Traffic
     </button>
-    <button data-tab="settings" class="tab">
-        <span class="tab-icon">⚙️</span> Settings
+<button class="tab" data-tab="settings">
+<span class="tab-icon">⚙️</span> Settings
     </button>
 </div>
-
-    
-    <!-- Real-time Toggle -->
-    <div class="real-time-toggle">
-        <span>Real-time Updates</span>
-        <label class="toggle-switch">
-            <input type="checkbox" id="real-time-toggle">
-            <span class="slider"></span>
-        </label>
-        <div id="connection-status" class="data-status">
-            <span>Offline</span>
-            <div class="pulse" style="display: none;"></div>
-        </div>
-    </div>
-
-    <!-- Date Range Picker -->
-    <div class="date-range-picker" style="display: flex; gap: 10px; margin-bottom: 20px;">
-        <div class="date-input-container" style="flex: 1;">
-            <label for="start-date" style="display: block; margin-bottom: 5px; color: white;">Start Date</label>
-            <input type="date" id="start-date" style="width: 100%; padding: 8px; background-color: var(--button-bg); border: 1px solid var(--accent-border); border-radius: 5px; color: white;">
-        </div>
-        <div class="date-input-container" style="flex: 1;">
-            <label for="end-date" style="display: block; margin-bottom: 5px; color: white;">End Date</label>
-            <input type="date" id="end-date" style="width: 100%; padding: 8px; background-color: var(--button-bg); border: 1px solid var(--accent-border); border-radius: 5px; color: white;">
-        </div>
-        <div class="date-button-container" style="display: flex; align-items: flex-end;">
-            <button id="apply-date-filter" style="padding: 8px 15px; background-color: var(--accent-green); color: white; border: none; border-radius: 5px; cursor: pointer;">Apply</button>
-        </div>
-    </div>
-    
-    <!-- Sales Section -->
-    <div id="sales-section" data-tab-content="sales" class="dashboard-section active">
-        <h2 class="section-title">Sales Charts</h2>
-        
-        <div class="charts-container">
-            <!-- Sales Over Time Chart -->
-            <div class="chart-container">
-                <div class="chart-title">
-                    <span>Sales Over Time</span>
-                    <div class="chart-controls">
-                        <select id="sales-chart-type" class="chart-control">
-                            <option value="line">Line</option>
-                            <option value="bar">Bar</option>
-                        </select>
-                        <select id="sales-time-view" class="chart-control">
-                            <option value="daily">Daily</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="monthly">Monthly</option>
-                        </select>
-                    </div>
-                </div>
-                <canvas id="sales-chart"></canvas>
-            </div>
-            
-            <!-- Revenue by Product Chart -->
-            <div class="chart-container">
-                <div class="chart-title">
-                    <span>Revenue Breakdown</span>
-                    <div class="chart-controls">
-                        <select id="revenue-chart-type" class="chart-control">
-                            <option value="bar">Bar</option>
-                            <option value="pie">Pie</option>
-                            <option value="line">Line</option>
-                        </select>
-                        <select id="revenue-view" class="chart-control">
-                            <option value="product">By Product</option>
-                            <option value="category">By Category</option>
-                        </select>
-                    </div>
-                </div>
-                <canvas id="revenue-chart"></canvas>
-            </div>
-            
-            <!-- Sessions Chart -->
-            <div class="chart-container">
-                <div class="chart-title">
-                    <span>User Sessions</span>
-                    <div class="chart-controls">
-                        <select id="sessions-time-view" class="chart-control">
-                            <option value="daily">Daily</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="monthly">Monthly</option>
-                        </select>
-                    </div>
-                </div>
-                <canvas id="sessions-chart"></canvas>
-            </div>
-            
-            <!-- Conversion Rate Chart -->
-            <div class="chart-container">
-                <div class="chart-title">
-                    <span>Conversion Rate</span>
-                    <div class="chart-controls">
-                        <select id="conversion-time-view" class="chart-control">
-                            <option value="daily">Daily</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="monthly">Monthly</option>
-                        </select>
-                    </div>
-                </div>
-                <canvas id="conversion-chart"></canvas>
-            </div>
-        </div>
-        
-        <!-- Orders Table -->
-        <div class="table-container">
-            <div class="table-header">
-                <h3 class="table-title">Recent Orders</h3>
-                <button class="export-btn" onclick="exportTableToCSV('orders-table', 'orders-data.csv')">Export CSV</button>
-            </div>
-            <input type="text" id="orders-search" class="search-input" placeholder="Search orders...">
-            <table id="orders-table">
-                <thead>
-                    <tr>
-                        <th data-sort="id">Order ID</th>
-                        <th data-sort="email">Customer Email</th>
-                        <th data-sort="product">Product</th>
-                        <th data-sort="price">Price</th>
-                        <th data-sort="date">Date</th>
-                        <th data-sort="status">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Will be populated by JavaScript -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-    
-    <!-- User Behavior Section -->
-    <div id="behavior-section" data-tab-content="behavior" class="dashboard-section">
-        <h2 class="section-title">User Behavior</h2>
-        
-        <div class="charts-container">
-            <!-- New vs Returning Users -->
-            <div class="chart-container">
-                <div class="chart-title">
-                    <span>New vs Returning Users</span>
-                    <div class="chart-controls">
-                        
-                    </div>
-                </div>
-                <canvas id="users-chart"></canvas>
-            </div>
-            
-            <!-- User Engagement Chart -->
-            <div class="chart-container">
-                <div class="chart-title">
-                    <span>User Engagement</span>
-                    <div class="chart-controls">
-                        <select id="engagement-time-view" class="chart-control">
-                            <option value="daily">Daily</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="monthly">Monthly</option>
-                        </select>
-                    </div>
-                </div>
-                <canvas id="engagement-chart"></canvas>
-            </div>
-        </div>
-        
-        <!-- User Activity Table -->
-        <div class="table-container">
-            <div class="table-header">
-                <h3 class="table-title">User Activity Log</h3>
-                <button class="export-btn" onclick="exportTableToCSV('activity-table', 'user-activity.csv')">Export CSV</button>
-            </div>
-            <input type="text" id="activity-search" class="search-input" placeholder="Search activities...">
-            <table id="activity-table">
-                <thead>
-                    <tr>
-                        <th data-sort="userId">User ID</th>
-                        <th data-sort="email">Email</th>
-                        <th data-sort="action">Action</th>
-                        <th data-sort="page">Page</th>
-                        <th data-sort="timestamp">Timestamp</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Will be populated by JavaScript -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-    
-    <!-- Traffic Section -->
-    <div id="traffic-section" data-tab-content="traffic" class="dashboard-section">
-        <h2 class="section-title">Traffic Analysis</h2>
-        
-        <div class="charts-container">
-            <!-- Traffic Sources Chart -->
-            <div class="chart-container">
-                <div class="chart-title">
-                    <span>Traffic Sources</span>
-                    <div class="chart-controls">
-                        <select id="traffic-chart-type" class="chart-control" onchange="updateTrafficChartType(this.value)">
-                            <option value="pie">Pie</option>
-                            <option value="bar">Bar</option>
-                        </select>
-                        <select id="traffic-filter" class="chart-control">
-                            <option value="all">All Time</option>
-                            <option value="month">This Month</option>
-                            <option value="week">This Week</option>
-                        </select>
-                    </div>
-                </div>
-                <canvas id="traffic-sources-chart"></canvas>
-            </div>
-            
-            <!-- Traffic Over Time Chart -->
-            <div class="chart-container">
-                <div class="chart-title">
-                    <span>Traffic Over Time</span>
-                    <div class="chart-controls">
-                        <select id="traffic-time-view" class="chart-control">
-                            <option value="daily">Daily</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="monthly">Monthly</option>
-                        </select>
-                    </div>
-                </div>
-                <canvas id="traffic-time-chart"></canvas>
-            </div>
-        </div>
-        
-        <!-- Traffic Details Table -->
-        <div class="table-container">
-            <div class="table-header">
-                <h3 class="table-title">Traffic Details</h3>
-                <button class="export-btn" onclick="exportTableToCSV('traffic-table', 'traffic-data.csv')">Export CSV</button>
-            </div>
-            <input type="text" id="traffic-search" class="search-input" placeholder="Search traffic data...">
-            <table id="traffic-table">
-                <thead>
-                    <tr>
-                        <th data-sort="source">Source</th>
-                        <th data-sort="visitors">Visitors</th>
-                        <th data-sort="pageViews">Page Views</th>
-                        <th data-sort="bounceRate">Bounce Rate</th>
-                        <th data-sort="avgTime">Avg. Time on Site</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Will be populated by JavaScript -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-    
-    <!-- Settings Section -->
-    <div id="settings-section" data-tab-content="settings" class="dashboard-section">
-        <h2 class="section-title">Settings</h2>
-        
-        <div class="settings-panel">
-            <h3 class="settings-title">Notification Settings</h3>
-            <div class="settings-form">
-                <div class="form-group">
-                    <label for="telegram-enabled">Enable Telegram Notifications</label>
-                    <select id="telegram-enabled" class="settings-input">
-                        <option value="true">Enabled</option>
-                        <option value="false">Disabled</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="notification-events">Events to Notify</label>
-                    <select id="notification-events" class="settings-input" multiple>
-                        <option value="new_order" selected>New Orders</option>
-                        <option value="refund">Refunds</option>
-                        <option value="high_traffic">High Traffic</option>
-                        <option value="low_stock">Low Stock</option>
-                    </select>
-                </div>
-                <button class="save-btn" id="save-notification-settings">Save Settings</button>
-            </div>
-        </div>
-        
-        <div class="settings-panel">
-            <h3 class="settings-title">API Settings</h3>
-            <div class="settings-form">
-                <div class="form-group">
-                    <label for="api-test">Test API Connection</label>
-                    <button class="save-btn" id="test-api">Test Connection</button>
-                </div>
-                <div class="form-group">
-                    <label for="api-status">API Status</label>
-                    <input type="text" id="api-status" value="Not Tested" readonly>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Notification Toast -->
-    <div class="notification" id="notification-toast">
-        <div class="notification-header">
-            <strong>New Order!</strong>
-            <span class="notification-close" onclick="closeNotification()">×</span>
-        </div>
-        <div class="notification-content" id="notification-content">
+<!-- Real-time Toggle -->
+<div class="real-time-toggle">
+<span>Real-time Updates</span>
+<label class="toggle-switch">
+<input id="real-time-toggle" type="checkbox"/>
+<span class="slider"></span>
+</label>
+<div class="data-status" id="connection-status">
+<span>Offline</span>
+<div class="pulse" style="display: none;"></div>
+</div>
+</div>
+<!-- Date Range Picker -->
+<div class="date-range-picker" style="display: flex; gap: 10px; margin-bottom: 20px;">
+<div class="date-input-container" style="flex: 1;">
+<label for="start-date" style="display: block; margin-bottom: 5px; color: white;">Start Date</label>
+<input id="start-date" style="width: 100%; padding: 8px; background-color: var(--button-bg); border: 1px solid var(--accent-border); border-radius: 5px; color: white;" type="date"/>
+</div>
+<div class="date-input-container" style="flex: 1;">
+<label for="end-date" style="display: block; margin-bottom: 5px; color: white;">End Date</label>
+<input id="end-date" style="width: 100%; padding: 8px; background-color: var(--button-bg); border: 1px solid var(--accent-border); border-radius: 5px; color: white;" type="date"/>
+</div>
+<div class="date-button-container" style="display: flex; align-items: flex-end;">
+<button id="apply-date-filter" style="padding: 8px 15px; background-color: var(--accent-green); color: white; border: none; border-radius: 5px; cursor: pointer;">Apply</button>
+</div>
+</div>
+<!-- Sales Section -->
+<div class="dashboard-section active" data-tab-content="sales" id="sales-section">
+<h2 class="section-title">Sales Charts</h2>
+<div class="charts-container">
+<!-- Sales Over Time Chart -->
+<div class="chart-container">
+<div class="chart-title">
+<span>Sales Over Time</span>
+<div class="chart-controls">
+<select class="chart-control" id="sales-chart-type">
+<option value="line">Line</option>
+<option value="bar">Bar</option>
+</select>
+<select class="chart-control" id="sales-time-view">
+<option value="daily">Daily</option>
+<option value="weekly">Weekly</option>
+<option value="monthly">Monthly</option>
+</select>
+</div>
+</div>
+<canvas id="sales-chart"></canvas>
+</div>
+<!-- Revenue by Product Chart -->
+<div class="chart-container">
+<div class="chart-title">
+<span>Revenue Breakdown</span>
+<div class="chart-controls">
+<select class="chart-control" id="revenue-chart-type">
+<option value="bar">Bar</option>
+<option value="pie">Pie</option>
+<option value="line">Line</option>
+</select>
+<select class="chart-control" id="revenue-view">
+<option value="product">By Product</option>
+<option value="category">By Category</option>
+</select>
+</div>
+</div>
+<canvas id="revenue-chart"></canvas>
+</div>
+<!-- Sessions Chart -->
+<div class="chart-container">
+<div class="chart-title">
+<span>User Sessions</span>
+<div class="chart-controls">
+<select class="chart-control" id="sessions-time-view">
+<option value="daily">Daily</option>
+<option value="weekly">Weekly</option>
+<option value="monthly">Monthly</option>
+</select>
+</div>
+</div>
+<canvas id="sessions-chart"></canvas>
+</div>
+<!-- Conversion Rate Chart -->
+<div class="chart-container">
+<div class="chart-title">
+<span>Conversion Rate</span>
+<div class="chart-controls">
+<select class="chart-control" id="conversion-time-view">
+<option value="daily">Daily</option>
+<option value="weekly">Weekly</option>
+<option value="monthly">Monthly</option>
+</select>
+</div>
+</div>
+<canvas id="conversion-chart"></canvas>
+</div>
+</div>
+<!-- Orders Table -->
+<div class="table-container">
+<div class="table-header">
+<h3 class="table-title">Recent Orders</h3>
+<button class="export-btn" onclick="exportTableToCSV('orders-table', 'orders-data.csv')">Export CSV</button>
+</div>
+<input class="search-input" id="orders-search" placeholder="Search orders..." type="text"/>
+<table id="orders-table">
+<thead>
+<tr>
+<th data-sort="id">Order ID</th>
+<th data-sort="email">Customer Email</th>
+<th data-sort="product">Product</th>
+<th data-sort="price">Price</th>
+<th data-sort="date">Date</th>
+<th data-sort="status">Status</th>
+</tr>
+</thead>
+<tbody>
+<!-- Will be populated by JavaScript -->
+</tbody>
+</table>
+</div>
+</div>
+<!-- User Behavior Section -->
+<div class="dashboard-section" data-tab-content="behavior" id="behavior-section">
+<h2 class="section-title">User Behavior</h2>
+<div class="charts-container">
+<!-- New vs Returning Users -->
+<div class="chart-container">
+<div class="chart-title">
+<span>New vs Returning Users</span>
+<div class="chart-controls">
+</div>
+</div>
+<canvas id="users-chart"></canvas>
+</div>
+<!-- User Engagement Chart -->
+<div class="chart-container">
+<div class="chart-title">
+<span>User Engagement</span>
+<div class="chart-controls">
+<select class="chart-control" id="engagement-time-view">
+<option value="daily">Daily</option>
+<option value="weekly">Weekly</option>
+<option value="monthly">Monthly</option>
+</select>
+</div>
+</div>
+<canvas id="engagement-chart"></canvas>
+</div>
+</div>
+<!-- User Activity Table -->
+<div class="table-container">
+<div class="table-header">
+<h3 class="table-title">User Activity Log</h3>
+<button class="export-btn" onclick="exportTableToCSV('activity-table', 'user-activity.csv')">Export CSV</button>
+</div>
+<input class="search-input" id="activity-search" placeholder="Search activities..." type="text"/>
+<table id="activity-table">
+<thead>
+<tr>
+<th data-sort="userId">User ID</th>
+<th data-sort="email">Email</th>
+<th data-sort="action">Action</th>
+<th data-sort="page">Page</th>
+<th data-sort="timestamp">Timestamp</th>
+</tr>
+</thead>
+<tbody>
+<!-- Will be populated by JavaScript -->
+</tbody>
+</table>
+</div>
+</div>
+<!-- Traffic Section -->
+<div class="dashboard-section" data-tab-content="traffic" id="traffic-section">
+<h2 class="section-title">Traffic Analysis</h2>
+<div class="charts-container">
+<!-- Traffic Sources Chart -->
+<div class="chart-container">
+<div class="chart-title">
+<span>Traffic Sources</span>
+<div class="chart-controls">
+<select class="chart-control" id="traffic-chart-type" onchange="updateTrafficChartType(this.value)">
+<option value="pie">Pie</option>
+<option value="bar">Bar</option>
+</select>
+<select class="chart-control" id="traffic-filter">
+<option value="all">All Time</option>
+<option value="month">This Month</option>
+<option value="week">This Week</option>
+</select>
+</div>
+</div>
+<canvas id="traffic-sources-chart"></canvas>
+</div>
+<!-- Traffic Over Time Chart -->
+<div class="chart-container">
+<div class="chart-title">
+<span>Traffic Over Time</span>
+<div class="chart-controls">
+<select class="chart-control" id="traffic-time-view">
+<option value="daily">Daily</option>
+<option value="weekly">Weekly</option>
+<option value="monthly">Monthly</option>
+</select>
+</div>
+</div>
+<canvas id="traffic-time-chart"></canvas>
+</div>
+</div>
+<!-- Traffic Details Table -->
+<div class="table-container">
+<div class="table-header">
+<h3 class="table-title">Traffic Details</h3>
+<button class="export-btn" onclick="exportTableToCSV('traffic-table', 'traffic-data.csv')">Export CSV</button>
+</div>
+<input class="search-input" id="traffic-search" placeholder="Search traffic data..." type="text"/>
+<table id="traffic-table">
+<thead>
+<tr>
+<th data-sort="source">Source</th>
+<th data-sort="visitors">Visitors</th>
+<th data-sort="pageViews">Page Views</th>
+<th data-sort="bounceRate">Bounce Rate</th>
+<th data-sort="avgTime">Avg. Time on Site</th>
+</tr>
+</thead>
+<tbody>
+<!-- Will be populated by JavaScript -->
+</tbody>
+</table>
+</div>
+</div>
+<!-- Settings Section -->
+<div class="dashboard-section" data-tab-content="settings" id="settings-section">
+<h2 class="section-title">Settings</h2>
+<div class="settings-panel">
+<h3 class="settings-title">Notification Settings</h3>
+<div class="settings-form">
+<div class="form-group">
+<label for="telegram-enabled">Enable Telegram Notifications</label>
+<select class="settings-input" id="telegram-enabled">
+<option value="true">Enabled</option>
+<option value="false">Disabled</option>
+</select>
+</div>
+<div class="form-group">
+<label for="notification-events">Events to Notify</label>
+<select class="settings-input" id="notification-events" multiple="">
+<option selected="" value="new_order">New Orders</option>
+<option value="refund">Refunds</option>
+<option value="high_traffic">High Traffic</option>
+<option value="low_stock">Low Stock</option>
+</select>
+</div>
+<button class="save-btn" id="save-notification-settings">Save Settings</button>
+</div>
+</div>
+<div class="settings-panel">
+<h3 class="settings-title">API Settings</h3>
+<div class="settings-form">
+<div class="form-group">
+<label for="api-test">Test API Connection</label>
+<button class="save-btn" id="test-api">Test Connection</button>
+</div>
+<div class="form-group">
+<label for="api-status">API Status</label>
+<input id="api-status" readonly="" type="text" value="Not Tested"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Notification Toast -->
+<div class="notification" id="notification-toast">
+<div class="notification-header">
+<strong>New Order!</strong>
+<span class="notification-close" onclick="closeNotification()">×</span>
+</div>
+<div class="notification-content" id="notification-content">
             New order received from customer@example.com
         </div>
-    </div>
-    
-     <script>
+</div>
+<script>
      document.getElementById('conversion-time-view').addEventListener('change', function() {
   updateConversionChart(this.value);
 });
@@ -1867,6 +1844,4 @@ function testApiConnection() {
 }
 </script>
 </body>
-         
-       
 </html>
