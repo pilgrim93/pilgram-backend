@@ -1110,30 +1110,29 @@ trafficSourcesChart = new Chart(trafficSourcesCtx, {
     },
     options: commonOptions
   });
-   updateSalesChart('daily');
-updateRevenueChart('product');
-updateSessionChart('daily');
-updateTrafficTimeChart('daily');
-updateTrafficSourcesChart('all');
-      
-}
-        
+ 		updateSalesChart('daily');
+		updateRevenueChart('product');
+		updateSessionChart('daily');
+		updateTrafficTimeChart('daily');
+		updateTrafficSourcesChart('all');
+		updateConversionChart('daily'); // ✅ correct place to trigger update
         function updateConversionChart(view = 'daily') {
-  const labels = salesData.labels[view];
-  const sales = salesData[view];
-  const sessions = salesData.sessions[view];
+  		const labels = salesData.labels[view];
+  		const sales = salesData[view];
+  		const sessions = salesData.sessions[view];
 
   const conversionData = sales.map((sale, i) => {
     const session = sessions[i] || 1;
     return ((sale / session) * 100).toFixed(2);
   });
-
-  conversionChart.data.labels = labels;
+       conversionChart.data.labels = labels;
   conversionChart.data.datasets[0].data = conversionData;
-  conversionChart.update();
+}
+    
+
+ 
 }
 
-   
         // Setup event listeners for chart controls
         function setupEventListeners() {
             // Sales chart type change
@@ -1403,15 +1402,12 @@ updateTrafficSourcesChart('all');
   showNotification('Export Complete', `Table exported as ${filename}`);
 }
 
-            
-
         // Chart update functions
        function updateSalesChart(view = 'daily') {
  			 salesChart.data.labels = salesData.labels[view];
   			salesChart.data.datasets[0].data = salesData[view];
   			salesChart.update();
 		}	
-
 
         function updateRevenueChart(view = 'product') {
  		 const data = view === 'product' ? revenueData.product : revenueData.category;
@@ -1461,22 +1457,6 @@ updateTrafficSourcesChart('all');
         function updateTrafficChartType(type) {
             updateChartType('trafficSourcesChart', type);
         }
-
-function updateConversionChart(view = 'daily') {
-  const labels = salesData.labels[view];
-  const sales = salesData[view];
-  const sessions = salesData.sessions[view];
-
-  const conversionData = sales.map((sale, i) => {
-    const session = sessions[i] || 1;
-    return ((sale / session) * 100).toFixed(2);
-  });
-
-  conversionChart.data.labels = labels;
-  conversionChart.data.datasets[0].data = conversionData;
-  conversionChart.update();
-}
-
 
         function updateAllCharts() {
             // Update all charts with new data
