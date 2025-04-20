@@ -802,7 +802,7 @@
                 { userId: '001', email: 'customer1@example.com', action: 'View Product', page: '/product/basic', timestamp: '2025-04-17 18:56:22' },
                 { userId: '006', email: 'customer6@example.com', action: 'Login', page: '/dashboard', timestamp: '2025-04-17 17:42:11' },
                 { userId: '007', email: 'customer7@example.com', action: 'Cancel Subscription', page: '/account', timestamp: '2025-04-17 16:19:38' }
-            ],
+            ]
             conversion: {
   			labels: {
     				default: ['Jan', 'Feb', 'Mar', 'Apr'],
@@ -1005,6 +1005,11 @@ conversionChart = new Chart(conversionCtx, {
 
   	 console.log("conversionData.labels:", conversionData.labels);
 console.log("conversionData.labels.daily:", conversionData.labels?.daily);
+
+	 const (conversionData.labels?.[view] || []).map((sale, index) => {
+ 	 const sessions = salesData.sessions.daily[index];
+  	 return sessions ? (sale / sessions * 100).toFixed(2) : 0;
+});
 
 
 const usersCtx = document.getElementById('users-chart').getContext('2d');
@@ -1519,7 +1524,7 @@ document.getElementById('conversion-view').addEventListener('change', () => {
             trafficTimeChart.update();
             
             showNotification('Charts Updated', 'All charts have been refreshed with latest data');
-        
+        }, 200);
 
         // Initialize real-time updates
         function initRealTimeUpdates() {
