@@ -973,7 +973,36 @@ async function fetchTrafficData() {
 		console.log('✅ Using revenueData:', revenueData);
 		console.log('✅ Using trafficData:', trafficData);
 
-  	 const conversionCtx = document.getElementById('conversion-chart').getContext('2d');
+
+const conversionCtx = document.getElementById('conversion-chart').getContext('2d');
+const view = 'daily';
+const sales = salesData[view];
+const sessions = salesData.sessions[view];
+const labels = salesData.labels[view];
+
+const conversionData = sales.map((sale, i) => {
+  const session = sessions[i] || 1;
+  return ((sale / session) * 100).toFixed(2);
+});
+
+conversionChart = new Chart(conversionCtx, {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [{
+      label: 'Conversion Rate (%)',
+      data: conversionData,
+      backgroundColor: 'rgba(255, 193, 7, 0.2)',
+      borderColor: 'rgba(255, 193, 7, 1)',
+      borderWidth: 2,
+      tension: 0.4,
+      pointRadius: 5,
+      pointBackgroundColor: 'rgba(255, 193, 7, 1)'
+    }]
+  },
+  options: commonOptions
+});
+
   	 console.log("conversionData.labels:", conversionData.labels);
 console.log("conversionData.labels.daily:", conversionData.labels?.daily);
 
@@ -1129,25 +1158,28 @@ trafficSourcesChart = new Chart(trafficSourcesCtx, {
 		updateTrafficTimeChart('daily');
 		updateTrafficSourcesChart('all');
 		updateConversionChart('daily'); // ✅ correct place to trigger update
-        function updateConversionChart(view = 'daily') {
-        if (!conversionData || !conversionData.labels?.[view]) {
-  console.warn("Conversion data not ready for view:", view);
-  return;
-}
+      	function updateConversionChart(view = 'daily') {
+  if (!salesData || !salesData[view] || !salesData.sessions?.[view]) {
+    console.warn("Missing data for view:", view);
+    return;
+  }
 
-  		const labels = salesData.labels[view];
-  		const sales = salesData[view];
-  		const sessions = salesData.sessions[view];
+  const sales = salesData[view];
+  const sessions = salesData.sessions[view];
+  const labels = salesData.labels[view];
 
-  const conversionData = (conversionData.data?.[view] || []).map((sale, i) => {
+  const conversionValues = sales.map((sale, i) => {
     const session = sessions[i] || 1;
     return ((sale / session) * 100).toFixed(2);
   });
-       conversionChart.data.labels = labels;
-  conversionChart.data.datasets[0].data = conversionData;
+
+  conversionChart.data.labels = labels;
+  conversionChart.data.datasets[0].data = conversionValues;
+  conversionChart.update();
 }
-    
-    const view = document.getElementById('conversion-view').value || 'default';
+
+
+const view = document.getElementById('conversion-time-view').value || 'daily';
  
 }
 
