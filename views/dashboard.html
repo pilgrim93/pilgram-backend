@@ -962,12 +962,13 @@ async function fetchTrafficData() {
 		console.log('✅ Using trafficData:', trafficData);
 
   	 const conversionCtx = document.getElementById('conversion-chart').getContext('2d');
-	 const conversionData = salesData.daily.map((sale, index) => {
+  	 console.log("conversionData.labels:", conversionData.labels);
+console.log("conversionData.labels.daily:", conversionData.labels?.daily);
+
+	 const (conversionData.labels?.[view] || []).map((sale, index) => {
  	 const sessions = salesData.sessions.daily[index];
   	 return sessions ? (sale / sessions * 100).toFixed(2) : 0;
 });
-
-updateConversionChart('daily');
 
 
 const usersCtx = document.getElementById('users-chart').getContext('2d');
@@ -1117,6 +1118,11 @@ trafficSourcesChart = new Chart(trafficSourcesCtx, {
 		updateTrafficSourcesChart('all');
 		updateConversionChart('daily'); // ✅ correct place to trigger update
         function updateConversionChart(view = 'daily') {
+        if (!conversionData || !conversionData.labels?.[view]) {
+  console.warn("Conversion data not ready for view:", view);
+  return;
+}
+
   		const labels = salesData.labels[view];
   		const sales = salesData[view];
   		const sessions = salesData.sessions[view];
@@ -1470,7 +1476,7 @@ trafficSourcesChart = new Chart(trafficSourcesCtx, {
             trafficTimeChart.update();
             
             showNotification('Charts Updated', 'All charts have been refreshed with latest data');
-        }
+        }, 200);
 
         // Initialize real-time updates
         function initRealTimeUpdates() {
