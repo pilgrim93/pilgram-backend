@@ -1398,11 +1398,12 @@ updateTrafficSourcesChart('all');
             
 
         // Chart update functions
-        function updateSalesChart(timeView) {
-            salesChart.data.labels = salesData.labels[timeView];
-            salesChart.data.datasets[0].data = salesData[timeView];
-            salesChart.update();
-        }
+       function updateSalesChart() {
+ 			 salesChart.data.labels = salesData.labels;
+  			salesChart.data.datasets[0].data = salesData.data;
+  			salesChart.update();
+		}	
+
 
         function updateRevenueChart(view = 'product') {
  		 const data = view === 'product' ? revenueData.product : revenueData.category;
@@ -1421,7 +1422,6 @@ updateTrafficSourcesChart('all');
            trafficSourcesChart.data.labels = trafficData.sources[view].labels;
 			trafficSourcesChart.data.datasets[0].data = trafficData.sources[view].data;
 			trafficSourcesChart.update();
-
         }
 
         function updateTrafficTimeChart(view) {
