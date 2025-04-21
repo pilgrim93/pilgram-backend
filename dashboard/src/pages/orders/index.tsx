@@ -4,7 +4,6 @@ import { BrowserRouter, Route, Routes, Outlet } from "react-router-dom";
 import { dataProvider } from "@refinedev/simple-rest";
 import { ConfigProvider, Table } from "antd";
 import { useTable } from "@refinedev/antd";
-import { Table } from "antd";
 import "@refinedev/antd/dist/reset.css";
 import React from "react";
 
