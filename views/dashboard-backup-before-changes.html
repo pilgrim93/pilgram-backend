@@ -535,7 +535,7 @@
                         <th data-sort="product">Product</th>
                         <th data-sort="price">Price</th>
                         <th data-sort="date">Date</th>
-                        <th data-sort="status">Coupon</th>
+                        <th data-sort="status">Status</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -778,76 +778,28 @@
                 ]
             },
             orders: [
-    {
-      order_id: "A1B2C3",
-      email: "john@example.com",
-      product: "CPAP Cleaner",
-      price: 49.99,
-      currency: "USD",
-      coupon_id: "SPRING10",
-      created_at: "2025-04-17T10:45:00Z"
-    },
-    {
-      order_id: "D4E5F6",
-      email: "lisa@example.com",
-      product: "Nasal Mask",
-      price: 89.99,
-      currency: "USD",
-      coupon_id: null,
-      created_at: "2025-04-16T13:20:00Z"
-    },
-    {
-      order_id: "G7H8I9",
-      email: "mark@example.com",
-      product: "Hose Connector",
-      price: 14.99,
-      currency: "USD",
-      coupon_id: "WELCOME5",
-      created_at: "2025-04-15T08:30:00Z"
-    }
-  ]
-};
-
-// Update populateOrdersTable() to match Shoppy fields
-async function populateOrdersTable(data = null) {
-  const tbody = document.querySelector('#orders-table tbody');
-  tbody.innerHTML = '';
-
-  let orders = data;
-  if (!orders) {
-    try {
-      const res = await fetch('/api/orders');
-      if (!res.ok) throw new Error("Failed to fetch");
-      orders = await res.json();
-    } catch (err) {
-      console.warn('Falling back to mockData.orders due to error:', err.message);
-      orders = mockData.orders;
-    }
-  }
-
-  orders.forEach(order => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${order.order_id}</td>
-      <td>${order.email}</td>
-      <td>${order.product}</td>
-      <td>${order.currency} ${order.price.toFixed(2)}</td>
-      <td>${new Date(order.created_at).toLocaleDateString()}</td>
-      <td>${order.coupon_id || 'N/A'}</td>
-    `;
-    tbody.appendChild(row);
-  });
-}
-
-// Update the Orders Table header in the HTML:
-// <th data-sort="id">Order ID</th>
-// <th data-sort="email">Customer Email</th>
-// <th data-sort="product">Product</th>
-// <th data-sort="price">Price</th>
-// <th data-sort="date">Date</th>
-// <th data-sort="status">Coupon ID</th>
-        
-        
+                { id: '12345', email: 'customer1@example.com', product: 'Premium Plan', price: 49.99, date: '2025-04-17', status: 'Completed' },
+                { id: '12346', email: 'customer2@example.com', product: 'Basic Plan', price: 19.99, date: '2025-04-17', status: 'Completed' },
+                { id: '12347', email: 'customer3@example.com', product: 'Bundle', price: 79.99, date: '2025-04-16', status: 'Processing' },
+                { id: '12348', email: 'customer4@example.com', product: 'Premium Plan', price: 49.99, date: '2025-04-16', status: 'Completed' },
+                { id: '12349', email: 'customer5@example.com', product: 'Basic Plan', price: 19.99, date: '2025-04-15', status: 'Completed' },
+                { id: '12350', email: 'customer6@example.com', product: 'Premium Plan', price: 49.99, date: '2025-04-15', status: 'Refunded' },
+                { id: '12351', email: 'customer7@example.com', product: 'Bundle', price: 79.99, date: '2025-04-14', status: 'Completed' },
+                { id: '12352', email: 'customer8@example.com', product: 'Basic Plan', price: 19.99, date: '2025-04-14', status: 'Completed' },
+                { id: '12353', email: 'customer9@example.com', product: 'Premium Plan', price: 49.99, date: '2025-04-13', status: 'Completed' },
+                { id: '12354', email: 'customer10@example.com', product: 'Bundle', price: 79.99, date: '2025-04-13', status: 'Processing' }
+            ],
+            userActivity: [
+                { userId: '001', email: 'customer1@example.com', action: 'Login', page: '/dashboard', timestamp: '2025-04-18 09:23:15' },
+                { userId: '002', email: 'customer2@example.com', action: 'Purchase', page: '/checkout', timestamp: '2025-04-18 08:45:32' },
+                { userId: '003', email: 'customer3@example.com', action: 'View Product', page: '/product/premium', timestamp: '2025-04-18 08:12:47' },
+                { userId: '004', email: 'customer4@example.com', action: 'Signup', page: '/register', timestamp: '2025-04-17 22:37:09' },
+                { userId: '005', email: 'customer5@example.com', action: 'Add to Cart', page: '/product/bundle', timestamp: '2025-04-17 21:14:55' },
+                { userId: '001', email: 'customer1@example.com', action: 'View Product', page: '/product/basic', timestamp: '2025-04-17 18:56:22' },
+                { userId: '006', email: 'customer6@example.com', action: 'Login', page: '/dashboard', timestamp: '2025-04-17 17:42:11' },
+                { userId: '007', email: 'customer7@example.com', action: 'Cancel Subscription', page: '/account', timestamp: '2025-04-17 16:19:38' }
+            ]
+        };
     
     let salesData, revenueData, trafficData;
 
@@ -1245,6 +1197,37 @@ updateTrafficSourcesChart('all');
                 }
             });
         }
+
+        // Table population functions
+      async function populateOrdersTable(data = null) {
+  const tbody = document.querySelector('#orders-table tbody');
+  tbody.innerHTML = '';
+
+  let orders = data;
+  if (!orders) {
+    try {
+      const res = await fetch('/api/orders');
+      if (!res.ok) throw new Error("Failed to fetch");
+      orders = await res.json();
+    } catch (err) {
+      console.warn('Falling back to mockData.orders due to error:', err.message);
+      orders = mockData.orders;
+    }
+  }
+
+  orders.forEach(order => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${order.id}</td>
+      <td>${order.email}</td>
+      <td>${order.product}</td>
+      <td>$${order.price.toFixed(2)}</td>
+      <td>${order.date}</td>
+      <td>${order.status}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
 
      async function populateActivityTable(data = null) {
   const tbody = document.querySelector('#activity-table tbody');
