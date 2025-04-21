@@ -1,81 +1,44 @@
 import express from "express";
+import session from "express-session";
 import path from "path";
+import { fileURLToPath } from "url";
 import bodyParser from "body-parser";
 import axios from "axios";
-import session from "express-session";
-import { fileURLToPath } from "url";
-import { dirname } from "path";
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 
-
-// 🔐 Session middleware
-app.use(session({
-  secret: process.env.SESSIONs_SECRET || "pilgram_secret",
-  resave: false,
-  saveUninitialized: true
-}));
-
-// 📦 Middleware
-app.use("/public", express.static(path.join(path.dirname(fileURLToPath(import.meta.url)), "public")));
-app.use(express.static(path.join(path.dirname(fileURLToPath(import.meta.url)), "public")));
-app.use("/styles", express.static(path.join(path.dirname(fileURLToPath(import.meta.url)), "styles")));
-app.use("/views", express.static(path.join(path.dirname(fileURLToPath(import.meta.url)), "views")));
-app.use(bodyParser.urlencoded({ extended: false }));
+// Middleware
+app.use(express.static(path.join(__dirname, "public")));
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(
+  session({
+    secret: "keyboardcat",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
 
-// 🛡️ Auth middleware
-function requireAuth(req, res, next) {
-  if (req.session && req.session.authenticated) {
-    return next();
-  }
-  res.redirect("/login");
-}
-
-// 🧠 Routes
-app.get("/login", (req, res) => {
-  res.sendFile(path.join(path.dirname(fileURLToPath(import.meta.url)), "views", "login.html"));
-});
-
-app.post("/login", (req, res) => {
-  const { username, password } = req.body;
-  if (username === 'admin' && password === 'dre') {
-    req.session.authenticated = true;
-    return res.redirect("/dashboard");
-  }
-  res.redirect("/login");
-});
-
-app.post("/logout", (req, res) => {
-  req.session.destroy(() => {
-   res.clearCookie('connect.sid');
-   res.sendStatus(200);
-  });
-});
-
-// Serve dashboard.html at the root URL
+// Serve dashboard.html directly
 app.get("/", (req, res) => {
-  res.sendFile(path.join(path.dirname(fileURLToPath(import.meta.url)), "public/views/dashboard.html"));
+  res.sendFile(path.join(__dirname, "public/views/dashboard.html"));
 });
 
-app.get("/reset-login", (req, res) => {
-  res.send(`
-    <html>
-      <head><title>Reset Login</title></head>
-      <body style="font-family:sans-serif; text-align:center; padding:50px;">
-        <h1>Reset Credentials</h1>
-        <p>Default username: <b>admin</b></p>
-        <p>Default password: <b>dre</b></p>
-        <p>You can change these in <code>server.js</code>.</p>
-        <a href="/login" style="color:#00bcd4;">Back to Login</a>
-      </body>
-    </html>
-  `);
+// Simulated API (so it doesn't error even without data)
+app.get("/api/orders", (req, res) => res.json([]));
+app.get("/api/user-activity", (req, res) => res.json([]));
+app.get("/api/traffic", (req, res) => res.json({ geo: {}, referrals: {} }));
+app.get("/api/sales-data", (req, res) => res.json({ labels: [], data: [] }));
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`✅ Dashboard live at http://localhost:${PORT}`);
 });
+
 
 
 // 📬 Telegram alert
