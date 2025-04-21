@@ -118,6 +118,8 @@ async function fetchShoppyOrders() {
     console.log(`✅ Shoppy orders fetched: ${shoppyOrders.length}`);
   } catch (err) {
     console.error("❌ Error fetching Shoppy orders:", err.message);
+    console.error("↪️ Full error:", err.response?.data || err);
+
   }
 }
 
