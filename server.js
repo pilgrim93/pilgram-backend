@@ -34,12 +34,11 @@ app.get("/api/user-activity", (req, res) => res.json([]));
 app.get("/api/traffic", (req, res) => res.json({ geo: {}, referrals: {} }));
 app.get("/api/sales-data", (req, res) => res.json({ labels: [], data: [] }));
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`✅ Dashboard live at http://localhost:${PORT}`);
+app.post('/logout', (req, res) => {
+  req.session?.destroy(() => {
+    res.redirect('/login');
+  });
 });
-
-
 
 // 📬 Telegram alert
 async function sendTelegramNotification(order) {
