@@ -58,6 +58,5 @@
   "build": "cd client && npm install && npm run build",
   "start": "node server.js"
 }
-}
 
 
