@@ -98,30 +98,43 @@ async function sendTelegramNotification(order) {
 // 🛒 Shoppy polling
 let shoppyOrders = [];
 
-async function fetchShoppyOrders() {
+async function populateOrdersTable(data = null) {
+  const tbody = document.querySelector('#orders-table tbody');
+  tbody.innerHTML = '';
+
+  let orders = data;
   try {
-    const response = await axios.get("https://shoppy.gg/api/v1/orders", {
-      headers: { Authorization: process.env.SHOPPY_API_KEY }
-    });
+    if (!orders) {
+      const res = await fetch('/api/orders');
+      if (!res.ok) throw new Error("Failed to fetch");
+      orders = await res.json();
+    }
 
-    shoppyOrders = response.data.map(o => ({
-      order_id: o.id,
-      email: o.email || 'N/A',
-      product: o.product_title || 'Unknown',
-      price: o.price ? o.price / 100 : 0,
-      currency: o.currency || 'USD',
-      coupon_id: o.coupon_id || null,
-      created_at: o.created_at,
-      order_status: o.status || 'Completed'
-    }));
-
-    console.log(`✅ Shoppy orders fetched: ${shoppyOrders.length}`);
+    // ✅ If empty, fallback to mockData
+    if (!orders || !orders.length) {
+      console.warn('API returned empty orders, using mockData.orders');
+      orders = mockData.orders;
+    }
   } catch (err) {
-    console.error("❌ Error fetching Shoppy orders:", err.message);
-    console.error("↪️ Full error:", err.response?.data || err);
-
+    console.warn('Failed to load orders, falling back to mockData:', err.message);
+    orders = mockData.orders;
   }
+
+  orders.forEach(order => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${order.order_id}</td>
+      <td>${order.email}</td>
+      <td>${order.product}</td>
+      <td>${order.currency} ${order.price.toFixed(2)}</td>
+      <td>${new Date(order.created_at).toLocaleDateString()}</td>
+      <td>${order.coupon_id || 'N/A'}</td>
+      <td>${order.order_status || 'Unknown'}</td>
+    `;
+    tbody.appendChild(row);
+  });
 }
+
 
 fetchShoppyOrders();                              // Fetch on server start
 setInterval(fetchShoppyOrders, 10 * 60 * 1000);    // Refresh every 2 minutes
