@@ -812,38 +812,6 @@
   ]
 };
 
-// Update populateOrdersTable() to include order_status
-async function populateOrdersTable(data = null) {
-  const tbody = document.querySelector('#orders-table tbody');
-  tbody.innerHTML = '';
-
-  let orders = data;
-  if (!orders) {
-    try {
-      const res = await fetch('/api/orders');
-      if (!res.ok) throw new Error("Failed to fetch");
-      orders = await res.json();
-    (!orders || !orders.length) {
-  	console.warn("⚠️ No orders from API, using mockData.orders");
-  	orders = mockData.orders;
-    }
-  }
-
-  orders.forEach(order => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${order.order_id}</td>
-      <td>${order.email}</td>
-      <td>${order.product}</td>
-      <td>${order.currency} ${order.price.toFixed(2)}</td>
-      <td>${new Date(order.created_at).toLocaleDateString()}</td>
-      <td>${order.coupon_id || 'N/A'}</td>
-      <td>${order.order_status || 'Unknown'}</td>
-    `;
-    tbody.appendChild(row);
-  });
-}
-
 // Update Orders Table header in HTML:
 // <th data-sort="id">Order ID</th>
 // <th data-sort="email">Customer Email</th>
@@ -1612,6 +1580,36 @@ updateTrafficSourcesChart('all');
             mockData.traffic.sources.all.data[sourceIndex] += additionalTraffic;
 	}
 	          
+	          function simulateNewOrder() {
+  const products = ['CPAP Cleaner', 'Nasal Mask', 'Hose Connector'];
+  const prices = [49.99, 89.99, 14.99];
+  const randomProduct = Math.floor(Math.random() * products.length);
+
+  const newOrder = {
+    order_id: `ORD-${Date.now()}`,
+    email: `user${Math.floor(Math.random() * 1000)}@example.com`,
+    product: products[randomProduct],
+    price: prices[randomProduct],
+    currency: 'USD',
+    coupon_id: Math.random() > 0.5 ? 'SAVE10' : null,
+    created_at: new Date().toISOString(),
+    order_status: 'Completed'
+  };
+
+  mockData.orders.unshift(newOrder);
+  if (mockData.orders.length > 20) mockData.orders.pop();
+
+  populateOrdersTable();
+
+  showNotification(
+    'New Order!',
+    `Order #${newOrder.order_id} received for ${newOrder.product} from ${newOrder.email}`
+  );
+
+  sendTelegramNotification(`New order #${newOrder.order_id}: ${newOrder.product} ($${newOrder.price}) from ${newOrder.email}`);
+}
+
+
   </script>
 </body>
          

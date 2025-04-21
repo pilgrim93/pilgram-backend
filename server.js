@@ -109,7 +109,6 @@ async function populateOrdersTable(data = null) {
       if (!res.ok) throw new Error("Failed to fetch");
       orders = await res.json();
     }
-
     // ✅ If empty, fallback to mockData
     if (!orders || !orders.length) {
       console.warn('API returned empty orders, using mockData.orders');
