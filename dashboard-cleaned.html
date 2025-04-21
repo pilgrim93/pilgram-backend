@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   Admin Dashboard
+  </title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js">
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js">
+  </script>
+  <style>
+   :root {
+            --main-bg: #111111;
+            --card-bg: #222222;
+            --accent-green: #4CAF50;
+            --accent-blue: #3F51B5;
+            --accent-yellow: #FFC107;
+            --text-primary: #FFFFFF;
+            --text-secondary: #CCCCCC;
+            --button-bg: #333333;
+            --accent-border: #444444;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--main-bg);
+            color: var(--text-primary);
+            padding: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            height: 40px;
+        }
+        
+        .logout-btn {
+            background-color: var(--accent-yellow);
+            color: #000;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .tab {
+            background-color: transparent;
+            color: var(--text-primary);
+            padding: 12px 24px;
+            border: 2px solid var(--accent-border);
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            border-color: var(--accent-green);
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+        
+        .tab-icon {
+            font-size: 18px;
+        }
+        
+        .dashboard-section {
+            display: none;
+            margin-bottom: 40px;
+        }
+        
+        .dashboard-section.active {
+            display: block;
+        }
+        
+        .section-title {
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+        
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        @media (min-width: 768px) {
+            .charts-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        .chart-container {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            height: 300px;
+            position: relative;
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chart-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chart-control {
+            background-color: var(--button-bg);
+            color: var(--text-primary);
+            padding: 5px 10px;
+            border: 1px solid var(--accent-border);
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        
+        .table-container {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .table-title {
+            font-size: 18px;
+        }
+        
+        .export-btn {
+            background-color: var(--accent-green);
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid var(--accent-border);
+        }
+        
+        th {
+            cursor: pointer;
+            position: relative;
+        }
+        
+        th:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        th.sorted-asc::after {
+            content: "▲";
+            position: absolute;
+            right: 8px;
+        }
+        
+        th.sorted-desc::after {
+            content: "▼";
+            position: absolute;
+            right: 8px;
+        }
+        
+        tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .hover-highlight {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+        }
+        
+        .search-input {
+            padding: 8px;
+            margin-bottom: 10px;
+            width: 100%;
+            background-color: var(--button-bg);
+            border: 1px solid var(--accent-border);
+            border-radius: 5px;
+            color: white;
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--accent-green);
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 1000;
+            max-width: 300px;
+        }
+        
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .notification-close {
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .pulse {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: red;
+            margin-left: 10px;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(0.8);
+                opacity: 0.8;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0.8);
+                opacity: 0.8;
+            }
+        }
+        
+        .data-status {
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .data-status.live span {
+            color: var(--accent-green);
+        }
+        
+        .settings-panel {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .settings-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        
+        .settings-form {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        @media (min-width: 768px) {
+            .settings-form {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            background-color: var(--button-bg);
+            border: 1px solid var(--accent-border);
+            border-radius: 5px;
+            color: white;
+        }
+        
+        .save-btn {
+            background-color: var(--accent-green);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            grid-column: 1 / -1;
+            justify-self: start;
+        }
+
+        /* Toggle switch for real-time updates */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+            margin-left: 10px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent-green);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .real-time-toggle {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+  </style>
+ </head>
+ <body>
+  <!-- Header -->
+  <div class="header">
+   <img alt="Logo" class="logo" src="/logo1.png"/>
+   <button class="logout-btn">
+    Logout
+   </button>
+  </div>
+  <!-- Navigation Tabs -->
+  <div class="nav-tabs">
+   <button class="tab active" data-tab="sales">
+    <span class="tab-icon">
+     💰
+    </span>
+    Sales
+   </button>
+   <button class="tab" data-tab="behavior">
+    <span class="tab-icon">
+     👥
+    </span>
+    User Behavior
+   </button>
+   <button class="tab" data-tab="traffic">
+    <span class="tab-icon">
+     🌐
+    </span>
+    Traffic
+   </button>
+   <button class="tab" data-tab="settings">
+    <span class="tab-icon">
+     ⚙️
+    </span>
+    Settings
+   </button>
+  </div>
+  <!-- Real-time Toggle -->
+  <div class="real-time-toggle">
+   <span>
+    Real-time Updates
+   </span>
+   <label class="toggle-switch">
+    <input id="real-time-toggle" type="checkbox"/>
+    <span class="slider">
+    </span>
+   </label>
+   <div class="data-status" id="connection-status">
+    <span>
+     Offline
+    </span>
+    <div class="pulse" style="display: none;">
+    </div>
+   </div>
+  </div>
+  <!-- Date Range Picker -->
+  <div class="date-range-picker" style="display: flex; gap: 10px; margin-bottom: 20px;">
+   <div class="date-input-container" style="flex: 1;">
+    <label for="start-date" style="display: block; margin-bottom: 5px; color: white;">
+     Start Date
+    </label>
+    <input id="start-date" style="width: 100%; padding: 8px; background-color: var(--button-bg); border: 1px solid var(--accent-border); border-radius: 5px; color: white;" type="date"/>
+   </div>
+   <div class="date-input-container" style="flex: 1;">
+    <label for="end-date" style="display: block; margin-bottom: 5px; color: white;">
+     End Date
+    </label>
+    <input id="end-date" style="width: 100%; padding: 8px; background-color: var(--button-bg); border: 1px solid var(--accent-border); border-radius: 5px; color: white;" type="date"/>
+   </div>
+   <div class="date-button-container" style="display: flex; align-items: flex-end;">
+    <button id="apply-date-filter" style="padding: 8px 15px; background-color: var(--accent-green); color: white; border: none; border-radius: 5px; cursor: pointer;">
+     Apply
+    </button>
+   </div>
+  </div>
+  <!-- Sales Section -->
+  <div class="dashboard-section active" data-tab-content="sales" id="sales-section">
+   <h2 class="section-title">
+    Sales Charts
+   </h2>
+   <div class="charts-container">
+    <!-- Sales Over Time Chart -->
+    <div class="chart-container">
+     <div class="chart-title">
+      <span>
+       Sales Over Time
+      </span>
+      <div class="chart-controls">
+       <select class="chart-control" id="sales-chart-type">
+        <option value="line">
+         Line
+        </option>
+        <option value="bar">
+         Bar
+        </option>
+       </select>
+       <select class="chart-control" id="sales-time-view">
+        <option value="daily">
+         Daily
+        </option>
+        <option value="weekly">
+         Weekly
+        </option>
+        <option value="monthly">
+         Monthly
+        </option>
+       </select>
+      </div>
+     </div>
+     <canvas id="sales-chart">
+     </canvas>
+    </div>
+    <!-- Revenue by Product Chart -->
+    <div class="chart-container">
+     <div class="chart-title">
+      <span>
+       Revenue Breakdown
+      </span>
+      <div class="chart-controls">
+       <select class="chart-control" id="revenue-chart-type">
+        <option value="bar">
+         Bar
+        </option>
+        <option value="pie">
+         Pie
+        </option>
+        <option value="line">
+         Line
+        </option>
+       </select>
+       <select class="chart-control" id="revenue-view">
+        <option value="product">
+         By Product
+        </option>
+        <option value="category">
+         By Category
+        </option>
+       </select>
+      </div>
+     </div>
+     <canvas id="revenue-chart">
+     </canvas>
+    </div>
+    <!-- Sessions Chart -->
+    <div class="chart-container">
+     <div class="chart-title">
+      <span>
+       User Sessions
+      </span>
+      <div class="chart-controls">
+       <select class="chart-control" id="sessions-time-view">
+        <option value="daily">
+         Daily
+        </option>
+        <option value="weekly">
+         Weekly
+        </option>
+        <option value="monthly">
+         Monthly
+        </option>
+       </select>
+      </div>
+     </div>
+     <canvas id="sessions-chart">
+     </canvas>
+    </div>
+    <!-- Conversion Rate Chart -->
+    <div class="chart-container">
+     <div class="chart-title">
+      <span>
+       Conversion Rate
+      </span>
+      <div class="chart-controls">
+       <select class="chart-control" id="conversion-time-view">
+        <option value="daily">
+         Daily
+        </option>
+        <option value="weekly">
+         Weekly
+        </option>
+        <option value="monthly">
+         Monthly
+        </option>
+       </select>
+      </div>
+     </div>
+     <canvas id="conversion-chart">
+     </canvas>
+    </div>
+   </div>
+   <!-- Orders Table -->
+   <div class="table-container">
+    <div class="table-header">
+     <h3 class="table-title">
+      Recent Orders
+     </h3>
+     <button class="export-btn" onclick="exportTableToCSV('orders-table', 'orders-data.csv')">
+      Export CSV
+     </button>
+    </div>
+    <input class="search-input" id="orders-search" placeholder="Search orders..." type="text"/>
+    <table id="orders-table">
+     <thead>
+      <tr>
+       <th>
+        Order ID
+       </th>
+       <th>
+        Email
+       </th>
+       <th>
+        Product
+       </th>
+       <th>
+        Price
+       </th>
+       <th>
+        Currency
+       </th>
+       <th>
+        Coupon ID
+       </th>
+       <th>
+        Date Created
+       </th>
+       <th>
+        Status
+       </th>
+      </tr>
+     </thead>
+     <tbody>
+     </tbody>
+    </table>
+   </div>
+  </div>
+  <!-- User Behavior Section -->
+  <div class="dashboard-section" data-tab-content="behavior" id="behavior-section">
+   <h2 class="section-title">
+    User Behavior
+   </h2>
+   <div class="charts-container">
+    <!-- New vs Returning Users -->
+    <div class="chart-container">
+     <div class="chart-title">
+      <span>
+       New vs Returning Users
+      </span>
+      <div class="chart-controls">
+      </div>
+     </div>
+     <canvas id="users-chart">
+     </canvas>
+    </div>
+    <!-- User Engagement Chart -->
+    <div class="chart-container">
+     <div class="chart-title">
+      <span>
+       User Engagement
+      </span>
+      <div class="chart-controls">
+       <select class="chart-control" id="engagement-time-view">
+        <option value="daily">
+         Daily
+        </option>
+        <option value="weekly">
+         Weekly
+        </option>
+        <option value="monthly">
+         Monthly
+        </option>
+       </select>
+      </div>
+     </div>
+     <canvas id="engagement-chart">
+     </canvas>
+    </div>
+   </div>
+   <!-- User Activity Table -->
+   <div class="table-container">
+    <div class="table-header">
+     <h3 class="table-title">
+      User Activity Log
+     </h3>
+     <button class="export-btn" onclick="exportTableToCSV('activity-table', 'user-activity.csv')">
+      Export CSV
+     </button>
+    </div>
+    <input class="search-input" id="activity-search" placeholder="Search activities..." type="text"/>
+    <table id="activity-table">
+     <thead>
+      <tr>
+       <th data-sort="userId">
+        User ID
+       </th>
+       <th data-sort="email">
+        Email
+       </th>
+       <th data-sort="action">
+        Action
+       </th>
+       <th data-sort="page">
+        Page
+       </th>
+       <th data-sort="timestamp">
+        Timestamp
+       </th>
+      </tr>
+     </thead>
+     <tbody>
+      <!-- Will be populated by JavaScript -->
+     </tbody>
+    </table>
+   </div>
+  </div>
+  <!-- Traffic Section -->
+  <div class="dashboard-section" data-tab-content="traffic" id="traffic-section">
+   <h2 class="section-title">
+    Traffic Analysis
+   </h2>
+   <div class="charts-container">
+    <!-- Traffic Sources Chart -->
+    <div class="chart-container">
+     <div class="chart-title">
+      <span>
+       Traffic Sources
+      </span>
+      <div class="chart-controls">
+       <select class="chart-control" id="traffic-chart-type" onchange="updateTrafficChartType(this.value)">
+        <option value="pie">
+         Pie
+        </option>
+        <option value="bar">
+         Bar
+        </option>
+       </select>
+       <select class="chart-control" id="traffic-filter">
+        <option value="all">
+         All Time
+        </option>
+        <option value="month">
+         This Month
+        </option>
+        <option value="week">
+         This Week
+        </option>
+       </select>
+      </div>
+     </div>
+     <canvas id="traffic-sources-chart">
+     </canvas>
+    </div>
+    <!-- Traffic Over Time Chart -->
+    <div class="chart-container">
+     <div class="chart-title">
+      <span>
+       Traffic Over Time
+      </span>
+      <div class="chart-controls">
+       <select class="chart-control" id="traffic-time-view">
+        <option value="daily">
+         Daily
+        </option>
+        <option value="weekly">
+         Weekly
+        </option>
+        <option value="monthly">
+         Monthly
+        </option>
+       </select>
+      </div>
+     </div>
+     <canvas id="traffic-time-chart">
+     </canvas>
+    </div>
+   </div>
+   <!-- Traffic Details Table -->
+   <div class="table-container">
+    <div class="table-header">
+     <h3 class="table-title">
+      Traffic Details
+     </h3>
+     <button class="export-btn" onclick="exportTableToCSV('traffic-table', 'traffic-data.csv')">
+      Export CSV
+     </button>
+    </div>
+    <input class="search-input" id="traffic-search" placeholder="Search traffic data..." type="text"/>
+    <table id="traffic-table">
+     <thead>
+      <tr>
+       <th data-sort="source">
+        Source
+       </th>
+       <th data-sort="visitors">
+        Visitors
+       </th>
+       <th data-sort="pageViews">
+        Page Views
+       </th>
+       <th data-sort="bounceRate">
+        Bounce Rate
+       </th>
+       <th data-sort="avgTime">
+        Avg. Time on Site
+       </th>
+      </tr>
+     </thead>
+     <tbody>
+      <!-- Will be populated by JavaScript -->
+     </tbody>
+    </table>
+   </div>
+  </div>
+  <!-- Settings Section -->
+  <div class="dashboard-section" data-tab-content="settings" id="settings-section">
+   <h2 class="section-title">
+    Settings
+   </h2>
+   <div class="settings-panel">
+    <h3 class="settings-title">
+     Notification Settings
+    </h3>
+    <div class="settings-form">
+     <div class="form-group">
+      <label for="telegram-enabled">
+       Enable Telegram Notifications
+      </label>
+      <select class="settings-input" id="telegram-enabled">
+       <option value="true">
+        Enabled
+       </option>
+       <option value="false">
+        Disabled
+       </option>
+      </select>
+     </div>
+     <div class="form-group">
+      <label for="notification-events">
+       Events to Notify
+      </label>
+      <select class="settings-input" id="notification-events" multiple="">
+       <option selected="" value="new_order">
+        New Orders
+       </option>
+       <option value="refund">
+        Refunds
+       </option>
+       <option value="high_traffic">
+        High Traffic
+       </option>
+       <option value="low_stock">
+        Low Stock
+       </option>
+      </select>
+     </div>
+     <button class="save-btn" id="save-notification-settings">
+      Save Settings
+     </button>
+    </div>
+   </div>
+   <div class="settings-panel">
+    <h3 class="settings-title">
+     API Settings
+    </h3>
+    <div class="settings-form">
+     <div class="form-group">
+      <label for="api-test">
+       Test API Connection
+      </label>
+      <button class="save-btn" id="test-api">
+       Test Connection
+      </button>
+     </div>
+     <div class="form-group">
+      <label for="api-status">
+       API Status
+      </label>
+      <input id="api-status" readonly="" type="text" value="Not Tested"/>
+     </div>
+    </div>
+   </div>
+  </div>
+  <!-- Notification Toast -->
+  <div class="notification" id="notification-toast">
+   <div class="notification-header">
+    <strong>
+     New Order!
+    </strong>
+    <span class="notification-close" onclick="closeNotification()">
+     ×
+    </span>
+   </div>
+   <div class="notification-content" id="notification-content">
+    New order received from customer@example.com
+   </div>
+  </div>
+ </body>
+</html>
