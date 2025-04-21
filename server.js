@@ -8,6 +8,8 @@ const session = require("express-session");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+
+
 // 🔐 Session middleware
 app.use(session({
   secret: process.env.SESSION_SECRET || "pilgram_secret",
@@ -52,8 +54,9 @@ app.post("/logout", (req, res) => {
   });
 });
 
-app.get("/dashboard", requireAuth, (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "dashboard.html"));
+// Serve dashboard.html at the root URL
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/views/dashboard.html"));
 });
 
 app.get("/reset-login", (req, res) => {
