@@ -222,12 +222,3 @@ app.get("/api/user-activity", (req, res) => {
   res.json(userActivityLog.slice(-50)); // Limit to last 50 entries
 });
 
-const path = require("path");
-const express = require("express");
-
-app.use(express.static(path.join(__dirname, "dist")));
-
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "dist", "index.html"));
-});
-
