@@ -985,7 +985,15 @@ document.addEventListener("DOMContentLoaded", function() {
       .then(data => {
         const tbody = document.querySelector('#activity-table tbody');
         tbody.innerHTML = '';
-        
+        if (!data || data.length === 0) {
+ 			 tbody.innerHTML = `
+   			 <tr>
+     			 <td colspan="8" style="text-align: center; font-style: italic;">No orders yet</td>
+    			</tr>
+ 				`;
+ 				 return; // stop further processing
+				}
+
         data.forEach(item => {
           const row = document.createElement('tr');
           row.innerHTML = `
