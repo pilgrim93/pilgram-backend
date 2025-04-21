@@ -5,8 +5,14 @@ import { dataProvider } from "@refinedev/simple-rest";
 import { OrderList } from "./pages/orders";
 import { ConfigProvider } from "antd";
 import "@refinedev/antd/dist/reset.css";
+import { useTable } from "@refinedev/antd";
+import { Table } from "antd";
 
 const API_URL = "https://admin.cpapilgrim.shop/api";
+export const OrderList = () => {
+  const { tableProps } = useTable({
+    resource: "orders",
+  });
 
 export default function App() {
   return (
@@ -36,3 +42,21 @@ export default function App() {
     </BrowserRouter>
   );
 }
+
+ return (
+    <Table
+      {...tableProps}
+      rowKey="order_id"
+      columns={[
+        { title: "Order ID", dataIndex: "order_id" },
+        { title: "Email", dataIndex: "email" },
+        { title: "Product", dataIndex: "product" },
+        { title: "Price", dataIndex: "price" },
+        { title: "Currency", dataIndex: "currency" },
+        { title: "Coupon", dataIndex: "coupon_id" },
+        { title: "Created", dataIndex: "created_at" },
+        { title: "Status", dataIndex: "order_status" },
+      ]}
+    />
+  );
+};
