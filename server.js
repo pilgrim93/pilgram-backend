@@ -71,7 +71,7 @@ app.post("/webhook/shoppy", async (req, res) => {
 });
 
 // 📊 Google Analytics
-const { BetaAnalyticsDataClient } = require('@google-analytics/data');
+import { BetaAnalyticsDataClient } from '@google-analytics/data';
 const analyticsDataClient = new BetaAnalyticsDataClient();
 
 app.get("/api/traffic-stats", async (req, res) => {
