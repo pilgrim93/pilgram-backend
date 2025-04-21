@@ -1560,23 +1560,36 @@ updateTrafficSourcesChart('all');
         }
 
         // Simulate a new order
-        function simulateNewOrder() {
-            // Create a new order object
-            const products = ['Basic Plan', 'Premium Plan', 'Bundle'];
-            const prices = [19.99, 49.99, 79.99];
-            const randomProduct = Math.floor(Math.random() * products.length);
-            
-            const newOrder = {
-  order_id: Math.floor(10000 + Math.random() * 90000).toString(),
-  email: `customer${Math.floor(Math.random() * 1000)}@example.com`,
-  product: products[randomProduct],
-  price: prices[randomProduct],
-  currency: 'USD',
-  coupon_id: Math.random() < 0.5 ? 'WELCOME5' : null,
-  created_at: new Date().toISOString(),
-  order_status: 'New'
-};
+       let shoppyOrders = [];
 
+async function fetchShoppyOrders() {
+  try {
+    const response = await axios.get("https://shoppy.gg/api/v1/orders", {
+      headers: { Authorization: process.env.SHOPPY_API_KEY }
+    });
+
+    if (Array.isArray(response.data)) {
+      shoppyOrders = response.data.map(o => ({
+        order_id: o.id,
+        email: o.email || 'N/A',
+        product: o.product_title || 'Unknown',
+        price: o.price ? o.price / 100 : 0, // Assuming price is in cents
+        currency: o.currency || 'USD',
+        coupon_id: o.coupon_id || null,
+        created_at: o.created_at,
+        order_status: o.status || 'Completed'
+      }));
+      console.log(`✅ Loaded ${shoppyOrders.length} Shoppy orders`);
+    } else {
+      console.warn("⚠️ Shoppy API returned unexpected format:", response.data);
+    }
+  } catch (err) {
+    console.error("❌ Failed to fetch Shoppy orders:", err.message);
+  }
+}
+
+fetchShoppyOrders(); // run once on startup
+setInterval(fetchShoppyOrders, 600000); // update every 10m
             
             // Add to mock data
             mockData.orders.unshift(newOrder);
@@ -1603,11 +1616,11 @@ updateTrafficSourcesChart('all');
             // Show notification for the new order
             showNotification(
                 'New Order!', 
-                `Order #${newOrder.id} received for ${newOrder.product} from ${newOrder.email}`
+                `Order #${newOrder.order_id} received for ${newOrder.product} from ${newOrder.email}`
             );
             
             // Simulate Telegram notification
-            sendTelegramNotification(`New order #${newOrder.id}: ${newOrder.product} ($${newOrder.price}) from ${newOrder.email}`);
+            sendTelegramNotification(`New order #${newOrder.order_id}: ${newOrder.product} ($${newOrder.price}) from ${newOrder.email}`);
         }
 
         // Simulate traffic update

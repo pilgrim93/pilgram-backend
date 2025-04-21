@@ -225,8 +225,8 @@ app.get('/api/sales-data', (req, res) => {
 });
 
 // 🚀 Launch
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+app.listen(process.env.PORT || 10000, '0.0.0.0', () => {
+  console.log(`🚀 Server running at http://localhost:${process.env.PORT || 10000}`);
 });
 
 
