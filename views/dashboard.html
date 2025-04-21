@@ -891,5 +891,45 @@
     New order received from customer@example.com
    </div>
   </div>
+  <script>
+document.addEventListener("DOMContentLoaded", function () {
+  // Tab functionality
+  document.querySelectorAll('.nav-tabs .tab').forEach(tab => {
+    tab.addEventListener('click', function () {
+      document.querySelectorAll('.nav-tabs .tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+
+      const selectedTab = this.getAttribute('data-tab');
+      document.querySelectorAll('.dashboard-section').forEach(section => {
+        section.classList.remove('active');
+      });
+
+      document.querySelector(`[data-tab-content="${selectedTab}"]`)?.classList.add('active');
+    });
+  });
+
+  // Logout button functionality (replace with real logic)
+  document.querySelector('.logout-btn')?.addEventListener('click', function () {
+    alert("Logging out... (implement redirect or session clear)");
+  });
+
+  // CSV export logic
+  window.exportTableToCSV = function (tableId, filename) {
+    const rows = document.querySelectorAll(`#${tableId} tr`);
+    const csv = [...rows].map(row =>
+      [...row.querySelectorAll('th, td')]
+        .map(cell => `"${cell.innerText.replace(/"/g, '""')}"`)
+        .join(',')
+    ).join('\\n');
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+  };
+});
+</script>
+
  </body>
 </html>
