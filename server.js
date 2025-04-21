@@ -1,18 +1,21 @@
 import express from "express";
-const bodyParser = require("body-parser");
 import path from "path";
-const axios = require("axios");
-require("dotenv").config();
-const session = require("express-session");
+import bodyParser from "body-parser";
+import axios from "axios";
+import session from "express-session";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 
-
 // 🔐 Session middleware
 app.use(session({
-  secret: process.env.SESSION_SECRET || "pilgram_secret",
+  secret: process.env.SESSIONs_SECRET || "pilgram_secret",
   resave: false,
   saveUninitialized: true
 }));
