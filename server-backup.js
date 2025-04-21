@@ -8,6 +8,8 @@ const session = require("express-session");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+
+
 // 🔐 Session middleware
 app.use(session({
   secret: process.env.SESSION_SECRET || "pilgram_secret",
@@ -52,12 +54,9 @@ app.post("/logout", (req, res) => {
   });
 });
 
-app.get("/dashboard", requireAuth, (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "dashboard.html"));
-});
-
+// Serve dashboard.html at the root URL
 app.get("/", (req, res) => {
-  res.redirect("/dashboard");
+  res.sendFile(path.join(__dirname, "public/views/dashboard.html"));
 });
 
 app.get("/reset-login", (req, res) => {
@@ -95,33 +94,6 @@ async function sendTelegramNotification(order) {
   }
 }
 
-// 🛒 Shoppy polling
-let shoppyOrders = [];
-
-async function fetchShoppyOrders() {
-  try {
-    const response = await axios.get("https://shoppy.gg/api/v1/orders", {
-      headers: { Authorization: process.env.SHOPPY_API_KEY }
-    });
-
-    const newOrders = response.data.filter(o => !shoppyOrders.find(p => p.id === o.id));
-    if (newOrders.length) {
-      console.log(`🆕 ${newOrders.length} new Shoppy orders detected.`);
-      for (const order of newOrders) await sendTelegramNotification(order);
-    }
-
-    shoppyOrders = response.data;
-  } catch (err) {
-    console.error("Error fetching Shoppy orders:", err.message);
-  }
-}
-
-setInterval(fetchShoppyOrders, 2 * 60 * 1000);
-fetchShoppyOrders();
-
-app.get("/api/orders", (req, res) => {
-  res.json(shoppyOrders);
-});
 
 app.post("/webhook/shoppy", async (req, res) => {
   const order = req.body;
@@ -225,10 +197,9 @@ app.get('/api/sales-data', (req, res) => {
 });
 
 // 🚀 Launch
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+app.listen(process.env.PORT || 10000, '0.0.0.0', () => {
+  console.log(`🚀 Server running at http://localhost:${process.env.PORT || 10000}`);
 });
-
 
 
 // 🧠 Behavior tracking endpoint
@@ -253,3 +224,4 @@ app.post("/api/track-behavior", (req, res) => {
 app.get("/api/user-activity", (req, res) => {
   res.json(userActivityLog.slice(-50)); // Limit to last 50 entries
 });
+

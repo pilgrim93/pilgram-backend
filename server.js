@@ -1,6 +1,6 @@
-const express = require("express");
+import express from "express";
 const bodyParser = require("body-parser");
-const path = require("path");
+import path from "path";
 const axios = require("axios");
 require("dotenv").config();
 const session = require("express-session");
@@ -18,10 +18,10 @@ app.use(session({
 }));
 
 // 📦 Middleware
-app.use("/public", express.static(path.join(__dirname, "public")));
-app.use(express.static(path.join(__dirname, "public")));
-app.use("/styles", express.static(path.join(__dirname, "styles")));
-app.use("/views", express.static(path.join(__dirname, "views")));
+app.use("/public", express.static(path.join(path.dirname(fileURLToPath(import.meta.url)), "public")));
+app.use(express.static(path.join(path.dirname(fileURLToPath(import.meta.url)), "public")));
+app.use("/styles", express.static(path.join(path.dirname(fileURLToPath(import.meta.url)), "styles")));
+app.use("/views", express.static(path.join(path.dirname(fileURLToPath(import.meta.url)), "views")));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
@@ -35,7 +35,7 @@ function requireAuth(req, res, next) {
 
 // 🧠 Routes
 app.get("/login", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "login.html"));
+  res.sendFile(path.join(path.dirname(fileURLToPath(import.meta.url)), "views", "login.html"));
 });
 
 app.post("/login", (req, res) => {
@@ -56,7 +56,7 @@ app.post("/logout", (req, res) => {
 
 // Serve dashboard.html at the root URL
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/views/dashboard.html"));
+  res.sendFile(path.join(path.dirname(fileURLToPath(import.meta.url)), "public/views/dashboard.html"));
 });
 
 app.get("/reset-login", (req, res) => {
@@ -143,7 +143,7 @@ app.get("/api/traffic-stats", async (req, res) => {
 
 
 app.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+  res.sendFile(path.join(path.dirname(fileURLToPath(import.meta.url)), 'public', 'dashboard.html'));
 });
 
 // --- Dummy Orders ---
