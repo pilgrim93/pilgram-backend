@@ -135,10 +135,6 @@ async function populateOrdersTable(data = null) {
   });
 }
 
-
-fetchShoppyOrders();                              // Fetch on server start
-setInterval(fetchShoppyOrders, 10 * 60 * 1000);    // Refresh every 2 minutes
-
 // API endpoint to serve orders to frontend
 app.get('/api/orders', (req, res) => {
   res.json(shoppyOrders);
@@ -153,6 +149,10 @@ app.post("/webhook/shoppy", async (req, res) => {
   await sendTelegramNotification(order);
   res.sendStatus(200);
 });
+
+fetchShoppyOrders();                              // Fetch on server start
+setInterval(fetchShoppyOrders, 10 * 60 * 1000);    // Refresh every 2 minutes
+
 
 // 📊 Google Analytics
 const { BetaAnalyticsDataClient } = require('@google-analytics/data');
