@@ -104,24 +104,31 @@ async function fetchShoppyOrders() {
       headers: { Authorization: process.env.SHOPPY_API_KEY }
     });
 
-    const newOrders = response.data.filter(o => !shoppyOrders.find(p => p.id === o.id));
-    if (newOrders.length) {
-      console.log(`🆕 ${newOrders.length} new Shoppy orders detected.`);
-      for (const order of newOrders) await sendTelegramNotification(order);
-    }
+    shoppyOrders = response.data.map(o => ({
+      order_id: o.id,
+      email: o.email || 'N/A',
+      product: o.product_title || 'Unknown',
+      price: o.price ? o.price / 100 : 0,
+      currency: o.currency || 'USD',
+      coupon_id: o.coupon_id || null,
+      created_at: o.created_at,
+      order_status: o.status || 'Completed'
+    }));
 
-    shoppyOrders = response.data;
+    console.log(`✅ Shoppy orders fetched: ${shoppyOrders.length}`);
   } catch (err) {
-    console.error("Error fetching Shoppy orders:", err.message);
+    console.error("❌ Error fetching Shoppy orders:", err.message);
   }
 }
 
-setInterval(fetchShoppyOrders, 2 * 60 * 1000);
-fetchShoppyOrders();
+fetchShoppyOrders();                              // Fetch on server start
+setInterval(fetchShoppyOrders, 10 * 60 * 1000);    // Refresh every 2 minutes
 
-app.get("/api/orders", (req, res) => {
+// API endpoint to serve orders to frontend
+app.get('/api/orders', (req, res) => {
   res.json(shoppyOrders);
 });
+
 
 app.post("/webhook/shoppy", async (req, res) => {
   const order = req.body;

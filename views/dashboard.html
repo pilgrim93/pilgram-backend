@@ -1559,40 +1559,7 @@ updateTrafficSourcesChart('all');
             }
         }
 
-        // Simulate a new order
-       let shoppyOrders = [];
 
-async function fetchShoppyOrders() {
-  try {
-    const response = await axios.get("https://shoppy.gg/api/v1/orders", {
-      headers: { Authorization: process.env.SHOPPY_API_KEY }
-    });
-
-    if (Array.isArray(response.data)) {
-      shoppyOrders = response.data.map(o => ({
-        order_id: o.id,
-        email: o.email || 'N/A',
-        product: o.product_title || 'Unknown',
-        price: o.price ? o.price / 100 : 0, // Assuming price is in cents
-        currency: o.currency || 'USD',
-        coupon_id: o.coupon_id || null,
-        created_at: o.created_at,
-        order_status: o.status || 'Completed'
-      }));
-      console.log(`✅ Loaded ${shoppyOrders.length} Shoppy orders`);
-    } else {
-      console.warn("⚠️ Shoppy API returned unexpected format:", response.data);
-    }
-  } catch (err) {
-    console.error("❌ Failed to fetch Shoppy orders:", err.message);
-  }
-  
-  
-}
-
-fetchShoppyOrders(); // run once on startup
-setInterval(fetchShoppyOrders, 600000); // update every 10m
-            
             // Add to mock data
             mockData.orders.unshift(newOrder);
             if (mockData.orders.length > 20) mockData.orders.pop(); // Keep length manageable
