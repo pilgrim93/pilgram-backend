@@ -1,5 +1,4 @@
 {
-
   "name": "dashboard",
   "version": "0.1.0",
   "private": true,
@@ -35,8 +34,8 @@
   },
   "scripts": {
     "dev": "refine dev",
-    "build": "tsc && refine build",
-    "start": "refine start",
+    "build": "cd client && npm install && npm run build",
+    "start": "node server.js",
     "refine": "refine"
   },
   "browserslist": {
@@ -54,9 +53,4 @@
   "refine": {
     "projectId": "9YLyJr-geC5t6-oQau2j"
   }
-  "scripts": {
-  "build": "cd client && npm install && npm run build",
-  "start": "node server.js"
 }
-
-
