@@ -856,8 +856,8 @@ async function populateOrdersTable(data = null) {
     
     let salesData, revenueData, trafficData;
 
-       document.addEventListener('DOMContentLoaded', async function () {
-       document.querySelector('[data-tab="sales"]').click();
+  document.addEventListener('DOMContentLoaded', async function () {
+  document.querySelector('[data-tab="sales"]').click();
   await initCharts();
   populateOrdersTable();
   populateActivityTable();
@@ -866,20 +866,13 @@ async function populateOrdersTable(data = null) {
   addSearchToTables();
   initRealTimeUpdates();
   setupEventListeners();
-  
+
   document.getElementById('save-notification-settings').addEventListener('click', function() {
     showNotification('Settings saved successfully!', 'Settings have been updated and will take effect immediately.');
   });
 
   document.getElementById('test-api').addEventListener('click', testApiConnection);
-
-
-document.querySelector('.logout-btn')?.addEventListener('click', () => {
-    fetch('/logout', { method: 'POST' })
-      .then(() => window.location.href = '/login.html')
-      .catch(err => console.error('Logout failed:', err));
-  });
-
+});
 
 const commonOptions = {
   responsive: true,
