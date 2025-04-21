@@ -777,7 +777,7 @@
                     { source: 'Instagram', visitors: 15, pageViews: 45, bounceRate: '45%', avgTime: '1:40' }
                 ]
             },
-            orders: [
+              orders: [
     {
       order_id: "A1B2C3",
       email: "john@example.com",
@@ -785,7 +785,8 @@
       price: 49.99,
       currency: "USD",
       coupon_id: "SPRING10",
-      created_at: "2025-04-17T10:45:00Z"
+      created_at: "2025-04-17T10:45:00Z",
+      order_status: "Completed"
     },
     {
       order_id: "D4E5F6",
@@ -794,7 +795,8 @@
       price: 89.99,
       currency: "USD",
       coupon_id: null,
-      created_at: "2025-04-16T13:20:00Z"
+      created_at: "2025-04-16T13:20:00Z",
+      order_status: "Pending"
     },
     {
       order_id: "G7H8I9",
@@ -803,12 +805,13 @@
       price: 14.99,
       currency: "USD",
       coupon_id: "WELCOME5",
-      created_at: "2025-04-15T08:30:00Z"
+      created_at: "2025-04-15T08:30:00Z",
+      order_status: "Refunded"
     }
   ]
 };
 
-// Update populateOrdersTable() to match Shoppy fields
+// Update populateOrdersTable() to include order_status
 async function populateOrdersTable(data = null) {
   const tbody = document.querySelector('#orders-table tbody');
   tbody.innerHTML = '';
@@ -834,20 +837,21 @@ async function populateOrdersTable(data = null) {
       <td>${order.currency} ${order.price.toFixed(2)}</td>
       <td>${new Date(order.created_at).toLocaleDateString()}</td>
       <td>${order.coupon_id || 'N/A'}</td>
+      <td>${order.order_status || 'Unknown'}</td>
     `;
     tbody.appendChild(row);
   });
 }
 
-// Update the Orders Table header in the HTML:
+// Update Orders Table header in HTML:
 // <th data-sort="id">Order ID</th>
 // <th data-sort="email">Customer Email</th>
 // <th data-sort="product">Product</th>
 // <th data-sort="price">Price</th>
 // <th data-sort="date">Date</th>
 // <th data-sort="status">Coupon ID</th>
-        
-        
+// <th data-sort="order_status">Status</th>
+    
     
     let salesData, revenueData, trafficData;
 
