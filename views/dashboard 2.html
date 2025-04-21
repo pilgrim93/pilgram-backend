@@ -892,313 +892,43 @@
    </div>
   </div>
   <script>
-// Main script to fix dashboard functionality
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
   // Tab functionality
-  const tabs = document.querySelectorAll('.nav-tabs .tab');
-  
-  tabs.forEach(tab => {
-    tab.addEventListener('click', function() {
-      // Remove active class from all tabs
-      tabs.forEach(t => t.classList.remove('active'));
-      
-      // Add active class to clicked tab
+  document.querySelectorAll('.nav-tabs .tab').forEach(tab => {
+    tab.addEventListener('click', function () {
+      document.querySelectorAll('.nav-tabs .tab').forEach(t => t.classList.remove('active'));
       this.classList.add('active');
-      
-      // Hide all sections
-      const sections = document.querySelectorAll('.dashboard-section');
-      sections.forEach(section => section.classList.remove('active'));
-      
-      // Show the selected section
-      const targetSection = this.getAttribute('data-tab');
-      const sectionToShow = document.querySelector(`.dashboard-section[data-tab-content="${targetSection}"]`);
-      
-      if (sectionToShow) {
-        sectionToShow.classList.add('active');
-      }
-    });
-  });
-  
-  // Logout button functionality
-  document.querySelector('.logout-btn')?.addEventListener('click', function() {
-    fetch('/logout', {
-      method: 'POST',
-      credentials: 'same-origin'
-    })
-    .then(response => {
-      if (response.ok) {
-        window.location.href = '/login';
-      }
-    })
-    .catch(error => {
-      console.error('Logout failed:', error);
+
+      const selectedTab = this.getAttribute('data-tab');
+      document.querySelectorAll('.dashboard-section').forEach(section => {
+        section.classList.remove('active');
+      });
+
+      document.querySelector(`[data-tab-content="${selectedTab}"]`)?.classList.add('active');
     });
   });
 
-  // CSV export logic - fixed version
-  window.exportTableToCSV = function(tableId, filename) {
-    const table = document.getElementById(tableId);
-    const rows = table.querySelectorAll('tr');
-    
-    // CSV content array
-    let csvContent = [];
-    
-    // Process each row
-    rows.forEach(row => {
-      const rowData = [];
-      // Get all cells in the row
-      const cells = row.querySelectorAll('th, td');
-      
-      cells.forEach(cell => {
-        // Escape quotes and add quotes around each cell value
-        let cellText = cell.innerText.replace(/"/g, '""');
-        rowData.push(`"${cellText}"`);
-      });
-      
-      // Add the row to CSV content
-      csvContent.push(rowData.join(','));
-    });
-    
-    // Join rows with proper newlines
-    const csvString = csvContent.join('\n');
-    
-    // Create download link
-    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+  // Logout button functionality (replace with real logic)
+  document.querySelector('.logout-btn')?.addEventListener('click', function () {
+    alert("Logging out... (implement redirect or session clear)");
+  });
+
+  // CSV export logic
+  window.exportTableToCSV = function (tableId, filename) {
+    const rows = document.querySelectorAll(`#${tableId} tr`);
+    const csv = [...rows].map(row =>
+      [...row.querySelectorAll('th, td')]
+        .map(cell => `"${cell.innerText.replace(/"/g, '""')}"`)
+        .join(',')
+    ).join('\\n');
+
+    const blob = new Blob([csv], { type: 'text/csv' });
     const link = document.createElement('a');
-    
-    // Create and click download link
-    if (navigator.msSaveBlob) { // IE 10+
-      navigator.msSaveBlob(blob, filename);
-    } else {
-      link.href = URL.createObjectURL(blob);
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
   };
-
-  // Load user activity data
-  function loadUserActivity() {
-    fetch('/api/user-activity')
-      .then(response => response.json())
-      .then(data => {
-        const tbody = document.querySelector('#activity-table tbody');
-        tbody.innerHTML = '';
-        
-        data.forEach(item => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${item.userId}</td>
-            <td>${item.email}</td>
-            <td>${item.action}</td>
-            <td>${item.page}</td>
-            <td>${item.timestamp}</td>
-          `;
-          tbody.appendChild(row);
-        });
-      })
-      .catch(error => console.error('Error loading user activity:', error));
-  }
-
-  // Load orders data
-  function loadOrders() {
-    fetch('/api/orders')
-      .then(response => response.json())
-      .then(data => {
-        const tbody = document.querySelector('#orders-table tbody');
-        tbody.innerHTML = '';
-        
-        data.forEach(order => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${order.id}</td>
-            <td>${order.email}</td>
-            <td>${order.product}</td>
-            <td>${order.price}</td>
-            <td>USD</td>
-            <td>N/A</td>
-            <td>${order.date}</td>
-            <td>${order.status}</td>
-          `;
-          tbody.appendChild(row);
-        });
-      })
-      .catch(error => console.error('Error loading orders:', error));
-  }
-
-  // Load traffic data
-  function loadTrafficData() {
-    fetch('/api/traffic')
-      .then(response => response.json())
-      .then(data => {
-        const tbody = document.querySelector('#traffic-table tbody');
-        tbody.innerHTML = '';
-        
-        // Process traffic sources
-        Object.entries(data.geo).forEach(([source, visitors]) => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${source}</td>
-            <td>${visitors}</td>
-            <td>${Math.round(visitors * 1.5)}</td>
-            <td>${Math.round(Math.random() * 40 + 25)}%</td>
-            <td>${Math.round(Math.random() * 150 + 30)}s</td>
-          `;
-          tbody.appendChild(row);
-        });
-        
-        // Initialize charts with the data
-        initializeCharts(data);
-      })
-      .catch(error => console.error('Error loading traffic data:', error));
-  }
-
-  // Initialize charts (simplified version)
-  function initializeCharts(data) {
-    // Sales chart
-    fetch('/api/sales-data')
-      .then(response => response.json())
-      .then(salesData => {
-        const salesCtx = document.getElementById('sales-chart').getContext('2d');
-        new Chart(salesCtx, {
-          type: 'line',
-          data: {
-            labels: salesData.labels,
-            datasets: [{
-              label: 'Sales',
-              data: salesData.data,
-              backgroundColor: 'rgba(76, 175, 80, 0.2)',
-              borderColor: 'rgba(76, 175, 80, 1)',
-              borderWidth: 2
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false
-          }
-        });
-      });
-    
-    // Traffic sources chart
-    const trafficCtx = document.getElementById('traffic-sources-chart').getContext('2d');
-    const sources = Object.keys(data.referrals);
-    const values = Object.values(data.referrals);
-    
-    new Chart(trafficCtx, {
-      type: 'pie',
-      data: {
-        labels: sources,
-        datasets: [{
-          data: values,
-          backgroundColor: [
-            'rgba(76, 175, 80, 0.7)',
-            'rgba(63, 81, 181, 0.7)',
-            'rgba(255, 193, 7, 0.7)'
-          ]
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
-      }
-    });
-  }
-
-  // Real-time toggle functionality
-  document.getElementById('real-time-toggle')?.addEventListener('change', function() {
-    const statusElem = document.getElementById('connection-status');
-    const pulseElem = statusElem.querySelector('.pulse');
-    
-    if (this.checked) {
-      statusElem.querySelector('span').textContent = 'Connected';
-      statusElem.querySelector('span').style.color = 'var(--accent-green)';
-      pulseElem.style.display = 'inline-block';
-      
-      // In a real implementation, you would set up a WebSocket connection here
-    } else {
-      statusElem.querySelector('span').textContent = 'Offline';
-      statusElem.querySelector('span').style.color = '';
-      pulseElem.style.display = 'none';
-    }
-  });
-
-  // Initialize search functionality
-  document.getElementById('orders-search')?.addEventListener('input', function() {
-    filterTable('orders-table', this.value);
-  });
-  
-  document.getElementById('activity-search')?.addEventListener('input', function() {
-    filterTable('activity-table', this.value);
-  });
-  
-  document.getElementById('traffic-search')?.addEventListener('input', function() {
-    filterTable('traffic-table', this.value);
-  });
-
-  // Table filter function
-  function filterTable(tableId, query) {
-    const table = document.getElementById(tableId);
-    const rows = table.querySelectorAll('tbody tr');
-    
-    query = query.toLowerCase();
-    
-    rows.forEach(row => {
-      let found = false;
-      const cells = row.querySelectorAll('td');
-      
-      cells.forEach(cell => {
-        if (cell.textContent.toLowerCase().includes(query)) {
-          found = true;
-        }
-      });
-      
-      row.style.display = found ? '' : 'none';
-    });
-  }
-  
-  // Initialize data
-  loadUserActivity();
-  loadOrders();
-  loadTrafficData();
-  
-  // Date filter functionality
-  document.getElementById('apply-date-filter')?.addEventListener('click', function() {
-    const startDate = document.getElementById('start-date').value;
-    const endDate = document.getElementById('end-date').value;
-    
-    // Show notification for now (in a real implementation, you would refetch data with these dates)
-    showNotification('Date Filter Applied', `Filtering data from ${startDate} to ${endDate}`);
-  });
 });
-
-// Notification functions
-function showNotification(title, message) {
-  const notification = document.getElementById('notification-toast');
-  const notificationHeader = notification.querySelector('.notification-header strong');
-  const notificationContent = document.getElementById('notification-content');
-  
-  notificationHeader.textContent = title;
-  notificationContent.textContent = message;
-  
-  notification.style.display = 'block';
-  
-  // Auto-hide after 5 seconds
-  setTimeout(() => {
-    closeNotification();
-  }, 5000);
-}
-
-function closeNotification() {
-  document.getElementById('notification-toast').style.display = 'none';
-}
-
-// Allow chart type changes
-function updateTrafficChartType(type) {
-  // This would rebuild the chart with the new type
-  // In a real implementation, you would destroy and recreate the chart
-  showNotification('Chart Updated', `Changed traffic chart to ${type} type`);
-}
 </script>
 
  </body>
