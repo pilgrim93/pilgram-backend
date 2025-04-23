@@ -910,7 +910,7 @@ document.addEventListener("DOMContentLoaded", function() {
       sections.forEach(section => section.classList.remove('active'));
       
       // Show the selected section
-      const targetSection = this.getAttribute('data-tab');
+      const targetSection = this.getAttribute('data-tab-content');
       const sectionToShow = document.querySelector(`.dashboard-section[data-tab-content="${targetSection}"]`);
       
       if (sectionToShow) {
@@ -918,6 +918,19 @@ document.addEventListener("DOMContentLoaded", function() {
       }
     });
   });
+  
+  // Add this inside your DOMContentLoaded event handler
+document.querySelector('.export-btn[onclick*="orders-table"]').addEventListener('click', function() {
+  exportTableToCSV('orders-table', 'orders-data.csv');
+});
+
+document.querySelector('.export-btn[onclick*="activity-table"]').addEventListener('click', function() {
+  exportTableToCSV('activity-table', 'user-activity.csv');
+});
+
+document.querySelector('.export-btn[onclick*="traffic-table"]').addEventListener('click', function() {
+  exportTableToCSV('traffic-table', 'traffic-data.csv');
+});
   
   // Logout button functionality
   document.querySelector('.logout-btn')?.addEventListener('click', function() {
@@ -935,48 +948,6 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
-  // CSV export logic - fixed version
-  window.exportTableToCSV = function(tableId, filename) {
-    const table = document.getElementById(tableId);
-    const rows = table.querySelectorAll('tr');
-    
-    // CSV content array
-    let csvContent = [];
-    
-    // Process each row
-    rows.forEach(row => {
-      const rowData = [];
-      // Get all cells in the row
-      const cells = row.querySelectorAll('th, td');
-      
-      cells.forEach(cell => {
-        // Escape quotes and add quotes around each cell value
-        let cellText = cell.innerText.replace(/"/g, '""');
-        rowData.push(`"${cellText}"`);
-      });
-      
-      // Add the row to CSV content
-      csvContent.push(rowData.join(','));
-    });
-    
-    // Join rows with proper newlines
-    const csvString = csvContent.join('\n');
-    
-    // Create download link
-    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    
-    // Create and click download link
-    if (navigator.msSaveBlob) { // IE 10+
-      navigator.msSaveBlob(blob, filename);
-    } else {
-      link.href = URL.createObjectURL(blob);
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  };
 
   // Load user activity data
   function loadUserActivity() {
@@ -1179,6 +1150,51 @@ document.addEventListener("DOMContentLoaded", function() {
     showNotification('Date Filter Applied', `Filtering data from ${startDate} to ${endDate}`);
   });
 });
+
+  // CSV export logic - fixed version
+  window.exportTableToCSV = function(tableId, filename) {
+    const table = document.getElementById(tableId);
+    const rows = table.querySelectorAll('tr');
+    
+    // CSV content array
+    let csvContent = [];
+    
+    // Process each row
+    rows.forEach(row => {
+      const rowData = [];
+      // Get all cells in the row
+      const cells = row.querySelectorAll('th, td');
+      
+      cells.forEach(cell => {
+        // Escape quotes and add quotes around each cell value
+        let cellText = cell.innerText.replace(/"/g, '""');
+        rowData.push(`"${cellText}"`);
+      });
+      
+      // Add the row to CSV content
+      csvContent.push(rowData.join(','));
+    });
+    
+    // Join rows with proper newlines
+    const csvString = csvContent.join('\n');
+    
+    // Create download link
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    
+    // Create and click download link
+    if (navigator.msSaveBlob) { // IE 10+
+      navigator.msSaveBlob(blob, filename);
+    } else {
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+  
+  
 
 // Notification functions
 function showNotification(title, message) {
