@@ -1152,7 +1152,7 @@ document.querySelector('.export-btn[onclick*="traffic-table"]').addEventListener
 });
 
   // CSV export logic - fixed version
-  window.exportTableToCSV = function(tableId, filename) {
+  function exportTableToCSV = function(tableId, filename) {
     const table = document.getElementById(tableId);
     const rows = table.querySelectorAll('tr');
     
@@ -1223,6 +1223,27 @@ function updateTrafficChartType(type) {
   // In a real implementation, you would destroy and recreate the chart
   showNotification('Chart Updated', `Changed traffic chart to ${type} type`);
 }
+
+<script>
+  // Tab switching
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      // Remove active class from all tabs
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+
+      // Hide all sections
+      document.querySelectorAll('.dashboard-section').forEach(section =>
+        section.classList.remove('active')
+      );
+
+      // Activate clicked tab and show corresponding section
+      tab.classList.add('active');
+      const target = tab.getAttribute('data-tab');
+      document.querySelector(`[data-tab-content="${target}"]`).classList.add('active');
+    });
+  });
+</script>
+
 </script>
 
  </body>
