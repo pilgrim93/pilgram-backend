@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Admin Dashboard - Shopify Integration</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
@@ -31,55 +31,71 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
         
         body {
             background-color: var(--main-bg);
             color: var(--text-primary);
-            padding: 20px;
+            padding: 12px;
+            min-height: 100vh;
         }
         
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+            gap: 10px;
         }
         
         .logo {
-            height: 40px;
+            height: 30px;
+            max-width: 120px;
+            object-fit: contain;
         }
         
         .logout-btn {
             background-color: var(--accent-yellow);
             color: #000;
-            padding: 8px 16px;
+            padding: 6px 12px;
             border: none;
             border-radius: 20px;
             cursor: pointer;
             font-weight: bold;
+            font-size: 14px;
+            white-space: nowrap;
         }
         
         .nav-tabs {
             display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 30px;
+            gap: 8px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding-bottom: 10px;
+        }
+        
+        .nav-tabs::-webkit-scrollbar {
+            display: none;
         }
         
         .tab {
             background-color: transparent;
             color: var(--text-primary);
-            padding: 12px 24px;
+            padding: 10px 16px;
             border: 2px solid var(--accent-border);
             border-radius: 25px;
             cursor: pointer;
             font-weight: bold;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             transition: all 0.3s ease;
+            white-space: nowrap;
+            font-size: 14px;
         }
         
         .tab.active {
@@ -88,12 +104,12 @@
         }
         
         .tab-icon {
-            font-size: 18px;
+            font-size: 16px;
         }
         
         .dashboard-section {
             display: none;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
         
         .dashboard-section.active {
@@ -101,41 +117,37 @@
         }
         
         .section-title {
-            font-size: 28px;
-            margin-bottom: 20px;
+            font-size: 24px;
+            margin-bottom: 16px;
         }
         
         .charts-container {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 20px;
-        }
-        
-        @media (min-width: 768px) {
-            .charts-container {
-                grid-template-columns: 1fr 1fr;
-            }
+            gap: 16px;
         }
         
         .chart-container {
             background-color: var(--card-bg);
             border-radius: 10px;
-            padding: 20px;
-            height: 300px;
+            padding: 16px;
+            height: 250px;
             position: relative;
         }
         
         .chart-title {
-            font-size: 18px;
+            font-size: 16px;
             margin-bottom: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
         }
         
         .chart-controls {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
         
         .chart-control {
@@ -145,6 +157,7 @@
             border: 1px solid var(--accent-border);
             border-radius: 5px;
             cursor: pointer;
+            font-size: 14px;
         }
         
         canvas {
@@ -155,16 +168,17 @@
         .table-container {
             background-color: var(--card-bg);
             border-radius: 10px;
-            padding: 20px;
-            overflow-x: auto;
-            margin-top: 20px;
+            padding: 16px;
+            margin-top: 16px;
         }
         
         .table-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         
         .table-title {
@@ -178,22 +192,32 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 600px;
         }
         
         th, td {
             text-align: left;
-            padding: 12px;
+            padding: 12px 8px;
             border-bottom: 1px solid var(--accent-border);
+            font-size: 14px;
         }
         
         th {
             cursor: pointer;
             position: relative;
+            white-space: nowrap;
         }
         
         th:hover {
@@ -212,6 +236,7 @@
             border: 1px solid var(--accent-border);
             border-radius: 5px;
             color: white;
+            font-size: 14px;
         }
         
         .loader {
@@ -236,6 +261,144 @@
             border-radius: 5px;
             margin: 10px 0;
             display: none;
+            font-size: 14px;
+        }
+        
+        .date-range-picker {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .date-input-container {
+            flex: 1;
+            min-width: 140px;
+        }
+        
+        .date-input-container label {
+            display: block;
+            margin-bottom: 5px;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .date-input-container input {
+            width: 100%;
+            padding: 8px;
+            background-color: var(--button-bg);
+            border: 1px solid var(--accent-border);
+            border-radius: 5px;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .date-button-container {
+            display: flex;
+            align-items: flex-end;
+            min-width: 80px;
+        }
+        
+        .date-button-container button {
+            width: 100%;
+            padding: 8px 15px;
+            background-color: var(--accent-green);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 480px) {
+            body {
+                padding: 8px;
+            }
+            
+            .header {
+                margin-bottom: 16px;
+            }
+            
+            .logo {
+                height: 24px;
+            }
+            
+            .nav-tabs {
+                margin-bottom: 16px;
+                gap: 6px;
+            }
+            
+            .tab {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+            
+            .section-title {
+                font-size: 20px;
+                margin-bottom: 12px;
+            }
+            
+            .chart-container {
+                height: 200px;
+                padding: 12px;
+            }
+            
+            .chart-title {
+                font-size: 14px;
+            }
+            
+            .table-container {
+                padding: 12px;
+            }
+            
+            .table-title {
+                font-size: 16px;
+            }
+            
+            th, td {
+                padding: 10px 6px;
+                font-size: 13px;
+            }
+        }
+        
+        /* Tablet and larger screens */
+        @media (min-width: 768px) {
+            .charts-container {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .nav-tabs {
+                justify-content: center;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            body {
+                padding: 20px;
+            }
+            
+            .header {
+                margin-bottom: 30px;
+            }
+            
+            .logo {
+                height: 40px;
+            }
+            
+            .tab {
+                padding: 12px 24px;
+            }
+            
+            .section-title {
+                font-size: 28px;
+                margin-bottom: 20px;
+            }
+            
+            .chart-container {
+                height: 300px;
+                padding: 20px;
+            }
         }
     </style>
 </head>
@@ -266,17 +429,17 @@
     <div class="error-message" id="error-message"></div>
 
     <!-- Date Range Picker -->
-    <div class="date-range-picker" style="display: flex; gap: 10px; margin-bottom: 20px;">
-        <div class="date-input-container" style="flex: 1;">
-            <label for="start-date" style="display: block; margin-bottom: 5px; color: white;">Start Date</label>
-            <input type="date" id="start-date" style="width: 100%; padding: 8px; background-color: var(--button-bg); border: 1px solid var(--accent-border); border-radius: 5px; color: white;">
+    <div class="date-range-picker">
+        <div class="date-input-container">
+            <label for="start-date">Start Date</label>
+            <input type="date" id="start-date">
         </div>
-        <div class="date-input-container" style="flex: 1;">
-            <label for="end-date" style="display: block; margin-bottom: 5px; color: white;">End Date</label>
-            <input type="date" id="end-date" style="width: 100%; padding: 8px; background-color: var(--button-bg); border: 1px solid var(--accent-border); border-radius: 5px; color: white;">
+        <div class="date-input-container">
+            <label for="end-date">End Date</label>
+            <input type="date" id="end-date">
         </div>
-        <div class="date-button-container" style="display: flex; align-items: flex-end;">
-            <button id="apply-date-filter" style="padding: 8px 15px; background-color: var(--accent-green); color: white; border: none; border-radius: 5px; cursor: pointer;">Apply</button>
+        <div class="date-button-container">
+            <button id="apply-date-filter">Apply</button>
         </div>
     </div>
 
@@ -320,28 +483,30 @@
                 <button class="export-btn" onclick="exportTableToCSV('orders-table', 'orders-data.csv')">Export CSV</button>
             </div>
             <input type="text" class="search-input" id="orders-search" placeholder="Search orders...">
-            <table id="orders-table">
-                <thead>
-                    <tr>
-                        <th>Order ID</th>
-                        <th>Email</th>
-                        <th>Product</th>
-                        <th>Price</th>
-                        <th>Currency</th>
-                        <th>Coupon ID</th>
-                        <th>Date Created</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="orders-tbody">
-                    <!-- Will be populated via Shopify API -->
-                </tbody>
-            </table>
+            <div class="table-wrapper">
+                <table id="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Email</th>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Currency</th>
+                            <th>Coupon ID</th>
+                            <th>Date Created</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-tbody">
+                        <!-- Will be populated via API -->
+                    </tbody>
+                </table>
+            </div>
             <div class="loader" id="orders-loader"></div>
         </div>
     </div>
 
-    <!-- Traffic Section (Google Analytics) -->
+    <!-- Traffic Section -->
     <div class="dashboard-section" id="traffic-section" data-tab-content="traffic">
         <h2 class="section-title">Traffic Analysis</h2>
         <div class="charts-container">
@@ -370,6 +535,7 @@
     // Chart.js Configuration
     Chart.defaults.color = '#FFFFFF';
     Chart.defaults.borderColor = '#444444';
+    Chart.defaults.font.size = window.innerWidth < 480 ? 12 : 14;
 
     // Initialize charts
     let salesChart, revenueChart, trafficChart, sessionsChart;
@@ -495,11 +661,9 @@
         // Process revenue by product
         const revenueByProduct = {};
         orders.forEach(order => {
-            order.line_items?.forEach(item => {
-                const productName = item.title;
-                revenueByProduct[productName] = (revenueByProduct[productName] || 0) + 
-                    (parseFloat(item.price) * item.quantity);
-            });
+            const productName = order.product;
+            const price = parseFloat(order.price.replace('$', '')) || 0;
+            revenueByProduct[productName] = (revenueByProduct[productName] || 0) + price;
         });
         
         const products = Object.keys(revenueByProduct);
@@ -542,17 +706,26 @@
 
     // Update traffic charts
     function updateTrafficCharts(data) {
+        // Handle empty data
+        if (!data || !data.referrals || Object.keys(data.referrals).length === 0) {
+            showError('No traffic data available');
+            return;
+        }
+        
         // Traffic sources chart
         const trafficCtx = document.getElementById('traffic-sources-chart').getContext('2d');
         
         if (trafficChart) trafficChart.destroy();
         
+        const sources = Object.keys(data.referrals);
+        const values = Object.values(data.referrals);
+        
         trafficChart = new Chart(trafficCtx, {
             type: 'pie',
             data: {
-                labels: data.sources.map(s => s.source),
+                labels: sources,
                 datasets: [{
-                    data: data.sources.map(s => s.sessions),
+                    data: values,
                     backgroundColor: [
                         '#4CAF50', '#3F51B5', '#FFC107', '#F44336', '#9C27B0'
                     ]
@@ -569,13 +742,20 @@
         
         if (sessionsChart) sessionsChart.destroy();
         
+        // Create mock sessions data if not available
+        const dates = sources.map((_, i) => {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            return date.toLocaleDateString();
+        });
+        
         sessionsChart = new Chart(sessionsCtx, {
             type: 'line',
             data: {
-                labels: data.sessions.map(s => s.date),
+                labels: dates,
                 datasets: [{
                     label: 'Sessions',
-                    data: data.sessions.map(s => s.count),
+                    data: values,
                     borderColor: '#3F51B5',
                     tension: 0.4
                 }]
@@ -649,20 +829,22 @@
             if (!response.ok) throw new Error('Failed to fetch user activity');
             
             const activities = await response.json();
-            const tbody = document.getElementById('activity-table').querySelector('tbody');
-            tbody.innerHTML = '';
-            
-            activities.forEach(activity => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${activity.userId}</td>
-                    <td>${activity.email}</td>
-                    <td>${activity.action}</td>
-                    <td>${activity.page}</td>
-                    <td>${new Date(activity.timestamp).toLocaleString()}</td>
-                `;
-                tbody.appendChild(row);
-            });
+            const tbody = document.getElementById('activity-table')?.querySelector('tbody');
+            if (tbody) {
+                tbody.innerHTML = '';
+                
+                activities.forEach(activity => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${activity.userId}</td>
+                        <td>${activity.email}</td>
+                        <td>${activity.action}</td>
+                        <td>${activity.page}</td>
+                        <td>${new Date(activity.timestamp).toLocaleString()}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
         } catch (error) {
             showError('Failed to load user activity: ' + error.message);
         }
@@ -679,6 +861,15 @@
         
         // Load initial data
         loadTabData('sales');
+    });
+
+    // Handle window resize for better chart rendering
+    window.addEventListener('resize', () => {
+        Chart.defaults.font.size = window.innerWidth < 480 ? 12 : 14;
+        if (salesChart) salesChart.resize();
+        if (revenueChart) revenueChart.resize();
+        if (trafficChart) trafficChart.resize();
+        if (sessionsChart) sessionsChart.resize();
     });
     </script>
 </body>
