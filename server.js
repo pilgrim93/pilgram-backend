@@ -33,11 +33,11 @@ app.use(
 
 // Serve dashboard.html directly
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/views/dashboard.html"));
+  res.sendFile(path.join(__dirname, "views/dashboard.html"));
 });
 
 app.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(path.dirname(fileURLToPath(import.meta.url)), 'public', 'dashboard.html'));
+  res.sendFile(path.join(path.dirname(fileURLToPath(import.meta.url)), 'views', 'dashboard.html'));
 });
 
 // Helper function for Shoppy API calls
