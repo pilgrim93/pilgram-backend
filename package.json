@@ -5,6 +5,7 @@
   "type": "module",
   "dependencies": {
     "@ant-design/icons": "^5.5.1",
+    "@google-analytics/data": "^5.1.0",
     "@refinedev/antd": "^5.44.0",
     "@refinedev/cli": "^2.16.21",
     "@refinedev/core": "^4.47.1",
@@ -38,10 +39,9 @@
     "vite": "^4.3.1"
   },
   "scripts": {
-      "start": "node server.js",
+    "start": "node server.js",
     "dev": "refine dev",
     "build": "cd client && npm install && npm run build",
-    "start": "node server.js",
     "refine": "refine"
   },
   "browserslist": {
