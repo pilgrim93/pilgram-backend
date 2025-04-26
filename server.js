@@ -297,6 +297,37 @@ app.use((req, res) => {
   `);
 });
 
+
+app.get("/", (req, res) => {
+  // First check in the expected location
+  const primaryPath = path.join(__dirname, "public", "views", "dashboard.html");
+  
+  // Also check in the root of the public directory
+  const alternatePath = path.join(__dirname, "public", "dashboard.html");
+  
+  if (fs.existsSync(primaryPath)) {
+    res.sendFile(primaryPath);
+  } else if (fs.existsSync(alternatePath)) {
+    res.sendFile(alternatePath);
+  } else {
+    // For debugging, show what's actually in the directories
+    const publicContents = fs.existsSync(path.join(__dirname, "public")) 
+      ? fs.readdirSync(path.join(__dirname, "public"))
+      : [];
+    
+    const viewsContents = fs.existsSync(path.join(__dirname, "public", "views"))
+      ? fs.readdirSync(path.join(__dirname, "public", "views"))
+      : [];
+    
+    res.status(404).send(`
+      <h1>Dashboard Not Found</h1>
+      <p>Looking for: ${primaryPath}</p>
+      <p>Public directory contents: ${publicContents.join(', ')}</p>
+      <p>Views directory contents: ${viewsContents.join(', ')}</p>
+    `);
+  }
+});
+
 // 🚀 Launch
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
