@@ -31,14 +31,38 @@ app.use(
   })
 );
 
-// Serve dashboard.html directly
+// Fix: Serve dashboard from the correct location
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/views/dashboard.html"));
+  // Try to find dashboard.html in different locations
+  const locations = [
+    path.join(__dirname, "public", "views", "dashboard.html"),
+    path.join(__dirname, "public", "dashboard.html"),
+    path.join(__dirname, "dashboard.html")
+  ];
+  
+  for (const location of locations) {
+    try {
+      if (require('fs').existsSync(location)) {
+        console.log(`Serving dashboard from: ${location}`);
+        return res.sendFile(location);
+      }
+    } catch (err) {
+      console.error(`Error checking file at ${location}:`, err);
+    }
+  }
+  
+  // If no file found, send an error with details
+  res.status(404).send(`
+    <h1>Dashboard Not Found</h1>
+    <p>Searched in:</p>
+    <ul>
+      ${locations.map(loc => `<li>${loc}</li>`).join('')}
+    </ul>
+    <p>Current directory: ${__dirname}</p>
+  `);
 });
 
-app.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(path.dirname(fileURLToPath(import.meta.url)), 'public', 'dashboard.html'));
-});
+// Remove redundant /dashboard route since we're using "/" for the dashboard
 
 // Helper function for Shoppy API calls
 async function callShoppyAPI(endpoint, method = 'GET', data = null) {
@@ -238,7 +262,43 @@ app.post("/webhook/shoppy", async (req, res) => {
   res.sendStatus(200);
 });
 
+// Debug route to check file structure
+app.get('/debug/files', (req, res) => {
+  const fs = require('fs');
+  const publicDir = path.join(__dirname, 'public');
+  
+  try {
+    const files = fs.readdirSync(publicDir);
+    let fileStructure = `<h2>Public Directory Structure:</h2>`;
+    fileStructure += `<pre>${JSON.stringify(files, null, 2)}</pre>`;
+    
+    if (fs.existsSync(path.join(publicDir, 'views'))) {
+      const viewsFiles = fs.readdirSync(path.join(publicDir, 'views'));
+      fileStructure += `<h3>Views Directory:</h3>`;
+      fileStructure += `<pre>${JSON.stringify(viewsFiles, null, 2)}</pre>`;
+    }
+    
+    res.send(fileStructure);
+  } catch (err) {
+    res.send(`Error reading directory structure: ${err.message}`);
+  }
+});
+
+// 404 handler for debugging
+app.use((req, res) => {
+  res.status(404).send(`
+    <h1>404 - Not Found</h1>
+    <p>The requested URL was not found: ${req.url}</p>
+    <p>Try visiting:</p>
+    <ul>
+      <li><a href="/">/</a> - Dashboard</li>
+      <li><a href="/debug/files">/debug/files</a> - Check file structure</li>
+    </ul>
+  `);
+});
+
 // 🚀 Launch
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
+  console.log(`Current directory: ${__dirname}`);
 });
