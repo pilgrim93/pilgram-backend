@@ -2,9 +2,10 @@
   "name": "dashboard",
   "version": "0.1.0",
   "private": true,
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
     "@ant-design/icons": "^5.5.1",
+    "body-parser": "^1.20.0",
     "@google-analytics/data": "^5.1.0",
     "@refinedev/antd": "^5.44.0",
     "@refinedev/cli": "^2.16.21",
