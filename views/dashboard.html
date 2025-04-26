@@ -1,17 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
- <head>
-  <meta charset="utf-8"/>
-  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <title>
-   Admin Dashboard
-  </title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js">
-  </script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js">
-  </script>
-  <style>
-   :root {
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Shopify Integration</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'GA_MEASUREMENT_ID');
+    </script>
+    <style>
+        :root {
             --main-bg: #111111;
             --card-bg: #222222;
             --accent-green: #4CAF50;
@@ -196,24 +200,8 @@
             background-color: rgba(255, 255, 255, 0.1);
         }
         
-        th.sorted-asc::after {
-            content: "▲";
-            position: absolute;
-            right: 8px;
-        }
-        
-        th.sorted-desc::after {
-            content: "▼";
-            position: absolute;
-            right: 8px;
-        }
-        
         tbody tr:hover {
             background-color: rgba(255, 255, 255, 0.05);
-        }
-        
-        .hover-highlight {
-            background-color: rgba(255, 255, 255, 0.1) !important;
         }
         
         .search-input {
@@ -226,1023 +214,472 @@
             color: white;
         }
         
-        .notification {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: var(--accent-green);
+        .loader {
+            border: 4px solid var(--card-bg);
+            border-top: 4px solid var(--accent-green);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            background-color: #ff5252;
             color: white;
-            padding: 15px;
+            padding: 10px;
             border-radius: 5px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            margin: 10px 0;
             display: none;
-            z-index: 1000;
-            max-width: 300px;
         }
-        
-        .notification-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 5px;
-        }
-        
-        .notification-close {
-            cursor: pointer;
-            font-weight: bold;
-        }
-        
-        .pulse {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: red;
-            margin-left: 10px;
-            animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0% {
-                transform: scale(0.8);
-                opacity: 0.8;
-            }
-            50% {
-                transform: scale(1.2);
-                opacity: 1;
-            }
-            100% {
-                transform: scale(0.8);
-                opacity: 0.8;
-            }
-        }
-        
-        .data-status {
-            font-size: 12px;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            margin-top: 10px;
-        }
-        
-        .data-status.live span {
-            color: var(--accent-green);
-        }
-        
-        .settings-panel {
-            background-color: var(--card-bg);
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-        
-        .settings-title {
-            font-size: 18px;
-            margin-bottom: 15px;
-        }
-        
-        .settings-form {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-        }
-        
-        @media (min-width: 768px) {
-            .settings-form {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 8px;
-            background-color: var(--button-bg);
-            border: 1px solid var(--accent-border);
-            border-radius: 5px;
-            color: white;
-        }
-        
-        .save-btn {
-            background-color: var(--accent-green);
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            grid-column: 1 / -1;
-            justify-self: start;
-        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <img src="/logo1.png" alt="Logo" class="logo">
+        <button class="logout-btn" id="logout-btn">Logout</button>
+    </div>
 
-        /* Toggle switch for real-time updates */
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
-            margin-left: 10px;
-        }
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+        <button class="tab active" data-tab="sales">
+            <span class="tab-icon">💰</span> Sales
+        </button>
+        <button class="tab" data-tab="behavior">
+            <span class="tab-icon">👥</span> User Behavior
+        </button>
+        <button class="tab" data-tab="traffic">
+            <span class="tab-icon">🌐</span> Traffic
+        </button>
+        <button class="tab" data-tab="settings">
+            <span class="tab-icon">⚙️</span> Settings
+        </button>
+    </div>
 
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
+    <!-- Error Message Display -->
+    <div class="error-message" id="error-message"></div>
 
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 24px;
-        }
+    <!-- Date Range Picker -->
+    <div class="date-range-picker" style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <div class="date-input-container" style="flex: 1;">
+            <label for="start-date" style="display: block; margin-bottom: 5px; color: white;">Start Date</label>
+            <input type="date" id="start-date" style="width: 100%; padding: 8px; background-color: var(--button-bg); border: 1px solid var(--accent-border); border-radius: 5px; color: white;">
+        </div>
+        <div class="date-input-container" style="flex: 1;">
+            <label for="end-date" style="display: block; margin-bottom: 5px; color: white;">End Date</label>
+            <input type="date" id="end-date" style="width: 100%; padding: 8px; background-color: var(--button-bg); border: 1px solid var(--accent-border); border-radius: 5px; color: white;">
+        </div>
+        <div class="date-button-container" style="display: flex; align-items: flex-end;">
+            <button id="apply-date-filter" style="padding: 8px 15px; background-color: var(--accent-green); color: white; border: none; border-radius: 5px; cursor: pointer;">Apply</button>
+        </div>
+    </div>
 
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
+    <!-- Sales Section -->
+    <div class="dashboard-section active" id="sales-section" data-tab-content="sales">
+        <h2 class="section-title">Sales Charts</h2>
+        <div class="charts-container">
+            <!-- Sales Over Time Chart -->
+            <div class="chart-container">
+                <div class="chart-title">
+                    <span>Sales Over Time</span>
+                    <div class="chart-controls">
+                        <select class="chart-control" id="sales-chart-type">
+                            <option value="line">Line</option>
+                            <option value="bar">Bar</option>
+                        </select>
+                    </div>
+                </div>
+                <canvas id="sales-chart"></canvas>
+            </div>
 
-        input:checked + .slider {
-            background-color: var(--accent-green);
-        }
+            <!-- Revenue by Product Chart -->
+            <div class="chart-container">
+                <div class="chart-title">
+                    <span>Revenue Breakdown</span>
+                    <div class="chart-controls">
+                        <select class="chart-control" id="revenue-chart-type">
+                            <option value="bar">Bar</option>
+                            <option value="pie">Pie</option>
+                        </select>
+                    </div>
+                </div>
+                <canvas id="revenue-chart"></canvas>
+            </div>
+        </div>
 
-        input:checked + .slider:before {
-            transform: translateX(26px);
-        }
+        <!-- Orders Table -->
+        <div class="table-container">
+            <div class="table-header">
+                <h3 class="table-title">Recent Orders</h3>
+                <button class="export-btn" onclick="exportTableToCSV('orders-table', 'orders-data.csv')">Export CSV</button>
+            </div>
+            <input type="text" class="search-input" id="orders-search" placeholder="Search orders...">
+            <table id="orders-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Email</th>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Currency</th>
+                        <th>Coupon ID</th>
+                        <th>Date Created</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="orders-tbody">
+                    <!-- Will be populated via Shopify API -->
+                </tbody>
+            </table>
+            <div class="loader" id="orders-loader"></div>
+        </div>
+    </div>
 
-        .real-time-toggle {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-  </style>
- </head>
- <body>
-  <!-- Header -->
-  <div class="header">
-   <img alt="Logo" class="logo" src="/logo1.png"/>
-   <button class="logout-btn">
-    Logout
-   </button>
-  </div>
-  <!-- Navigation Tabs -->
-  <div class="nav-tabs">
-   <button class="tab active" data-tab="sales">
-    <span class="tab-icon">
-     💰
-    </span>
-    Sales
-   </button>
-   <button class="tab" data-tab="behavior">
-    <span class="tab-icon">
-     👥
-    </span>
-    User Behavior
-   </button>
-   <button class="tab" data-tab="traffic">
-    <span class="tab-icon">
-     🌐
-    </span>
-    Traffic
-   </button>
-   <button class="tab" data-tab="settings">
-    <span class="tab-icon">
-     ⚙️
-    </span>
-    Settings
-   </button>
-  </div>
-  <!-- Real-time Toggle -->
-  <div class="real-time-toggle">
-   <span>
-    Real-time Updates
-   </span>
-   <label class="toggle-switch">
-    <input id="real-time-toggle" type="checkbox"/>
-    <span class="slider">
-    </span>
-   </label>
-   <div class="data-status" id="connection-status">
-    <span>
-     Offline
-    </span>
-    <div class="pulse" style="display: none;">
+    <!-- Traffic Section (Google Analytics) -->
+    <div class="dashboard-section" id="traffic-section" data-tab-content="traffic">
+        <h2 class="section-title">Traffic Analysis</h2>
+        <div class="charts-container">
+            <!-- Traffic Sources Chart -->
+            <div class="chart-container">
+                <div class="chart-title">
+                    <span>Traffic Sources</span>
+                </div>
+                <canvas id="traffic-sources-chart"></canvas>
+            </div>
+
+            <!-- Sessions Over Time Chart -->
+            <div class="chart-container">
+                <div class="chart-title">
+                    <span>Sessions Over Time</span>
+                </div>
+                <canvas id="sessions-chart"></canvas>
+            </div>
+        </div>
     </div>
-   </div>
-  </div>
-  <!-- Date Range Picker -->
-  <div class="date-range-picker" style="display: flex; gap: 10px; margin-bottom: 20px;">
-   <div class="date-input-container" style="flex: 1;">
-    <label for="start-date" style="display: block; margin-bottom: 5px; color: white;">
-     Start Date
-    </label>
-    <input id="start-date" style="width: 100%; padding: 8px; background-color: var(--button-bg); border: 1px solid var(--accent-border); border-radius: 5px; color: white;" type="date"/>
-   </div>
-   <div class="date-input-container" style="flex: 1;">
-    <label for="end-date" style="display: block; margin-bottom: 5px; color: white;">
-     End Date
-    </label>
-    <input id="end-date" style="width: 100%; padding: 8px; background-color: var(--button-bg); border: 1px solid var(--accent-border); border-radius: 5px; color: white;" type="date"/>
-   </div>
-   <div class="date-button-container" style="display: flex; align-items: flex-end;">
-    <button id="apply-date-filter" style="padding: 8px 15px; background-color: var(--accent-green); color: white; border: none; border-radius: 5px; cursor: pointer;">
-     Apply
-    </button>
-   </div>
-  </div>
-  <!-- Sales Section -->
-  <div class="dashboard-section active" data-tab-content="sales" id="sales-section">
-   <h2 class="section-title">
-    Sales Charts
-   </h2>
-   <div class="charts-container">
-    <!-- Sales Over Time Chart -->
-    <div class="chart-container">
-     <div class="chart-title">
-      <span>
-       Sales Over Time
-      </span>
-      <div class="chart-controls">
-       <select class="chart-control" id="sales-chart-type">
-        <option value="line">
-         Line
-        </option>
-        <option value="bar">
-         Bar
-        </option>
-       </select>
-       <select class="chart-control" id="sales-time-view">
-        <option value="daily">
-         Daily
-        </option>
-        <option value="weekly">
-         Weekly
-        </option>
-        <option value="monthly">
-         Monthly
-        </option>
-       </select>
-      </div>
-     </div>
-     <canvas id="sales-chart">
-     </canvas>
-    </div>
-    <!-- Revenue by Product Chart -->
-    <div class="chart-container">
-     <div class="chart-title">
-      <span>
-       Revenue Breakdown
-      </span>
-      <div class="chart-controls">
-       <select class="chart-control" id="revenue-chart-type">
-        <option value="bar">
-         Bar
-        </option>
-        <option value="pie">
-         Pie
-        </option>
-        <option value="line">
-         Line
-        </option>
-       </select>
-       <select class="chart-control" id="revenue-view">
-        <option value="product">
-         By Product
-        </option>
-        <option value="category">
-         By Category
-        </option>
-       </select>
-      </div>
-     </div>
-     <canvas id="revenue-chart">
-     </canvas>
-    </div>
-    <!-- Sessions Chart -->
-    <div class="chart-container">
-     <div class="chart-title">
-      <span>
-       User Sessions
-      </span>
-      <div class="chart-controls">
-       <select class="chart-control" id="sessions-time-view">
-        <option value="daily">
-         Daily
-        </option>
-        <option value="weekly">
-         Weekly
-        </option>
-        <option value="monthly">
-         Monthly
-        </option>
-       </select>
-      </div>
-     </div>
-     <canvas id="sessions-chart">
-     </canvas>
-    </div>
-    <!-- Conversion Rate Chart -->
-    <div class="chart-container">
-     <div class="chart-title">
-      <span>
-       Conversion Rate
-      </span>
-      <div class="chart-controls">
-       <select class="chart-control" id="conversion-time-view">
-        <option value="daily">
-         Daily
-        </option>
-        <option value="weekly">
-         Weekly
-        </option>
-        <option value="monthly">
-         Monthly
-        </option>
-       </select>
-      </div>
-     </div>
-     <canvas id="conversion-chart">
-     </canvas>
-    </div>
-   </div>
-   <!-- Orders Table -->
-   <div class="table-container">
-    <div class="table-header">
-     <h3 class="table-title">
-      Recent Orders
-     </h3>
-     <button class="export-btn" onclick="exportTableToCSV('orders-table', 'orders-data.csv')">
-      Export CSV
-     </button>
-    </div>
-    <input class="search-input" id="orders-search" placeholder="Search orders..." type="text"/>
-    <table id="orders-table">
-     <thead>
-      <tr>
-       <th>
-        Order ID
-       </th>
-       <th>
-        Email
-       </th>
-       <th>
-        Product
-       </th>
-       <th>
-        Price
-       </th>
-       <th>
-        Currency
-       </th>
-       <th>
-        Coupon ID
-       </th>
-       <th>
-        Date Created
-       </th>
-       <th>
-        Status
-       </th>
-      </tr>
-     </thead>
-     <tbody>
-     </tbody>
-    </table>
-   </div>
-  </div>
-  <!-- User Behavior Section -->
-  <div class="dashboard-section" data-tab-content="behavior" id="behavior-section">
-   <h2 class="section-title">
-    User Behavior
-   </h2>
-   <div class="charts-container">
-    <!-- New vs Returning Users -->
-    <div class="chart-container">
-     <div class="chart-title">
-      <span>
-       New vs Returning Users
-      </span>
-      <div class="chart-controls">
-      </div>
-     </div>
-     <canvas id="users-chart">
-     </canvas>
-    </div>
-    <!-- User Engagement Chart -->
-    <div class="chart-container">
-     <div class="chart-title">
-      <span>
-       User Engagement
-      </span>
-      <div class="chart-controls">
-       <select class="chart-control" id="engagement-time-view">
-        <option value="daily">
-         Daily
-        </option>
-        <option value="weekly">
-         Weekly
-        </option>
-        <option value="monthly">
-         Monthly
-        </option>
-       </select>
-      </div>
-     </div>
-     <canvas id="engagement-chart">
-     </canvas>
-    </div>
-   </div>
-   <!-- User Activity Table -->
-   <div class="table-container">
-    <div class="table-header">
-     <h3 class="table-title">
-      User Activity Log
-     </h3>
-     <button class="export-btn" onclick="exportTableToCSV('activity-table', 'user-activity.csv')">
-      Export CSV
-     </button>
-    </div>
-    <input class="search-input" id="activity-search" placeholder="Search activities..." type="text"/>
-    <table id="activity-table">
-     <thead>
-      <tr>
-       <th data-sort="userId">
-        User ID
-       </th>
-       <th data-sort="email">
-        Email
-       </th>
-       <th data-sort="action">
-        Action
-       </th>
-       <th data-sort="page">
-        Page
-       </th>
-       <th data-sort="timestamp">
-        Timestamp
-       </th>
-      </tr>
-     </thead>
-     <tbody>
-      <!-- Will be populated by JavaScript -->
-     </tbody>
-    </table>
-   </div>
-  </div>
-  <!-- Traffic Section -->
-  <div class="dashboard-section" data-tab-content="traffic" id="traffic-section">
-   <h2 class="section-title">
-    Traffic Analysis
-   </h2>
-   <div class="charts-container">
-    <!-- Traffic Sources Chart -->
-    <div class="chart-container">
-     <div class="chart-title">
-      <span>
-       Traffic Sources
-      </span>
-      <div class="chart-controls">
-       <select class="chart-control" id="traffic-chart-type" onchange="updateTrafficChartType(this.value)">
-        <option value="pie">
-         Pie
-        </option>
-        <option value="bar">
-         Bar
-        </option>
-       </select>
-       <select class="chart-control" id="traffic-filter">
-        <option value="all">
-         All Time
-        </option>
-        <option value="month">
-         This Month
-        </option>
-        <option value="week">
-         This Week
-        </option>
-       </select>
-      </div>
-     </div>
-     <canvas id="traffic-sources-chart">
-     </canvas>
-    </div>
-    <!-- Traffic Over Time Chart -->
-    <div class="chart-container">
-     <div class="chart-title">
-      <span>
-       Traffic Over Time
-      </span>
-      <div class="chart-controls">
-       <select class="chart-control" id="traffic-time-view">
-        <option value="daily">
-         Daily
-        </option>
-        <option value="weekly">
-         Weekly
-        </option>
-        <option value="monthly">
-         Monthly
-        </option>
-       </select>
-      </div>
-     </div>
-     <canvas id="traffic-time-chart">
-     </canvas>
-    </div>
-   </div>
-   <!-- Traffic Details Table -->
-   <div class="table-container">
-    <div class="table-header">
-     <h3 class="table-title">
-      Traffic Details
-     </h3>
-     <button class="export-btn" onclick="exportTableToCSV('traffic-table', 'traffic-data.csv')">
-      Export CSV
-     </button>
-    </div>
-    <input class="search-input" id="traffic-search" placeholder="Search traffic data..." type="text"/>
-    <table id="traffic-table">
-     <thead>
-      <tr>
-       <th data-sort="source">
-        Source
-       </th>
-       <th data-sort="visitors">
-        Visitors
-       </th>
-       <th data-sort="pageViews">
-        Page Views
-       </th>
-       <th data-sort="bounceRate">
-        Bounce Rate
-       </th>
-       <th data-sort="avgTime">
-        Avg. Time on Site
-       </th>
-      </tr>
-     </thead>
-     <tbody>
-      <!-- Will be populated by JavaScript -->
-     </tbody>
-    </table>
-   </div>
-  </div>
-  <!-- Settings Section -->
-  <div class="dashboard-section" data-tab-content="settings" id="settings-section">
-   <h2 class="section-title">
-    Settings
-   </h2>
-   <div class="settings-panel">
-    <h3 class="settings-title">
-     Notification Settings
-    </h3>
-    <div class="settings-form">
-     <div class="form-group">
-      <label for="telegram-enabled">
-       Enable Telegram Notifications
-      </label>
-      <select class="settings-input" id="telegram-enabled">
-       <option value="true">
-        Enabled
-       </option>
-       <option value="false">
-        Disabled
-       </option>
-      </select>
-     </div>
-     <div class="form-group">
-      <label for="notification-events">
-       Events to Notify
-      </label>
-      <select class="settings-input" id="notification-events" multiple="">
-       <option selected="" value="new_order">
-        New Orders
-       </option>
-       <option value="refund">
-        Refunds
-       </option>
-       <option value="high_traffic">
-        High Traffic
-       </option>
-       <option value="low_stock">
-        Low Stock
-       </option>
-      </select>
-     </div>
-     <button class="save-btn" id="save-notification-settings">
-      Save Settings
-     </button>
-    </div>
-   </div>
-   <div class="settings-panel">
-    <h3 class="settings-title">
-     API Settings
-    </h3>
-    <div class="settings-form">
-     <div class="form-group">
-      <label for="api-test">
-       Test API Connection
-      </label>
-      <button class="save-btn" id="test-api">
-       Test Connection
-      </button>
-     </div>
-     <div class="form-group">
-      <label for="api-status">
-       API Status
-      </label>
-      <input id="api-status" readonly="" type="text" value="Not Tested"/>
-     </div>
-    </div>
-   </div>
-  </div>
-  <!-- Notification Toast -->
-  <div class="notification" id="notification-toast">
-   <div class="notification-header">
-    <strong>
-     New Order!
-    </strong>
-    <span class="notification-close" onclick="closeNotification()">
-     ×
-    </span>
-   </div>
-   <div class="notification-content" id="notification-content">
-    New order received from customer@example.com
-   </div>
-  </div>
-  <script>
-// Main script to fix dashboard functionality
-document.addEventListener("DOMContentLoaded", function() {
-  // Tab functionality
-  const tabs = document.querySelectorAll('.nav-tabs .tab');
-  
-  tabs.forEach(tab => {
-    tab.addEventListener('click', function() {
-      // Remove active class from all tabs
-      tabs.forEach(t => t.classList.remove('active'));
-      
-      // Add active class to clicked tab
-      this.classList.add('active');
-      
-      // Hide all sections
-      const sections = document.querySelectorAll('.dashboard-section');
-      sections.forEach(section => section.classList.remove('active'));
-      
-      // Show the selected section
-      const targetSection = this.getAttribute('data-tab-content');
-      const sectionToShow = document.querySelector(`.dashboard-section[data-tab-content="${targetSection}"]`);
-      
-      if (sectionToShow) {
-        sectionToShow.classList.add('active');
-      }
+
+    <script>
+    // API Configuration
+    const API_URL = '';  // Same domain, so no need for full URL
+
+    // Chart.js Configuration
+    Chart.defaults.color = '#FFFFFF';
+    Chart.defaults.borderColor = '#444444';
+
+    // Initialize charts
+    let salesChart, revenueChart, trafficChart, sessionsChart;
+
+    // Tab functionality
+    document.querySelectorAll('.nav-tabs .tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.nav-tabs .tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            const selectedTab = this.getAttribute('data-tab');
+            document.querySelectorAll('.dashboard-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            document.querySelector(`[data-tab-content="${selectedTab}"]`)?.classList.add('active');
+            
+            // Load data for selected tab
+            loadTabData(selectedTab);
+        });
     });
-  });
-  
-  // Add this inside your DOMContentLoaded event handler
-document.querySelector('.export-btn[onclick*="orders-table"]').addEventListener('click', function() {
-  exportTableToCSV('orders-table', 'orders-data.csv');
-});
 
-document.querySelector('.export-btn[onclick*="activity-table"]').addEventListener('click', function() {
-  exportTableToCSV('activity-table', 'user-activity.csv');
-});
-
-document.querySelector('.export-btn[onclick*="traffic-table"]').addEventListener('click', function() {
-  exportTableToCSV('traffic-table', 'traffic-data.csv');
-});
-  
-  // Logout button functionality
-  document.querySelector('.logout-btn')?.addEventListener('click', function() {
-    fetch('/logout', {
-      method: 'POST',
-      credentials: 'same-origin'
-    })
-    .then(response => {
-      if (response.ok) {
-        window.location.href = '/login';
-      }
-    })
-    .catch(error => {
-      console.error('Logout failed:', error);
-    });
-  });
-
-
-  // Load user activity data
-  function loadUserActivity() {
-    fetch('/api/user-activity')
-      .then(response => response.json())
-      .then(data => {
-        const tbody = document.querySelector('#activity-table tbody');
-        tbody.innerHTML = '';
-        if (!data || data.length === 0) {
- 			 tbody.innerHTML = `
-   			 <tr>
-     			 <td colspan="8" style="text-align: center; font-style: italic;">No orders yet</td>
-    			</tr>
- 				`;
- 				 return; // stop further processing
-				}
-
-        data.forEach(item => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${item.userId}</td>
-            <td>${item.email}</td>
-            <td>${item.action}</td>
-            <td>${item.page}</td>
-            <td>${item.timestamp}</td>
-          `;
-          tbody.appendChild(row);
-        });
-      })
-      .catch(error => console.error('Error loading user activity:', error));
-  }
-
-  // Load orders data
-  function loadOrders() {
-    fetch('/api/orders')
-      .then(response => response.json())
-      .then(data => {
-        const tbody = document.querySelector('#orders-table tbody');
-        tbody.innerHTML = '';
-        
-        data.forEach(order => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${order.id}</td>
-            <td>${order.email}</td>
-            <td>${order.product}</td>
-            <td>${order.price}</td>
-            <td>USD</td>
-            <td>N/A</td>
-            <td>${order.date}</td>
-            <td>${order.status}</td>
-          `;
-          tbody.appendChild(row);
-        });
-      })
-      .catch(error => console.error('Error loading orders:', error));
-  }
-
-  // Load traffic data
-  function loadTrafficData() {
-    fetch('/api/traffic')
-      .then(response => response.json())
-      .then(data => {
-        const tbody = document.querySelector('#traffic-table tbody');
-        tbody.innerHTML = '';
-        
-        // Process traffic sources
-        Object.entries(data.geo).forEach(([source, visitors]) => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${source}</td>
-            <td>${visitors}</td>
-            <td>${Math.round(visitors * 1.5)}</td>
-            <td>${Math.round(Math.random() * 40 + 25)}%</td>
-            <td>${Math.round(Math.random() * 150 + 30)}s</td>
-          `;
-          tbody.appendChild(row);
-        });
-        
-        // Initialize charts with the data
-        initializeCharts(data);
-      })
-      .catch(error => console.error('Error loading traffic data:', error));
-  }
-
-  // Initialize charts (simplified version)
-  function initializeCharts(data) {
-    // Sales chart
-    fetch('/api/sales-data')
-      .then(response => response.json())
-      .then(salesData => {
-        const salesCtx = document.getElementById('sales-chart').getContext('2d');
-        new Chart(salesCtx, {
-          type: 'line',
-          data: {
-            labels: salesData.labels,
-            datasets: [{
-              label: 'Sales',
-              data: salesData.data,
-              backgroundColor: 'rgba(76, 175, 80, 0.2)',
-              borderColor: 'rgba(76, 175, 80, 1)',
-              borderWidth: 2
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false
-          }
-        });
-      });
-    
-    // Traffic sources chart
-    const trafficCtx = document.getElementById('traffic-sources-chart').getContext('2d');
-    const sources = Object.keys(data.referrals);
-    const values = Object.values(data.referrals);
-    
-    new Chart(trafficCtx, {
-      type: 'pie',
-      data: {
-        labels: sources,
-        datasets: [{
-          data: values,
-          backgroundColor: [
-            'rgba(76, 175, 80, 0.7)',
-            'rgba(63, 81, 181, 0.7)',
-            'rgba(255, 193, 7, 0.7)'
-          ]
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
-      }
-    });
-  }
-
-  // Real-time toggle functionality
-  document.getElementById('real-time-toggle')?.addEventListener('change', function() {
-    const statusElem = document.getElementById('connection-status');
-    const pulseElem = statusElem.querySelector('.pulse');
-    
-    if (this.checked) {
-      statusElem.querySelector('span').textContent = 'Connected';
-      statusElem.querySelector('span').style.color = 'var(--accent-green)';
-      pulseElem.style.display = 'inline-block';
-      
-      // In a real implementation, you would set up a WebSocket connection here
-    } else {
-      statusElem.querySelector('span').textContent = 'Offline';
-      statusElem.querySelector('span').style.color = '';
-      pulseElem.style.display = 'none';
+    // Error handling function
+    function showError(message) {
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+        }, 5000);
     }
-  });
 
-  // Initialize search functionality
-  document.getElementById('orders-search')?.addEventListener('input', function() {
-    filterTable('orders-table', this.value);
-  });
-  
-  document.getElementById('activity-search')?.addEventListener('input', function() {
-    filterTable('activity-table', this.value);
-  });
-  
-  document.getElementById('traffic-search')?.addEventListener('input', function() {
-    filterTable('traffic-table', this.value);
-  });
-
-  // Table filter function
-  function filterTable(tableId, query) {
-    const table = document.getElementById(tableId);
-    const rows = table.querySelectorAll('tbody tr');
-    
-    query = query.toLowerCase();
-    
-    rows.forEach(row => {
-      let found = false;
-      const cells = row.querySelectorAll('td');
-      
-      cells.forEach(cell => {
-        if (cell.textContent.toLowerCase().includes(query)) {
-          found = true;
+    // Fetch orders
+    async function fetchOrders() {
+        const loader = document.getElementById('orders-loader');
+        const tbody = document.getElementById('orders-tbody');
+        
+        loader.style.display = 'block';
+        tbody.innerHTML = '';
+        
+        try {
+            const response = await fetch('/api/orders');
+            if (!response.ok) throw new Error('Failed to fetch orders');
+            
+            const orders = await response.json();
+            populateOrdersTable(orders);
+            updateSalesChart(orders);
+            updateRevenueChart(orders);
+            
+        } catch (error) {
+            showError('Failed to load orders: ' + error.message);
+        } finally {
+            loader.style.display = 'none';
         }
-      });
-      
-      row.style.display = found ? '' : 'none';
-    });
-  }
-  
-  // Initialize data
-  loadUserActivity();
-  loadOrders();
-  loadTrafficData();
-  
-  // Date filter functionality
-  document.getElementById('apply-date-filter')?.addEventListener('click', function() {
-    const startDate = document.getElementById('start-date').value;
-    const endDate = document.getElementById('end-date').value;
-    
-    // Show notification for now (in a real implementation, you would refetch data with these dates)
-    showNotification('Date Filter Applied', `Filtering data from ${startDate} to ${endDate}`);
-  });
-});
-
-  // CSV export logic - fixed version
-  function exportTableToCSV = function(tableId, filename) {
-    const table = document.getElementById(tableId);
-    const rows = table.querySelectorAll('tr');
-    
-    // CSV content array
-    let csvContent = [];
-    
-    // Process each row
-    rows.forEach(row => {
-      const rowData = [];
-      // Get all cells in the row
-      const cells = row.querySelectorAll('th, td');
-      
-      cells.forEach(cell => {
-        // Escape quotes and add quotes around each cell value
-        let cellText = cell.innerText.replace(/"/g, '""');
-        rowData.push(`"${cellText}"`);
-      });
-      
-      // Add the row to CSV content
-      csvContent.push(rowData.join(','));
-    });
-    
-    // Join rows with proper newlines
-    const csvString = csvContent.join('\n');
-    
-    // Create download link
-    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    
-    // Create and click download link
-    if (navigator.msSaveBlob) { // IE 10+
-      navigator.msSaveBlob(blob, filename);
-    } else {
-      link.href = URL.createObjectURL(blob);
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
     }
-  };
-  
-  
 
-// Notification functions
-function showNotification(title, message) {
-  const notification = document.getElementById('notification-toast');
-  const notificationHeader = notification.querySelector('.notification-header strong');
-  const notificationContent = document.getElementById('notification-content');
-  
-  notificationHeader.textContent = title;
-  notificationContent.textContent = message;
-  
-  notification.style.display = 'block';
-  
-  // Auto-hide after 5 seconds
-  setTimeout(() => {
-    closeNotification();
-  }, 5000);
-}
+    // Populate orders table
+    function populateOrdersTable(orders) {
+        const tbody = document.getElementById('orders-tbody');
+        tbody.innerHTML = '';
+        
+        orders.forEach(order => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${order.id}</td>
+                <td>${order.email || 'N/A'}</td>
+                <td>${order.product}</td>
+                <td>${order.price}</td>
+                <td>${order.currency}</td>
+                <td>${order.coupon_id || '-'}</td>
+                <td>${order.date}</td>
+                <td>${order.status}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
 
-function closeNotification() {
-  document.getElementById('notification-toast').style.display = 'none';
-}
+    // Update sales chart using sales-data endpoint
+    async function updateSalesChart() {
+        const ctx = document.getElementById('sales-chart').getContext('2d');
+        
+        try {
+            const response = await fetch('/api/sales-data');
+            const salesData = await response.json();
+            
+            if (salesChart) salesChart.destroy();
+            
+            salesChart = new Chart(ctx, {
+                type: document.getElementById('sales-chart-type').value,
+                data: {
+                    labels: salesData.labels,
+                    datasets: [{
+                        label: 'Sales',
+                        data: salesData.data,
+                        borderColor: '#4CAF50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Revenue'
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (error) {
+            showError('Failed to load sales chart: ' + error.message);
+        }
+    }
 
-// Allow chart type changes
-function updateTrafficChartType(type) {
-  // This would rebuild the chart with the new type
-  // In a real implementation, you would destroy and recreate the chart
-  showNotification('Chart Updated', `Changed traffic chart to ${type} type`);
-}
+    // Update revenue chart
+    function updateRevenueChart(orders) {
+        const ctx = document.getElementById('revenue-chart').getContext('2d');
+        
+        // Process revenue by product
+        const revenueByProduct = {};
+        orders.forEach(order => {
+            order.line_items?.forEach(item => {
+                const productName = item.title;
+                revenueByProduct[productName] = (revenueByProduct[productName] || 0) + 
+                    (parseFloat(item.price) * item.quantity);
+            });
+        });
+        
+        const products = Object.keys(revenueByProduct);
+        const values = products.map(product => revenueByProduct[product]);
+        
+        if (revenueChart) revenueChart.destroy();
+        
+        revenueChart = new Chart(ctx, {
+            type: document.getElementById('revenue-chart-type').value,
+            data: {
+                labels: products,
+                datasets: [{
+                    label: 'Revenue by Product',
+                    data: values,
+                    backgroundColor: [
+                        '#4CAF50', '#3F51B5', '#FFC107', '#F44336', '#9C27B0'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
 
+    // Fetch traffic data
+    async function fetchTrafficData() {
+        try {
+            const response = await fetch('/api/traffic');
+            if (!response.ok) throw new Error('Failed to fetch traffic data');
+            
+            const data = await response.json();
+            updateTrafficCharts(data);
+            
+        } catch (error) {
+            showError('Failed to load traffic data: ' + error.message);
+        }
+    }
 
-  // Tab switching
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      // Remove active class from all tabs
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    // Update traffic charts
+    function updateTrafficCharts(data) {
+        // Traffic sources chart
+        const trafficCtx = document.getElementById('traffic-sources-chart').getContext('2d');
+        
+        if (trafficChart) trafficChart.destroy();
+        
+        trafficChart = new Chart(trafficCtx, {
+            type: 'pie',
+            data: {
+                labels: data.sources.map(s => s.source),
+                datasets: [{
+                    data: data.sources.map(s => s.sessions),
+                    backgroundColor: [
+                        '#4CAF50', '#3F51B5', '#FFC107', '#F44336', '#9C27B0'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+        
+        // Sessions chart
+        const sessionsCtx = document.getElementById('sessions-chart').getContext('2d');
+        
+        if (sessionsChart) sessionsChart.destroy();
+        
+        sessionsChart = new Chart(sessionsCtx, {
+            type: 'line',
+            data: {
+                labels: data.sessions.map(s => s.date),
+                datasets: [{
+                    label: 'Sessions',
+                    data: data.sessions.map(s => s.count),
+                    borderColor: '#3F51B5',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
 
-      // Hide all sections
-      document.querySelectorAll('.dashboard-section').forEach(section =>
-        section.classList.remove('active')
-      );
+    // Export table to CSV
+    function exportTableToCSV(tableId, filename) {
+        const table = document.getElementById(tableId);
+        const rows = table.querySelectorAll('tr');
+        const csv = [];
+        
+        for (let row of rows) {
+            const cells = row.querySelectorAll('th, td');
+            const rowData = Array.from(cells).map(cell => cell.textContent);
+            csv.push(rowData.join(','));
+        }
+        
+        const csvContent = 'data:text/csv;charset=utf-8,' + csv.join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
 
-      // Activate clicked tab and show corresponding section
-      tab.classList.add('active');
-      const target = tab.getAttribute('data-tab');
-      document.querySelector(`[data-tab-content="${target}"]`).classList.add('active');
+    // Event listeners
+    document.getElementById('apply-date-filter').addEventListener('click', fetchOrders);
+    document.getElementById('sales-chart-type').addEventListener('change', () => updateSalesChart());
+    document.getElementById('revenue-chart-type').addEventListener('change', () => fetchOrders());
+
+    // Search functionality
+    document.getElementById('orders-search').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('#orders-tbody tr');
+        
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
     });
-  });
-</script>
 
- </body>
+    // Load tab data
+    function loadTabData(tab) {
+        switch(tab) {
+            case 'sales':
+                fetchOrders();
+                updateSalesChart();
+                break;
+            case 'traffic':
+                fetchTrafficData();
+                break;
+            case 'behavior':
+                fetchUserActivity();
+                break;
+            // Add other tab data loading as needed
+        }
+    }
+    
+    // Fetch user activity
+    async function fetchUserActivity() {
+        try {
+            const response = await fetch('/api/user-activity');
+            if (!response.ok) throw new Error('Failed to fetch user activity');
+            
+            const activities = await response.json();
+            const tbody = document.getElementById('activity-table').querySelector('tbody');
+            tbody.innerHTML = '';
+            
+            activities.forEach(activity => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${activity.userId}</td>
+                    <td>${activity.email}</td>
+                    <td>${activity.action}</td>
+                    <td>${activity.page}</td>
+                    <td>${new Date(activity.timestamp).toLocaleString()}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        } catch (error) {
+            showError('Failed to load user activity: ' + error.message);
+        }
+    }
+
+    // Initialize
+    window.addEventListener('load', () => {
+        // Set default dates
+        const today = new Date();
+        const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+        
+        document.getElementById('end-date').value = today.toISOString().split('T')[0];
+        document.getElementById('start-date').value = thirtyDaysAgo.toISOString().split('T')[0];
+        
+        // Load initial data
+        loadTabData('sales');
+    });
+    </script>
+</body>
 </html>
