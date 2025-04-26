@@ -114,6 +114,20 @@ app.get('/debug/files', (req, res) => {
   }
 });
 
+app.get("/", (req, res) => {
+  // Check both locations
+  const viewsPath = path.join(__dirname, "views", "dashboard.html");
+  const publicViewsPath = path.join(__dirname, "public", "views", "dashboard.html");
+  
+  if (fs.existsSync(viewsPath)) {
+    res.sendFile(viewsPath);
+  } else if (fs.existsSync(publicViewsPath)) {
+    res.sendFile(publicViewsPath);
+  } else {
+    // Error handling...
+  }
+});
+
 // Copy all your other routes here...
 // (Keep all your existing API routes as they were)
 
