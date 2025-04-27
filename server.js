@@ -1,11 +1,15 @@
 // Updated server.js
 const express = require('express');
-const session = require('express-session'); // Add this import
+const session = require('express-session');
 const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
 const app = express();
 const PORT = process.env.PORT || 10000;
+
+// Your hardcoded credentials (replace with your actual credentials)
+const ADMIN_USERNAME = 'admin';  // Replace with your username
+const ADMIN_PASSWORD = 'password123';  // Replace with your password
 
 // Setup for Google API credentials if using GOOGLE_SERVICE_ACCOUNT_KEY
 if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
@@ -14,72 +18,35 @@ if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
   process.env.GOOGLE_APPLICATION_CREDENTIALS = keyPath;
 }
 
+// Middleware setup
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.urlencoded({ extended: true }));
 
-// Session middleware should be before routes
+// Session middleware
 app.use(session({
   secret: 'your_secret_key',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false } // Set to true if using HTTPS
+  cookie: { secure: false }
 }));
 
-// Middleware to check authentication
-function authMiddleware(req, res, next) {
-  // Allow access to login page and API endpoints without authentication
-  if (req.path === '/login' || 
-      req.path === '/login.html' || 
-      req.path === '/api/login' || 
-      req.path.startsWith('/static/') || 
-      req.path.startsWith('/assets/')) {
-    return next();
-  }
-  
-  // Check if user is logged in
-  if (req.session && req.session.loggedIn) {
-    return next();
-  }
-  
-  // Redirect to login page if not logged in
-  res.redirect('/login.html');
-}
+// Static files
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Apply authentication middleware BEFORE route definitions
-app.use(authMiddleware);
-
-// Serve login page
-app.get('/', (req, res) => {
-  if (req.session && req.session.loggedIn) {
+// Login route
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+  
+  // Check credentials
+  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    req.session.loggedIn = true;
     res.redirect('/dashboard.html');
   } else {
-    res.redirect('/login.html');
+    res.redirect('/login.html?error=invalid');
   }
 });
 
-// Serve dashboard page
-app.get('/dashboard', (req, res) => {
-  if (req.session && req.session.loggedIn) {
-    res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
-  } else {
-    res.redirect('/login.html');
-  }
-});
-
-// Login API endpoint
-app.post('/api/login', (req, res) => {
-  const { email, password } = req.body;
-  
-  // Replace with your actual authentication logic
-  if (email === 'admin@admin.com' && password === 'admin') {
-    req.session.loggedIn = true;
-    res.json({ success: true });
-  } else {
-    res.status(401).json({ success: false, message: 'Invalid credentials' });
-  }
-});
-
-// Logout API endpoint
+// Logout route
 app.post('/api/logout', (req, res) => {
   req.session.destroy((err) => {
     if (err) {
@@ -91,13 +58,26 @@ app.post('/api/logout', (req, res) => {
   });
 });
 
-// Shoppy Sales Data for Sales Chart
-app.get('/api/sales-data', async (req, res) => {
-  // Check authentication
-  if (!req.session || !req.session.loggedIn) {
-    return res.status(401).json({ error: 'Not authenticated' });
+// Root route
+app.get('/', (req, res) => {
+  if (req.session && req.session.loggedIn) {
+    res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+  } else {
+    res.redirect('/login.html');
   }
-  
+});
+
+// Protected routes middleware
+function requireAuth(req, res, next) {
+  if (req.session && req.session.loggedIn) {
+    next();
+  } else {
+    res.status(401).json({ error: 'Not authenticated' });
+  }
+}
+
+// Apply auth to API endpoints
+app.get('/api/sales-data', requireAuth, async (req, res) => {
   try {
     const response = await axios.get('https://shoppy.dev/api/orders', {
       headers: {
@@ -110,7 +90,7 @@ app.get('/api/sales-data', async (req, res) => {
     const salesData = {};
     orders.forEach(order => {
       const date = new Date(order.created_at).toISOString().split('T')[0];
-      salesData[date] = (salesData[date] || 0) + parseFloat(order.price);
+      salesData[date] = (salesData[date] || 0) + parseFloat(order.price || 0);
     });
 
     const labels = Object.keys(salesData).sort();
@@ -124,13 +104,7 @@ app.get('/api/sales-data', async (req, res) => {
   }
 });
 
-// Shoppy Traffic Data (Simulated)
-app.get('/api/traffic', async (req, res) => {
-  // Check authentication
-  if (!req.session || !req.session.loggedIn) {
-    return res.status(401).json({ error: 'Not authenticated' });
-  }
-  
+app.get('/api/traffic', requireAuth, async (req, res) => {
   try {
     const response = await axios.get('https://shoppy.dev/api/orders', {
       headers: {
@@ -162,6 +136,34 @@ app.get('/api/traffic', async (req, res) => {
   } catch (error) {
     console.error('Failed to fetch traffic data:', error.response?.data || error.message);
     res.status(500).send('Failed to fetch traffic data');
+  }
+});
+
+app.get('/api/orders', requireAuth, async (req, res) => {
+  try {
+    const response = await axios.get('https://shoppy.dev/api/orders', {
+      headers: {
+        Authorization: `Bearer ${process.env.SHOPPY_API_KEY}`
+      }
+    });
+    
+    const orders = response.data || [];
+    
+    const formattedOrders = orders.map(order => ({
+      id: order.id,
+      email: order.email || 'N/A',
+      product: order.product?.title || 'Unknown Product',
+      price: `$${(order.price || 0).toFixed(2)}`,
+      currency: order.currency || 'USD',
+      coupon_id: order.coupon_id || 'N/A',
+      date: new Date(order.created_at).toISOString().split('T')[0],
+      status: order.status || 'Unknown'
+    }));
+    
+    res.json(formattedOrders);
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    res.json([]);
   }
 });
 

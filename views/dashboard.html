@@ -895,6 +895,27 @@
         if (trafficChart) trafficChart.resize();
         if (sessionsChart) sessionsChart.resize();
     });
+    
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+    try {
+        const response = await fetch('/api/logout', { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            window.location.href = '/login.html';
+        } else {
+            showError('Logout failed. Please try again.');
+        }
+    } catch (error) {
+        console.error('Logout error:', error);
+        showError('An error occurred during logout.');
+    }
+});
     </script>
 </body>
 </html>
