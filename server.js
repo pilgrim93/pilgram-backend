@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 10000;
 
 // Your hardcoded credentials (replace with your actual credentials)
 const ADMIN_USERNAME = 'admin';  // Replace with your username
-const ADMIN_PASSWORD = 'password123';  // Replace with your password
+const ADMIN_PASSWORD = 'officialdre7';  // Replace with your password
 
 // Setup for Google API credentials if using GOOGLE_SERVICE_ACCOUNT_KEY
 if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
