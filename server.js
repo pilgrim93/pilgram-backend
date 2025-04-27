@@ -1,5 +1,6 @@
 // Updated server.js
 const express = require('express');
+const session = require('express-session'); // Add this import
 const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
@@ -16,48 +17,87 @@ if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Serve dashboard.html
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'login.html'));
-});
-
+// Session middleware should be before routes
 app.use(session({
   secret: 'your_secret_key',
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: false,
+  cookie: { secure: false } // Set to true if using HTTPS
 }));
-
-app.use(express.static('public')); // Assuming your html/css/js are in /public
 
 // Middleware to check authentication
 function authMiddleware(req, res, next) {
-  if (req.session && req.session.loggedIn) {
-    next();
-  } else {
-    if (req.path === '/login.html' || req.path.startsWith('/api/')) {
-      // Allow access to login page and API endpoints
-      next();
-    } else {
-      res.redirect('/login.html');
-    }
+  // Allow access to login page and API endpoints without authentication
+  if (req.path === '/login' || 
+      req.path === '/login.html' || 
+      req.path === '/api/login' || 
+      req.path.startsWith('/static/') || 
+      req.path.startsWith('/assets/')) {
+    return next();
   }
+  
+  // Check if user is logged in
+  if (req.session && req.session.loggedIn) {
+    return next();
+  }
+  
+  // Redirect to login page if not logged in
+  res.redirect('/login.html');
 }
 
+// Apply authentication middleware BEFORE route definitions
 app.use(authMiddleware);
 
-
-// Example logout
-app.post('/api/logout', (req, res) => {
-  req.session.destroy(() => {
+// Serve login page
+app.get('/', (req, res) => {
+  if (req.session && req.session.loggedIn) {
+    res.redirect('/dashboard.html');
+  } else {
     res.redirect('/login.html');
+  }
+});
+
+// Serve dashboard page
+app.get('/dashboard', (req, res) => {
+  if (req.session && req.session.loggedIn) {
+    res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+  } else {
+    res.redirect('/login.html');
+  }
+});
+
+// Login API endpoint
+app.post('/api/login', (req, res) => {
+  const { email, password } = req.body;
+  
+  // Replace with your actual authentication logic
+  if (email === 'admin@admin.com' && password === 'admin') {
+    req.session.loggedIn = true;
+    res.json({ success: true });
+  } else {
+    res.status(401).json({ success: false, message: 'Invalid credentials' });
+  }
+});
+
+// Logout API endpoint
+app.post('/api/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Session destruction error:', err);
+      res.status(500).json({ success: false });
+    } else {
+      res.json({ success: true });
+    }
   });
 });
 
-// Listen
-app.listen(3000, () => console.log('Server running'));
-
 // Shoppy Sales Data for Sales Chart
 app.get('/api/sales-data', async (req, res) => {
+  // Check authentication
+  if (!req.session || !req.session.loggedIn) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+  
   try {
     const response = await axios.get('https://shoppy.dev/api/orders', {
       headers: {
@@ -86,6 +126,11 @@ app.get('/api/sales-data', async (req, res) => {
 
 // Shoppy Traffic Data (Simulated)
 app.get('/api/traffic', async (req, res) => {
+  // Check authentication
+  if (!req.session || !req.session.loggedIn) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+  
   try {
     const response = await axios.get('https://shoppy.dev/api/orders', {
       headers: {
