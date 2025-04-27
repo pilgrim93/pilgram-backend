@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Admin Dashboard - Shopify Integration</title>
+    <title>Admin Dashboard</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <!-- Google Analytics -->
@@ -34,10 +34,15 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
         
+        html, body {
+            width: 100%;
+            overflow-x: hidden;
+        }
+        
         body {
             background-color: var(--main-bg);
             color: var(--text-primary);
-            padding: 12px;
+            padding: 10px;
             min-height: 100vh;
         }
         
@@ -45,13 +50,15 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             gap: 10px;
+            width: 100%;
+            overflow: hidden;
         }
         
         .logo {
-            height: 30px;
-            max-width: 120px;
+            height: 24px;
+            max-width: 100px;
             object-fit: contain;
         }
         
@@ -63,19 +70,21 @@
             border-radius: 20px;
             cursor: pointer;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 12px;
             white-space: nowrap;
         }
         
         .nav-tabs {
             display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
+            gap: 6px;
+            margin-bottom: 15px;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
             scrollbar-width: none;
             -ms-overflow-style: none;
-            padding-bottom: 10px;
+            padding: 0 0 10px 0;
+            width: 100%;
         }
         
         .nav-tabs::-webkit-scrollbar {
@@ -85,17 +94,18 @@
         .tab {
             background-color: transparent;
             color: var(--text-primary);
-            padding: 10px 16px;
+            padding: 8px 12px;
             border: 2px solid var(--accent-border);
-            border-radius: 25px;
+            border-radius: 20px;
             cursor: pointer;
             font-weight: bold;
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
             transition: all 0.3s ease;
             white-space: nowrap;
-            font-size: 14px;
+            font-size: 12px;
+            flex-shrink: 0;
         }
         
         .tab.active {
@@ -104,12 +114,13 @@
         }
         
         .tab-icon {
-            font-size: 16px;
+            font-size: 14px;
         }
         
         .dashboard-section {
             display: none;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+            width: 100%;
         }
         
         .dashboard-section.active {
@@ -117,111 +128,128 @@
         }
         
         .section-title {
-            font-size: 24px;
-            margin-bottom: 16px;
+            font-size: 18px;
+            margin-bottom: 12px;
         }
         
         .charts-container {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 16px;
+            gap: 12px;
+            width: 100%;
         }
         
         .chart-container {
             background-color: var(--card-bg);
-            border-radius: 10px;
-            padding: 16px;
-            height: 250px;
+            border-radius: 8px;
+            padding: 12px;
+            height: 200px;
             position: relative;
+            width: 100%;
         }
         
         .chart-title {
-            font-size: 16px;
-            margin-bottom: 10px;
+            font-size: 14px;
+            margin-bottom: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 6px;
         }
         
         .chart-controls {
             display: flex;
-            gap: 8px;
+            gap: 6px;
         }
         
         .chart-control {
             background-color: var(--button-bg);
             color: var(--text-primary);
-            padding: 5px 10px;
+            padding: 4px 8px;
             border: 1px solid var(--accent-border);
             border-radius: 5px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 12px;
         }
         
         canvas {
             width: 100% !important;
-            height: 100% !important;
+            height: calc(100% - 30px) !important;
         }
         
         .table-container {
             background-color: var(--card-bg);
-            border-radius: 10px;
-            padding: 16px;
-            margin-top: 16px;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+            width: 100%;
+            overflow: hidden;
         }
         
         .table-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 8px;
         }
         
         .table-title {
-            font-size: 18px;
+            font-size: 16px;
         }
         
         .export-btn {
             background-color: var(--accent-green);
             color: white;
-            padding: 8px 16px;
+            padding: 6px 12px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 12px;
             white-space: nowrap;
         }
         
         .table-wrapper {
+            width: 100%;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
+            margin: 0 -12px;
+            padding: 0 12px;
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 600px;
+            min-width: 800px;
         }
         
         th, td {
             text-align: left;
-            padding: 12px 8px;
+            padding: 10px 8px;
             border-bottom: 1px solid var(--accent-border);
-            font-size: 14px;
+            font-size: 12px;
+            white-space: nowrap;
         }
         
         th {
             cursor: pointer;
-            position: relative;
-            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            background-color: var(--card-bg);
+            z-index: 1;
         }
         
-        th:hover {
-            background-color: rgba(255, 255, 255, 0.1);
+        th:first-child, td:first-child {
+            position: sticky;
+            left: 0;
+            background-color: var(--card-bg);
+            z-index: 2;
+        }
+        
+        th:first-child {
+            z-index: 3;
         }
         
         tbody tr:hover {
@@ -261,119 +289,74 @@
             border-radius: 5px;
             margin: 10px 0;
             display: none;
-            font-size: 14px;
+            font-size: 12px;
         }
         
         .date-range-picker {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 8px;
+            margin-bottom: 15px;
             flex-wrap: wrap;
+            width: 100%;
         }
         
         .date-input-container {
             flex: 1;
-            min-width: 140px;
+            min-width: calc(50% - 4px);
         }
         
         .date-input-container label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             color: white;
-            font-size: 14px;
+            font-size: 12px;
         }
         
         .date-input-container input {
             width: 100%;
-            padding: 8px;
+            padding: 6px;
             background-color: var(--button-bg);
             border: 1px solid var(--accent-border);
             border-radius: 5px;
             color: white;
-            font-size: 14px;
+            font-size: 12px;
         }
         
         .date-button-container {
             display: flex;
             align-items: flex-end;
-            min-width: 80px;
+            width: 100%;
         }
         
         .date-button-container button {
             width: 100%;
-            padding: 8px 15px;
+            padding: 6px 12px;
             background-color: var(--accent-green);
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 12px;
         }
         
-        /* Mobile optimizations */
-        @media (max-width: 480px) {
-            body {
-                padding: 8px;
+        /* Mobile-specific optimizations */
+        @media screen and (max-width: 480px) {
+            .table-wrapper {
+                margin: 0 -12px;
+                padding: 0;
             }
             
-            .header {
-                margin-bottom: 16px;
-            }
-            
-            .logo {
-                height: 24px;
-            }
-            
-            .nav-tabs {
-                margin-bottom: 16px;
-                gap: 6px;
-            }
-            
-            .tab {
-                padding: 8px 12px;
-                font-size: 13px;
-            }
-            
-            .section-title {
-                font-size: 20px;
-                margin-bottom: 12px;
-            }
-            
-            .chart-container {
-                height: 200px;
-                padding: 12px;
-            }
-            
-            .chart-title {
-                font-size: 14px;
-            }
-            
-            .table-container {
-                padding: 12px;
-            }
-            
-            .table-title {
-                font-size: 16px;
+            table {
+                font-size: 11px;
             }
             
             th, td {
-                padding: 10px 6px;
-                font-size: 13px;
+                padding: 8px 6px;
             }
         }
         
         /* Tablet and larger screens */
-        @media (min-width: 768px) {
-            .charts-container {
-                grid-template-columns: 1fr 1fr;
-            }
-            
-            .nav-tabs {
-                justify-content: center;
-            }
-        }
-        
-        @media (min-width: 1024px) {
+        @media screen and (min-width: 768px) {
             body {
                 padding: 20px;
             }
@@ -384,10 +367,26 @@
             
             .logo {
                 height: 40px;
+                max-width: 150px;
+            }
+            
+            .logout-btn {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+            
+            .nav-tabs {
+                justify-content: center;
+                gap: 10px;
             }
             
             .tab {
                 padding: 12px 24px;
+                font-size: 14px;
+            }
+            
+            .tab-icon {
+                font-size: 18px;
             }
             
             .section-title {
@@ -395,14 +394,61 @@
                 margin-bottom: 20px;
             }
             
+            .charts-container {
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+            
             .chart-container {
                 height: 300px;
                 padding: 20px;
+            }
+            
+            .chart-title {
+                font-size: 18px;
+            }
+            
+            .chart-control {
+                padding: 5px 10px;
+                font-size: 14px;
+            }
+            
+            .table-container {
+                padding: 20px;
+            }
+            
+            .table-title {
+                font-size: 18px;
+            }
+            
+            .export-btn {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+            
+            th, td {
+                padding: 12px;
+                font-size: 14px;
+            }
+            
+            .date-input-container {
+                min-width: 140px;
+            }
+            
+            .date-button-container {
+                width: auto;
+            }
+            
+            .date-button-container button {
+                width: auto;
+                padding: 8px 15px;
+                font-size: 14px;
             }
         }
     </style>
 </head>
 <body>
+
     <!-- Header -->
     <div class="header">
         <img src="/logo1.png" alt="Logo" class="logo">
@@ -415,7 +461,7 @@
             <span class="tab-icon">💰</span> Sales
         </button>
         <button class="tab" data-tab="behavior">
-            <span class="tab-icon">👥</span> User Behavior
+            <span class="tab-icon">👥</span> User
         </button>
         <button class="tab" data-tab="traffic">
             <span class="tab-icon">🌐</span> Traffic
@@ -464,7 +510,7 @@
             <!-- Revenue by Product Chart -->
             <div class="chart-container">
                 <div class="chart-title">
-                    <span>Revenue Breakdown</span>
+                    <span>Revenue</span>
                     <div class="chart-controls">
                         <select class="chart-control" id="revenue-chart-type">
                             <option value="bar">Bar</option>
@@ -480,7 +526,7 @@
         <div class="table-container">
             <div class="table-header">
                 <h3 class="table-title">Recent Orders</h3>
-                <button class="export-btn" onclick="exportTableToCSV('orders-table', 'orders-data.csv')">Export CSV</button>
+                <button class="export-btn" onclick="exportTableToCSV('orders-table', 'orders-data.csv')">Export</button>
             </div>
             <input type="text" class="search-input" id="orders-search" placeholder="Search orders...">
             <div class="table-wrapper">
@@ -492,8 +538,8 @@
                             <th>Product</th>
                             <th>Price</th>
                             <th>Currency</th>
-                            <th>Coupon ID</th>
-                            <th>Date Created</th>
+                            <th>Coupon</th>
+                            <th>Date</th>
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -503,28 +549,6 @@
                 </table>
             </div>
             <div class="loader" id="orders-loader"></div>
-        </div>
-    </div>
-
-    <!-- Traffic Section -->
-    <div class="dashboard-section" id="traffic-section" data-tab-content="traffic">
-        <h2 class="section-title">Traffic Analysis</h2>
-        <div class="charts-container">
-            <!-- Traffic Sources Chart -->
-            <div class="chart-container">
-                <div class="chart-title">
-                    <span>Traffic Sources</span>
-                </div>
-                <canvas id="traffic-sources-chart"></canvas>
-            </div>
-
-            <!-- Sessions Over Time Chart -->
-            <div class="chart-container">
-                <div class="chart-title">
-                    <span>Sessions Over Time</span>
-                </div>
-                <canvas id="sessions-chart"></canvas>
-            </div>
         </div>
     </div>
 
