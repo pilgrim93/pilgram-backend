@@ -39,7 +39,7 @@ app.use(session({
 }));
 
 // Static files
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'views')));
 
 // Authentication checker
 function isAuthenticated(req, res, next) {
@@ -52,7 +52,7 @@ function isAuthenticated(req, res, next) {
 
 // Protect dashboard.html
 app.get('/dashboard.html', isAuthenticated, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+  res.sendFile(path.join(__dirname, 'views', 'dashboard.html'));
 });
 
 // Login route
@@ -83,7 +83,7 @@ app.post('/api/logout', (req, res) => {
 // Root route
 app.get('/', (req, res) => {
   if (req.session && req.session.loggedIn) {
-    res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+    res.sendFile(path.join(__dirname, 'views', 'dashboard.html'));
   } else {
     res.redirect('/login.html');
   }
