@@ -68,6 +68,15 @@ app.post('/login', (req, res) => {
   }
 });
 
+app.get('/login.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'login.html'));
+});
+
+app.get('/dashboard.html', isAuthenticated, (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'dashboard.html'));
+});
+
+
 // Logout route
 app.post('/api/logout', (req, res) => {
   req.session.destroy((err) => {
