@@ -39,7 +39,7 @@ app.use(session({
 }));
 
 // Static files
-app.use(express.static(path.join(__dirname, 'views')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Authentication checker
 function isAuthenticated(req, res, next) {
