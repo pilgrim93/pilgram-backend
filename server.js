@@ -1,9 +1,17 @@
-// Updated server.js
-const express = require('express');
-const session = require('express-session');
-const path = require('path');
-const fs = require('fs');
-const axios = require('axios');
+// Updated server.js in ES Modules format
+
+import express from 'express';
+import session from 'express-session';
+import path from 'path';
+import fs from 'fs';
+import axios from 'axios';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// Setup __dirname manually for ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 const app = express();
 const PORT = process.env.PORT || 10000;
 
@@ -44,9 +52,8 @@ function isAuthenticated(req, res, next) {
 
 // Protect dashboard.html
 app.get('/dashboard.html', isAuthenticated, (req, res) => {
-  res.sendFile(__dirname + '/public/dashboard.html');
+  res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
-
 
 // Login route
 app.post('/login', (req, res) => {
@@ -92,6 +99,7 @@ function requireAuth(req, res, next) {
 }
 
 // Apply auth to API endpoints
+
 app.get('/api/sales-data', requireAuth, async (req, res) => {
   try {
     const response = await axios.get('https://shoppy.dev/api/orders', {

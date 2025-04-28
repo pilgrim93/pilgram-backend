@@ -1,227 +1,188 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const path = require("path");
-const axios = require("axios");
-require("dotenv").config();
-const session = require("express-session");
-
+// Updated server.js
+const express = require('express');
+const session = require('express-session');
+const path = require('path');
+const fs = require('fs');
+const axios = require('axios');
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 
+// Your hardcoded credentials (replace with your actual credentials)
+const ADMIN_USERNAME = 'admin';  // Replace with your username
+const ADMIN_PASSWORD = 'officialdre7';  // Replace with your password
 
+// Setup for Google API credentials if using GOOGLE_SERVICE_ACCOUNT_KEY
+if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
+  const keyPath = path.join(__dirname, 'service-account.json');
+  fs.writeFileSync(keyPath, process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
+  process.env.GOOGLE_APPLICATION_CREDENTIALS = keyPath;
+}
 
-// 🔐 Session middleware
+// Middleware setup
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Session middleware
 app.use(session({
-  secret: process.env.SESSION_SECRET || "pilgram_secret",
+  secret: 'your_secret_key',
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: false,
+  cookie: { secure: false }
 }));
 
-// 📦 Middleware
-app.use("/public", express.static(path.join(__dirname, "public")));
-app.use(express.static(path.join(__dirname, "public")));
-app.use("/styles", express.static(path.join(__dirname, "styles")));
-app.use("/views", express.static(path.join(__dirname, "views")));
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+// Static files
+app.use(express.static(path.join(__dirname, 'public')));
 
-// 🛡️ Auth middleware
-function requireAuth(req, res, next) {
-  if (req.session && req.session.authenticated) {
-    return next();
+// Authentication checker
+function isAuthenticated(req, res, next) {
+  if (req.session && req.session.loggedIn) {
+    next();
+  } else {
+    res.redirect('/login.html');
   }
-  res.redirect("/login");
 }
 
-// 🧠 Routes
-app.get("/login", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "login.html"));
+// Protect dashboard.html
+app.get('/dashboard.html', isAuthenticated, (req, res) => {
+  res.sendFile(__dirname + '/public/dashboard.html');
 });
 
-app.post("/login", (req, res) => {
+
+// Login route
+app.post('/login', (req, res) => {
   const { username, password } = req.body;
-  if (username === 'admin' && password === 'dre') {
-    req.session.authenticated = true;
-    return res.redirect("/dashboard");
+  
+  // Check credentials
+  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    req.session.loggedIn = true;
+    res.redirect('/dashboard.html');
+  } else {
+    res.redirect('/login.html?error=invalid');
   }
-  res.redirect("/login");
 });
 
-app.post("/logout", (req, res) => {
-  req.session.destroy(() => {
-   res.clearCookie('connect.sid');
-   res.sendStatus(200);
+// Logout route
+app.post('/api/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Session destruction error:', err);
+      res.status(500).json({ success: false });
+    } else {
+      res.json({ success: true });
+    }
   });
 });
 
-// Serve dashboard.html at the root URL
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/views/dashboard.html"));
+// Root route
+app.get('/', (req, res) => {
+  if (req.session && req.session.loggedIn) {
+    res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+  } else {
+    res.redirect('/login.html');
+  }
 });
 
-app.get("/reset-login", (req, res) => {
-  res.send(`
-    <html>
-      <head><title>Reset Login</title></head>
-      <body style="font-family:sans-serif; text-align:center; padding:50px;">
-        <h1>Reset Credentials</h1>
-        <p>Default username: <b>admin</b></p>
-        <p>Default password: <b>dre</b></p>
-        <p>You can change these in <code>server.js</code>.</p>
-        <a href="/login" style="color:#00bcd4;">Back to Login</a>
-      </body>
-    </html>
-  `);
-});
-
-
-// 📬 Telegram alert
-async function sendTelegramNotification(order) {
-  const message = `🛒 *New Order Received!*
-
-📦 *Product:* ${order.product_title}
-💵 *Amount:* $${order.amount}
-📧 *Email:* ${order.email}`;
-  try {
-    await axios.post(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-      chat_id: process.env.TELEGRAM_CHAT_ID,
-      text: message,
-      parse_mode: "Markdown"
-    });
-    console.log("✅ Telegram message sent.");
-  } catch (err) {
-    console.error("❌ Failed to send Telegram message:", err.message);
+// Protected routes middleware
+function requireAuth(req, res, next) {
+  if (req.session && req.session.loggedIn) {
+    next();
+  } else {
+    res.status(401).json({ error: 'Not authenticated' });
   }
 }
 
-
-app.post("/webhook/shoppy", async (req, res) => {
-  const order = req.body;
-  if (req.headers["x-verification-key"] !== process.env.SHOPPY_WEBHOOK_SECRET) {
-    return res.status(403).send("Invalid key");
-  }
-  await sendTelegramNotification(order);
-  res.sendStatus(200);
-});
-
-// 📊 Google Analytics
-const { BetaAnalyticsDataClient } = require('@google-analytics/data');
-const analyticsDataClient = new BetaAnalyticsDataClient();
-
-app.get("/api/traffic-stats", async (req, res) => {
+// Apply auth to API endpoints
+app.get('/api/sales-data', requireAuth, async (req, res) => {
   try {
-    const propertyId = "486157365";
-    const startDate = req.query.start || "7daysAgo";
-    const endDate = req.query.end || "today";
+    const response = await axios.get('https://shoppy.dev/api/orders', {
+      headers: {
+        Authorization: `Bearer ${process.env.SHOPPY_API_KEY}`
+      }
+    });
 
-    const runReport = async (dimension) => {
-      const [response] = await analyticsDataClient.runReport({
-        property: `properties/${propertyId}`,
-        dimensions: [{ name: dimension }],
-        metrics: [{ name: "sessions" }],
-        dateRanges: [{ startDate, endDate }],
-        limit: 5
-      });
-      return (response.rows || []).map(row => ({
-        label: row.dimensionValues[0].value,
-        value: parseInt(row.metricValues[0].value)
-      }));
-    };
+    const orders = response.data || [];
 
-    const [topCountries, topDevices, topReferrers] = await Promise.all([
-      runReport("country"),
-      runReport("deviceCategory"),
-      runReport("sessionSource")
-    ]);
+    const salesData = {};
+    orders.forEach(order => {
+      const date = new Date(order.created_at).toISOString().split('T')[0];
+      salesData[date] = (salesData[date] || 0) + parseFloat(order.price || 0);
+    });
 
-    res.json({ topCountries, topDevices, topReferrers });
-  } catch (err) {
-    console.error("GA4 API error:", err);
-    res.status(500).json({ error: "Failed to fetch traffic stats" });
+    const labels = Object.keys(salesData).sort();
+    const data = labels.map(date => salesData[date]);
+
+    res.json({ labels, data });
+
+  } catch (error) {
+    console.error('Failed to fetch sales data:', error.response?.data || error.message);
+    res.status(500).send('Failed to fetch sales data');
   }
 });
 
+app.get('/api/traffic', requireAuth, async (req, res) => {
+  try {
+    const response = await axios.get('https://shoppy.dev/api/orders', {
+      headers: {
+        Authorization: `Bearer ${process.env.SHOPPY_API_KEY}`
+      }
+    });
 
-app.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+    const orders = response.data || [];
+
+    const sources = [
+      { source: 'Direct', sessions: Math.floor(orders.length * 0.5) },
+      { source: 'Referral', sessions: Math.floor(orders.length * 0.3) },
+      { source: 'Organic', sessions: Math.floor(orders.length * 0.2) },
+    ];
+
+    const sessionCounts = {};
+    orders.forEach(order => {
+      const date = new Date(order.created_at).toISOString().split('T')[0];
+      sessionCounts[date] = (sessionCounts[date] || 0) + 1;
+    });
+
+    const sessions = Object.keys(sessionCounts).sort().map(date => ({
+      date,
+      count: sessionCounts[date]
+    }));
+
+    res.json({ sources, sessions });
+
+  } catch (error) {
+    console.error('Failed to fetch traffic data:', error.response?.data || error.message);
+    res.status(500).send('Failed to fetch traffic data');
+  }
 });
 
-// --- Dummy Orders ---
-app.get('/api/orders', (req, res) => {
-  res.json([
-    {
-      id: 'ORD-001',
-      email: 'user1@example.com',
-      product: 'CPAP Machine',
-      price: '$250.00',
-      date: '2025-04-17',
-      status: 'Shipped'
-    },
-    {
-      id: 'ORD-002',
-      email: 'user2@example.com',
-      product: 'Mask Headgear',
-      price: '$45.99',
-      date: '2025-04-18',
-      status: 'Processing'
-    }
-  ]);
+app.get('/api/orders', requireAuth, async (req, res) => {
+  try {
+    const response = await axios.get('https://shoppy.dev/api/orders', {
+      headers: {
+        Authorization: `Bearer ${process.env.SHOPPY_API_KEY}`
+      }
+    });
+    
+    const orders = response.data || [];
+    
+    const formattedOrders = orders.map(order => ({
+      id: order.id,
+      email: order.email || 'N/A',
+      product: order.product?.title || 'Unknown Product',
+      price: `$${(order.price || 0).toFixed(2)}`,
+      currency: order.currency || 'USD',
+      coupon_id: order.coupon_id || 'N/A',
+      date: new Date(order.created_at).toISOString().split('T')[0],
+      status: order.status || 'Unknown'
+    }));
+    
+    res.json(formattedOrders);
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    res.json([]);
+  }
 });
 
-// --- Dummy User Activity ---
-app.get('/api/user-activity', (req, res) => {
-  res.json({
-    avgScrollDepth: 62,
-    avgTimeOnPage: 95,
-    clicksPerSession: 22
-  });
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
-
-// --- Dummy Traffic Insights ---
-app.get('/api/traffic', (req, res) => {
-  res.json({
-    geo: { US: 200, CA: 50, UK: 30 },
-    device: { Mobile: 180, Desktop: 100, Tablet: 20 },
-    referrals: { Google: 120, Facebook: 60, Direct: 30 },
-    campaigns: { SpringLaunch: 70, Retargeting: 25 },
-    keywords: { 'cpap mask': 80, 'sleep aid': 45 }
-  });
-});
-
-// --- Dummy Sales Data for Charts ---
-app.get('/api/sales-data', (req, res) => {
-  res.json({
-    labels: ['2025-04-15', '2025-04-16', '2025-04-17', '2025-04-18'],
-    data: [10, 22, 17, 25]
-  });
-});
-
-// 🚀 Launch
-app.listen(process.env.PORT || 10000, '0.0.0.0', () => {
-  console.log(`🚀 Server running at http://localhost:${process.env.PORT || 10000}`);
-});
-
-
-// 🧠 Behavior tracking endpoint
-let userActivityLog = [];
-
-app.post("/api/track-behavior", (req, res) => {
-  const { type, value, path } = req.body;
-  if (!type || !value || !path) return res.status(400).send("Missing data");
-
-  userActivityLog.push({
-    userId: Math.floor(Math.random() * 1000).toString().padStart(3, '0'),
-    email: `user${Math.floor(Math.random() * 100)}@example.com`,
-    action: type === "click" ? "Clicked" : type === "scroll" ? "Scrolled" : "Time on Page",
-    page: path,
-    timestamp: new Date().toISOString()
-  });
-
-  res.status(200).send("Tracked");
-});
-
-// 📊 Endpoint to get user activity log
-app.get("/api/user-activity", (req, res) => {
-  res.json(userActivityLog.slice(-50)); // Limit to last 50 entries
-});
-
