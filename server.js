@@ -33,6 +33,21 @@ app.use(session({
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Authentication checker
+function isAuthenticated(req, res, next) {
+  if (req.session && req.session.loggedIn) {
+    next();
+  } else {
+    res.redirect('/login.html');
+  }
+}
+
+// Protect dashboard.html
+app.get('/dashboard.html', isAuthenticated, (req, res) => {
+  res.sendFile(__dirname + '/public/dashboard.html');
+});
+
+
 // Login route
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
